@@ -1,4 +1,4 @@
-import { Box } from "@chakra-ui/react";
+import { Box, Text } from "@chakra-ui/react";
 import React from "react";
 import TutorPageWrapper from "@tuteria/shared-lib/src/tutor-revamp";
 
@@ -12,19 +12,7 @@ export const WorkHistory = () => {
       borderRadius=".25rem"
       maxW="600px"
     >
-      <WorkHistoryComponent
-        handleSubmit={(values) => console.log(values)}
-        initialValues={{
-          company: "Spotify",
-          isTeachingRole: true,
-          role: "Backend Developer",
-          endYear: "",
-          startYear: "",
-          isCurrent: false,
-          showOnProfile: false,
-        }}
-        ref={formRef}
-      />
+      <Text>Hello world</Text>
     </Box>
   );
 };

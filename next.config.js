@@ -31,6 +31,18 @@ module.exports = withPWA(
 
         return config;
       },
+      webpackDevMiddleware(config, options) {
+        config.watchOptions.ignored = config.watchOptions.ignored.filter(
+          ignore => !ignore.toString().includes("node_modules")
+        );
+        // Ignore all node modules except those here.
+        config.watchOptions.ignored = [
+          ...config.watchOptions.ignored,
+          /node_modules([\\]+|\/)+(?!@tuteria[\\/]shared-lib)/,
+          /\@tuteria[\\/]shared-lib([\\]+|\/)node_modules/
+        ];
+        return config;
+      },
       assetPrefix: process.env.BASE_PATH || "",
       publicRuntimeConfig: {
         basePath: process.env.BASE_PATH || ""

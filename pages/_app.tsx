@@ -1,10 +1,8 @@
 import React from "react";
 import Head from "next/head";
 import "react-phone-input-2/lib/style.css";
-import "@gbozee/shared-lib/src/components/ui-elements/datepicker.css";
-import "@gbozee/shared-lib/src/components/ui-elements/react-datepicker.css";
 // import App from "next/app";
-import ZetaProvider from "@gbozee/shared-lib/src/bootstrap";
+import ZetaProvider from "@tuteria/shared-lib/src/bootstrap";
 require("react-dom");
 if (typeof window !== "undefined") {
   window.React2 = require("react");
