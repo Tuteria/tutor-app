@@ -1,5 +1,6 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
+import {sampleServerAdapter} from "../../server_utils/server"
 
-export default function handler(req, res) {
-  res.status(200).json({ name: "John Doe" });
+export default async function handler(req, res) {
+  const result = await sampleServerAdapter()
+  res.status(200).json({ name: result });
 }
