@@ -1,9 +1,9 @@
 image: docker:git
 services:
-- docker:dind
+  - docker:dind
 
 stages:
-- build
+  - build
 
 variables:
   CONTAINER_IMAGE: registry.gitlab.com/tuteria/tutor-frontend-app/tutor-application
@@ -16,3 +16,5 @@ build:
   script:
     - docker build -t $CONTAINER_IMAGE:latest .
     - docker push $CONTAINER_IMAGE:latest
+  only:
+    - staging
