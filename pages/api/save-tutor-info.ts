@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { saveTutorInfo } from "../../server_utils/server";
+import { serverAdapter } from "../../server_utils/server";
 
 export default async function handler(
   req: NextApiRequest,
@@ -7,8 +7,8 @@ export default async function handler(
 ) {
   if (req.method === "POST") {
     try {
-      const result = await saveTutorInfo(req.body);
-      res.status(200).json({status: true, data: result})
+      const result = await serverAdapter.saveTutorInfo(req.body);
+      res.status(200).json({ status: true, data: result });
     } catch (error) {
       res.status(400).json({ status: false, error });
     }
