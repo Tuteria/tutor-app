@@ -1,4 +1,4 @@
-FROM mhart/alpine-node:14 AS builder
+FROM mhart/alpine-node:14
 
 RUN apk update && apk upgrade && \
     apk add --no-cache bash git openssh
@@ -6,6 +6,8 @@ RUN apk update && apk upgrade && \
 WORKDIR /app
 
 COPY . .
+
+RUN mv package-prod.json package.json
 
 RUN yarn install
 
