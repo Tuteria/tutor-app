@@ -8,7 +8,7 @@ let SHEET_API = "https://sheet.tuteria.com";
 async function getSheetAPI(
   params: any,
   path = "read-single"
-): Array<{ shortName: string; test_name: string }> {
+): Promise<Array<{ shortName: string; test_name: string }>> {
   let response = await fetch(`${SHEET_API}/${path}`, {
     method: "POST",
     body: JSON.stringify(params),
@@ -31,6 +31,28 @@ export async function getTestableSubjects(shortName?: string) {
   return subjects;
 }
 
+function transfromData(data) {
+  const options = ["OptionA", "OptionB", "OptionC", "OptionD"];
+  return {
+    quiz: {
+      questions: data.map((item) => ({
+        content: item.Question,
+        figure: item.Image,
+        is_latex: item.is_latex || false,
+        comprehension: item.comprehension,
+        options_display: item["Options Layout"],
+        answers: options.map((option) => ({
+          content: item[option],
+          is_latex: item.is_latex || false,
+          figure: null,
+          correct: item.Answer === option,
+          answer_type: "TEXT",
+        })),
+      })),
+    },
+  };
+}
+
 export async function getTestForSubject(shortName: string) {
   let subjects = await getTestableSubjects(shortName);
   let results = await Promise.all(
@@ -41,5 +63,6 @@ export async function getTestForSubject(shortName: string) {
       })
     )
   );
-  return results.flat();
+  const flattenedResult = results.flat();
+  return transfromData(flattenedResult);
 }
