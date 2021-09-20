@@ -10,6 +10,80 @@ let ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const TEST_EMAIL = process.env.TEST_EMAIL || "";
 const TEST_NUMBER = process.env.TEST_NUMBER || "";
 
+export async function bulkCreateQuizOnBackend(
+  data: Array<{
+    skill?: string;
+    pass_mark?: number;
+    url?: string;
+    questions: Array<{
+      pretext?: string;
+      question?: string;
+      image?: string;
+      optionA?: string;
+      optionB?: string;
+      optionC?: string;
+      optionD?: string;
+      answer?: string;
+      shared_text?: string;
+      shared_question?: string;
+      shared_images?: string;
+      options_layout?: string;
+      image_layout?: string;
+      is_latex?: string;
+    }>;
+  }>
+): Promise<
+  Array<{
+    name: string;
+    testable: boolean;
+    quiz_url: string;
+    id: number;
+    slug: string;
+    passmark: number;
+    duration: number;
+    is_new: boolean;
+  }>
+> {
+  let response = await fetch(`${HOST}/api/ensure-quiz-creation/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ info: data }),
+  });
+  if (response.status < 500) {
+    let result = await response.json();
+    if (result.status) {
+      return result.data;
+    }
+    return result;
+  }
+  throw new Error("Error creating subjects from backend.");
+}
+
+export async function fetchAllowedQuizesForUser(email: string): Promise<
+  Array<{
+    name: string;
+    testable: boolean;
+    quiz_url: string;
+    id: number;
+    slug: string;
+    passmark: number;
+    duration: number;
+    is_new: boolean;
+  }>
+> {
+  let response = await fetch(`${HOST}/api/get-quizzes/?email=${email}`, {});
+  if (response.status < 500) {
+    let result = await response.json();
+    if (result.status) {
+      return result.data;
+    }
+    return result;
+  }
+  throw new Error("Error fetching quizes for user");
+}
+
 export const saveTutorInfoService = async ({
   tutorId,
   type,
