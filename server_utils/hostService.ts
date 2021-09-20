@@ -130,3 +130,28 @@ export const getTutorInfoService = async (tutorId: string) => {
     // },
   };
 };
+
+export const getQuizes = async (subject) => {
+  try {
+    const response = await fetch(`${HOST}/api/quizes/${subject}`)
+    const data = await response.json()
+    return data
+  } catch (error) {
+    throw error
+  }
+}
+
+export const getTestQuestions = async (subject) => {
+  try {
+    const response = await fetch(`${HOST}/api/questions/${subject}`,{
+      headers: {
+        "Content-Type": "application/json"
+      },
+      method: "POST",
+      body : JSON.stringify({subject})
+    })
+    const data = await response.json()
+  } catch (error) {
+    throw error
+  }
+}

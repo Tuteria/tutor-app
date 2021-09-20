@@ -1,11 +1,11 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { getTestForSubject } from "../../../server_utils/quizes";
+import { getTestQuestionsForSubject } from "../../../server_utils/quizes";
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === "POST") {
     let { subject } = req.body;
     try {
-      let quizes = await getTestForSubject(subject);
+      let quizes = await getTestQuestionsForSubject(subject);
       res.status(200).json({
         status: true,
         data: quizes,

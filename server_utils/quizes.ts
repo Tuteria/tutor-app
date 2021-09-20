@@ -1,3 +1,5 @@
+import { getTestQuestions } from "./hostService";
+
 let QUIZES_SHEET_API =
   "https://docs.google.com/spreadsheets/d/132vGcZPoZZxG3lbEx_YNoveOyucp6vWVc7Tw4-s4DwQ/edit?usp=sharing";
 let SUBJECTS_API =
@@ -31,23 +33,29 @@ export async function getTestableSubjects(shortName?: string) {
   return subjects;
 }
 
-function transfromData(data) {
-  const options = ["OptionA", "OptionB", "OptionC", "OptionD"];
+function transfromData(data, showAnswer) {
   return {
     quiz: {
       questions: data.map((item) => ({
-        content: item.Question,
-        figure: item.Image,
+        id: item.id,
+        content: item.content,
+        figure: item.image,
         is_latex: item.is_latex || false,
-        comprehension: item.comprehension,
-        options_display: item["Options Layout"],
-        answers: options.map((option) => ({
-          content: item[option],
-          is_latex: item.is_latex || false,
-          figure: null,
-          correct: item.Answer === option,
-          answer_type: "TEXT",
-        })),
+        comprehension: {
+          passage: item.comprehension,
+        },
+        options_display: item.options_layout || "vertical",
+        answers: item.answer_set.map((option) => {
+          const optionData = {
+            content: option.content,
+            is_latex: item.is_latex || false,
+            figure: null,
+            answer_type: "TEXT",
+          };
+          return showAnswer
+            ? { ...optionData, correct: showAnswer ? option.correct : null }
+            : optionData;
+        }),
       })),
     },
   };
@@ -64,5 +72,13 @@ export async function getTestForSubject(shortName: string) {
     )
   );
   const flattenedResult = results.flat();
-  return transfromData(flattenedResult);
+  return flattenedResult;
+}
+
+export async function getTestQuestionsForSubject(
+  shortName,
+  showAnswer = false
+) {
+  const questions = await getTestQuestions(shortName);
+  return transfromData(questions, showAnswer);
 }
