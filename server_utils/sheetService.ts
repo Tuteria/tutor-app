@@ -84,28 +84,6 @@ export async function getTestableSubjects(
     });
 }
 
-function transfromData(data) {
-  const options = ["OptionA", "OptionB", "OptionC", "OptionD"];
-  return {
-    quiz: {
-      questions: data.map((item) => ({
-        content: item.Question,
-        figure: item.Image,
-        is_latex: item.is_latex || false,
-        comprehension: item.comprehension,
-        options_display: item["Options Layout"],
-        answers: options.map((option) => ({
-          content: item[option],
-          is_latex: item.is_latex || false,
-          figure: null,
-          correct: item.Answer === option,
-          answer_type: "TEXT",
-        })),
-      })),
-    },
-  };
-}
-
 export async function getSheetTestData(shortName: string): Promise<
   Array<{
     pretext?: string;

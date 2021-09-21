@@ -1,8 +1,12 @@
 import {
+  beginQuiz,
   bulkCreateQuizOnBackend,
   fetchAllowedQuizesForUser,
+  getQuizData,
   getTutorInfoService,
+  gradeQuiz,
   saveTutorInfoService,
+  updateTestStatus,
 } from "./hostService";
 import {
   getTuteriaSubjectList,
@@ -11,7 +15,69 @@ import {
 } from "./sheetService";
 import { groupBy } from "lodash";
 
+const bulkFetchQuizSubjectsFromSheet = async (
+  subjects: string[],
+  create = false
+) => {
+  let promises: any = await Promise.all(
+    subjects.map((o) => getSheetTestData(o))
+  );
+  // let promises: any = await batchPromiseCall(
+  //   subjects.map((o) => getSheetTestData(o), 5)
+  // );
+  // debugger;
+  let transformed = await getTestableSubjects();
+  let rr = subjects
+    .map((p, i) => {
+      let f = transformed.find((o) => o.skill === p);
+      if (f) {
+        return {
+          skill: f.skill,
+          pass_mark: f.pass_mark,
+          url: f.url,
+          questions: promises[i],
+        };
+      }
+      return null;
+    })
+    .filter((x) => x);
+  if (create) {
+    return await bulkCreateQuizOnBackend(rr);
+  }
+  return rr;
+};
+
+const transfromData = (data, showAnswer = false) =>
+  data.map((item) => ({
+    id: item.id,
+    pretext: item.pretext,
+    content: item.content,
+    figure: item.image,
+    is_latex: item.is_latex || false,
+    comprehension: {
+      passage: item.comprehension,
+    },
+    options_display: item.options_layout || "vertical",
+    answers: item.answer_set.map((option) => {
+      const optionData = {
+        content: option.content,
+        is_latex: item.is_latex || false,
+        figure: null,
+        answer_type: "TEXT",
+      };
+      return showAnswer
+        ? { ...optionData, correct: showAnswer ? option.correct : null }
+        : optionData;
+    }),
+  }));
+
+const getQuizQuestions = async (subject: string) => {
+  const questions = await getQuizData(subject);
+  return transfromData(questions);
+};
+
 export const serverAdapter = {
+  bulkFetchQuizSubjectsFromSheet,
   saveTutorInfo: async (data: any) => {
     return await saveTutorInfoService(data);
   },
@@ -37,43 +103,55 @@ export const serverAdapter = {
     let result = await getSheetTestData(subject);
     return result;
   },
-  bulkFetchQuizSubjectsFromSheet: async (
-    subjects: string[],
-    create = false
-  ) => {
-    let promises: any = await Promise.all(
-      subjects.map((o) => getSheetTestData(o))
+  generateQuizes: async (name: string, subjects: string[]) => {
+    const quizDataFromSheet: any[] = await bulkFetchQuizSubjectsFromSheet(
+      subjects,
+      true
     );
-    // let promises: any = await batchPromiseCall(
-    //   subjects.map((o) => getSheetTestData(o), 5)
-    // );
-    // debugger;
-    let transformed = await getTestableSubjects();
-    let rr = subjects
-      .map((p, i) => {
-        let f = transformed.find((o) => o.skill === p);
-        if (f) {
-          return {
-            skill: f.skill,
-            pass_mark: f.pass_mark,
-            url: f.url,
-            questions: promises[i],
-          };
-        }
-        return null;
-      })
-      .filter((x) => x);
-    if (create) {
-      return await bulkCreateQuizOnBackend(rr);
-    }
-    return rr;
+    const quizQuestionpromises = quizDataFromSheet.map((item) =>
+      getQuizQuestions(item.quiz_url)
+    );
+    const quizQuestions = await Promise.all(quizQuestionpromises);
+    return subjects.map((subject, index) => ({
+      subject,
+      passmark: quizDataFromSheet[index].passmark,
+      questions: quizQuestions[index],
+    }));
+  },
+  startQuiz: async (subjects: string[], email: string) => {
+    return await beginQuiz(subjects, email);
+  },
+  completeQuiz: async (data: {
+    email: string;
+    name: string;
+    avg_passmark: number;
+    time_elapsed: boolean;
+    subjects: string[];
+    answers: Array<{ question_id: number; answer: string }>;
+  }) => {
+    const grading = await gradeQuiz(data);
+    const groupedGrading = {
+      email: data.email,
+      name: data.name,
+      passed: [],
+      failed: [],
+    };
+    grading.forEach(({ passed, score, skill }) => {
+      if (passed) {
+        groupedGrading.passed.push({ score, skill });
+      } else {
+        groupedGrading.failed.push({ score, skill });
+      }
+    });
+    const result = await updateTestStatus(groupedGrading);
+    return result;
   },
   gradeQuiz(
     quizzes: Array<{ skill: string; questions: Array<any>; pass_mark: number }>,
     answers: Array<{ question_id: string; answer: number }>,
     question_count: number
   ) {
-    /**This function is an internal function, you would need to make api calls to get 
+    /**This function is an internal function, you would need to make api calls to get
      * the quiz data.
      */
     let avgPassmark = sum(quizzes.map((o) => o.pass_mark)) / quizzes.length;

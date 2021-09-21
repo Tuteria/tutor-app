@@ -204,3 +204,117 @@ export const getTutorInfoService = async (tutorId: string) => {
     // },
   };
 };
+
+export const getQuizData = async (subject) => {
+  const response = await fetch(`${HOST}/api/questions/${subject}`);
+  if (response.status < 500) {
+    let result = await response.json();
+    return result;
+  }
+  throw new Error("Error fetching quiz from backend.");
+};
+
+export const beginQuiz = async (subjects: string[], email: string) => {
+  const response = await fetch(`${HOST}/new-subject-flow/begin-quiz`, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+    method: "POST",
+    body: JSON.stringify({ subjects, email }),
+  });
+  if (response.status < 500) {
+    let result = await response.json();
+    return result;
+  }
+  throw new Error("Error starting quiz from backend.");
+};
+
+// This is not coming from django anymore. this would be solved in the serveradapter.
+export const gradeQuiz = async (data: {
+  name: string;
+  avg_passmark: number;
+  time_elapsed: boolean;
+  subjects: string[];
+  answers: Array<{ question_id: number; answer: string }>;
+}): Promise<
+  Array<{
+    score: number;
+    skill: string;
+    passed: boolean;
+  }>
+> => {
+  const response = await fetch(`${HOST}/api/grade-quiz`, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+  if (response.status < 500) {
+    let result = await response.json();
+    return result.data;
+  }
+  throw new Error("Error grading quiz from backend.");
+};
+
+export const updateTestStatus = async (data: {
+  email: string;
+  name: string;
+  passed: Array<{ score: number; skill: string }>;
+  failed: Array<{ score: number; skill: string }>;
+}) => {
+  const response = await fetch(`${HOST}/new-subject-flow/update-quiz`, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+  if (response.status < 500) {
+    let result = await response.json();
+    return result.data;
+  }
+  throw new Error("Error updating test status from backend.");
+};
+
+export const saveUserSelectedSubjects = async (data: {
+  email: string;
+  subjects: string[];
+}) => {
+  let response = await fetch(`${HOST}/new-subject-flow/select-subjects`, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+  if (response.status < 500) {
+    let result = await response.json();
+    if (result.status) {
+      return result.data;
+    }
+    return result;
+  }
+  throw new Error("Error saving selected-subjects");
+};
+
+export const userRetakeTest = async (data: {
+  email: string;
+  subjects: string[];
+}) => {
+  let response = await fetch(`${HOST}/new-subject-flow/retake-quiz`, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+  if (response.status < 500) {
+    let result = await response.json();
+    if (result.status) {
+      return result.data;
+    }
+    return result;
+  }
+  throw new Error("Error allowing user to retake test");
+};
