@@ -9,6 +9,7 @@ import {
   getSheetTestData,
   getTestableSubjects,
 } from "./sheetService";
+import { groupBy } from "lodash";
 
 export const serverAdapter = {
   saveTutorInfo: async (data: any) => {
@@ -67,24 +68,64 @@ export const serverAdapter = {
     }
     return rr;
   },
+  gradeQuiz(
+    quizzes: Array<{ skill: string; questions: Array<any>; pass_mark: number }>,
+    answers: Array<{ question_id: string; answer: number }>,
+    question_count: number
+  ) {
+    /**This function is an internal function, you would need to make api calls to get 
+     * the quiz data.
+     */
+    let avgPassmark = sum(quizzes.map((o) => o.pass_mark)) / quizzes.length;
+    // group the answers into their corresponding quizes
+    let combinedQuestions = quizzes
+      .map((quiz) => {
+        return quiz.questions.map((o) => ({ ...o, skill: quiz.skill }));
+      })
+      .flat();
+    let transformedAnswers = answers.map((a) => {
+      let found = combinedQuestions.find((o) => o.id === a.question_id);
+      let isCorrect = false;
+      let skill = null;
+      if (found) {
+        isCorrect = found.answers[a.answer].correct === true;
+        skill = found.skill;
+      }
+      return { ...a, correct: isCorrect, skill };
+    });
+    let passedQuizAvg =
+      (transformedAnswers.filter((o) => o.correct).length * 100) /
+      question_count;
+    let graded = groupBy(transformedAnswers, "skill");
+    let result = {};
+    Object.keys(graded).forEach((gr) => {
+      let key = gr;
+      let quizInstance = quizzes.find((o) => o.skill === gr);
+      let value = graded[gr];
+      let score = (value.filter((o) => o.correct).length * 100) / value.length;
+
+      result[key] = {
+        score,
+        passed: score > quizInstance.pass_mark,
+        pass_mark: quizInstance.pass_mark,
+      };
+    });
+    return {
+      avgPassmark,
+      totalQuizGrade: passedQuizAvg,
+      result: Object.keys(result).map((o) => ({ ...result[o], skill: o })),
+      passed: passedQuizAvg > avgPassmark,
+    };
+  },
+  // async gradeQuiz(
+  //   answers: Array<{ question_id: string; answer: string }>,
+  //   subjects: string[]
+  // ) {
+  //   // using the subjects array passed, get the list of all
+  //   return {};
+  // },
 };
 
-async function batchPromiseCall(promises: any, size = 10) {
-  let r = [];
-  if (promises.length > 0) {
-    const times = Math.ceil(promises.length / size);
-    const batchPromises = [];
-    for (let i = 0; i < times; i++) {
-      batchPromises.push(promises.splice(0, size));
-    }
-
-    for (let i = 0; i < batchPromises.length; i++) {
-      setTimeout(async () => {
-        let result = await Promise.all(batchPromises[i]);
-        r.push(result);
-        console.log(result);
-      }, 10000);
-    }
-  }
-  return r.flat();
+function sum(array: number[]) {
+  return array.reduce((a, b) => a + b, 0);
 }
