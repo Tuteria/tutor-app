@@ -213,3 +213,18 @@ export const getQuizData = async (subject) => {
   }
   throw new Error("Error fetching quiz from backend.");
 };
+
+export const beginQuiz = async (subjects) => {
+  const response = await fetch(`${HOST}/api/quiz/begin`, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+    method: "POST",
+    body: JSON.stringify({subjects})
+  });
+  if (response.status < 500) {
+    let result = await response.json();
+    return result;
+  }
+  throw new Error("Error starting quiz from backend.");
+}

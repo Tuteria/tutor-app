@@ -1,4 +1,5 @@
 import {
+  beginQuiz,
   bulkCreateQuizOnBackend,
   fetchAllowedQuizesForUser,
   getQuizData,
@@ -114,6 +115,10 @@ export const serverAdapter = {
       questions: quizQuestions[index],
     }));
   },
+  startQuiz: async (subjects: []) => {
+    const response = await beginQuiz(subjects)
+    return response;
+  }
 };
 
 async function batchPromiseCall(promises: any, size = 10) {
