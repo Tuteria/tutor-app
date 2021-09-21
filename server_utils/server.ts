@@ -4,7 +4,9 @@ import {
   fetchAllowedQuizesForUser,
   getQuizData,
   getTutorInfoService,
+  gradeQuiz,
   saveTutorInfoService,
+  updateTestStatus,
 } from "./hostService";
 import {
   getTuteriaSubjectList,
@@ -116,9 +118,34 @@ export const serverAdapter = {
     }));
   },
   startQuiz: async (subjects: []) => {
-    const response = await beginQuiz(subjects)
+    const response = await beginQuiz(subjects);
     return response;
-  }
+  },
+  completeQuiz: async (data: {
+    email: string,
+    name: string;
+    avg_passmark: number;
+    time_elapsed: boolean;
+    subjects: string[];
+    answers: Array<{ question_id: number; answer: string }>;
+  }) => {
+    const grading = await gradeQuiz(data);
+    const groupedGrading = {
+      email: data.email,
+      name: data.name,
+      passed: [],
+      failed: [],
+    }
+    grading.forEach(({passed, score, skill}) => {
+      if (passed) {
+        groupedGrading.passed.push({score, skill})
+      } else {
+        groupedGrading.failed.push({score, skill})
+      }
+    })
+    const result = await updateTestStatus(groupedGrading);
+    return result;
+  },
 };
 
 async function batchPromiseCall(promises: any, size = 10) {
