@@ -84,34 +84,6 @@ export async function getTestableSubjects(
     });
 }
 
-function transfromData(data, showAnswer) {
-  return {
-    quiz: {
-      questions: data.map((item) => ({
-        id: item.id,
-        content: item.content,
-        figure: item.image,
-        is_latex: item.is_latex || false,
-        comprehension: {
-          passage: item.comprehension,
-        },
-        options_display: item.options_layout || "vertical",
-        answers: item.answer_set.map((option) => {
-          const optionData = {
-            content: option.content,
-            is_latex: item.is_latex || false,
-            figure: null,
-            answer_type: "TEXT",
-          };
-          return showAnswer
-            ? { ...optionData, correct: showAnswer ? option.correct : null }
-            : optionData;
-        }),
-      })),
-    },
-  };
-}
-
 export async function getSheetTestData(shortName: string): Promise<
   Array<{
     pretext?: string;

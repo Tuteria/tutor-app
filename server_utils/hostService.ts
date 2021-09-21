@@ -205,17 +205,11 @@ export const getTutorInfoService = async (tutorId: string) => {
   };
 };
 
-export const getTestQuestions = async (subject) => {
-  try {
-    const response = await fetch(`${HOST}/api/questions/${subject}`,{
-      headers: {
-        "Content-Type": "application/json"
-      },
-      method: "POST",
-      body : JSON.stringify({subject})
-    })
-    const data = await response.json()
-  } catch (error) {
-    throw error
+export const getQuizData = async (subject) => {
+  const response = await fetch(`${HOST}/api/questions/${subject}`);
+  if (response.status < 500) {
+    let result = await response.json();
+    return result;
   }
-}
+  throw new Error("Error fetching quiz from backend.");
+};
