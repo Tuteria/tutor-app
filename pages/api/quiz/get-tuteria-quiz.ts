@@ -1,17 +1,15 @@
+/* eslint-disable import/no-anonymous-default-export */
 import { NextApiRequest, NextApiResponse } from "next";
 import { serverAdapter } from "../../../server_utils/server";
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === "POST") {
-    let { subjects, create = false } = req.body;
+    let { email } = req.body;
     try {
-      let quizes = await serverAdapter.bulkFetchQuizSubjectsFromSheet(
-        subjects,
-        create
-      );
+      let result = await serverAdapter.getTuteriaSubjectList(email);
       res.status(200).json({
         status: true,
-        data: quizes,
+        data: result,
       });
     } catch (error) {
       console.log(error);
