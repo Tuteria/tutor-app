@@ -4,7 +4,6 @@ import {
   fetchAllowedQuizesForUser,
   getQuizData,
   getTutorInfoService,
-  gradeQuiz,
   saveTutorInfoService,
   updateTestStatus,
 } from "./hostService";
@@ -121,36 +120,57 @@ export const serverAdapter = {
   startQuiz: async (subjects: string[], email: string) => {
     return await beginQuiz(subjects, email);
   },
-  completeQuiz: async (data: {
+  // completeQuiz: async (data: {
+  async completeQuiz(data: {
     email: string;
     name: string;
     avg_passmark: number;
     time_elapsed: boolean;
     subjects: string[];
-    answers: Array<{ question_id: number; answer: string }>;
-  }) => {
-    const grading = await gradeQuiz(data);
-    const groupedGrading = {
+    answers: Array<{ question_id: number; answer: number }>;
+    question_count: number;
+  }) {
+    // }) => {
+    let quizzes = await apiCallTogetQuiz(data.subjects); // you would implement this
+    // also take notes of the type change.
+    const grading = this.gradeQuiz(quizzes, data.answers, data.question_count);
+    const groupedGrading: {
+      email: string;
+      name?: string;
+      passed: any[];
+      failed: any[];
+    } = {
       email: data.email,
-      name: data.name,
       passed: [],
       failed: [],
     };
-    grading.forEach(({ passed, score, skill }) => {
+    if (grading.passed) {
+      groupedGrading.name = data.name;
+    }
+    grading.result.forEach(({ passed, score, skill }) => {
       if (passed) {
         groupedGrading.passed.push({ score, skill });
       } else {
         groupedGrading.failed.push({ score, skill });
       }
     });
-    const result = await updateTestStatus(groupedGrading);
-    return result;
+    return await updateTestStatus(groupedGrading);
   },
   gradeQuiz(
     quizzes: Array<{ skill: string; questions: Array<any>; pass_mark: number }>,
     answers: Array<{ question_id: string; answer: number }>,
     question_count: number
-  ) {
+  ): {
+    passed: boolean;
+    avgPassmark: number;
+    totalQuizGrade: number;
+    result: Array<{
+      score: number;
+      passed: boolean;
+      pass_mark: number;
+      skill: string;
+    }>;
+  } {
     /**This function is an internal function, you would need to make api calls to get
      * the quiz data.
      */

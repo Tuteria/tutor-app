@@ -229,37 +229,9 @@ export const beginQuiz = async (subjects: string[], email: string) => {
   throw new Error("Error starting quiz from backend.");
 };
 
-// This is not coming from django anymore. this would be solved in the serveradapter.
-export const gradeQuiz = async (data: {
-  name: string;
-  avg_passmark: number;
-  time_elapsed: boolean;
-  subjects: string[];
-  answers: Array<{ question_id: number; answer: string }>;
-}): Promise<
-  Array<{
-    score: number;
-    skill: string;
-    passed: boolean;
-  }>
-> => {
-  const response = await fetch(`${HOST}/api/grade-quiz`, {
-    headers: {
-      "Content-Type": "application/json",
-    },
-    method: "POST",
-    body: JSON.stringify(data),
-  });
-  if (response.status < 500) {
-    let result = await response.json();
-    return result.data;
-  }
-  throw new Error("Error grading quiz from backend.");
-};
-
 export const updateTestStatus = async (data: {
   email: string;
-  name: string;
+  name?: string;
   passed: Array<{ score: number; skill: string }>;
   failed: Array<{ score: number; skill: string }>;
 }) => {
