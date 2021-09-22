@@ -4,8 +4,8 @@ import { serverAdapter } from "../../../server_utils/server";
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === "POST") {
     try {
-      let { name, subjects } = req.body;
-      let quizes = await serverAdapter.generateQuizes(name, subjects);
+      let { name, subjects, total_questions } = req.body;
+      let quizes = await serverAdapter.generateQuizes(name, subjects, total_questions);
       res.status(200).json({ status: true, data: quizes });
     } catch (error) {
       res.status(400).json({ status: false, error });

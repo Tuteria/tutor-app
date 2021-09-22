@@ -46,7 +46,7 @@ const bulkFetchQuizSubjectsFromSheet = async (
   return rr;
 };
 
-const transfromData = (data, showAnswer = false) =>
+const transfromData = (data, showAnswer) =>
   data.map((item) => ({
     id: item.id,
     pretext: item.pretext,
@@ -70,9 +70,22 @@ const transfromData = (data, showAnswer = false) =>
     }),
   }));
 
-const getQuizQuestions = async (subject: string) => {
+const generateQuestionSplit = (
+  numOfSubjects: number,
+  total_questions: number
+): number[] => {
+  const numOfQuestions = new Array(numOfSubjects);
+  numOfQuestions.fill(0);
+  for (let i = 0; i < total_questions; i++) {
+    let pointer = i % numOfSubjects;
+    numOfQuestions[pointer] = numOfQuestions[pointer] + 1;
+  }
+  return numOfQuestions;
+};
+
+const getQuizQuestions = async (subject: string, showAnswer: boolean) => {
   const questions = await getQuizData(subject);
-  return transfromData(questions);
+  return transfromData(questions, showAnswer);
 };
 
 export const serverAdapter = {
@@ -102,20 +115,41 @@ export const serverAdapter = {
     let result = await getSheetTestData(subject);
     return result;
   },
-  generateQuizes: async (name: string, subjects: string[]) => {
+  generateQuizes: async (
+    name: string,
+    subjects: string[],
+    total_questions,
+    showAnswer = false
+  ) => {
+    const DEFAULT_TOTAL_QUESTIONS = 30;
     const quizDataFromSheet: any[] = await bulkFetchQuizSubjectsFromSheet(
       subjects,
       true
     );
     const quizQuestionpromises = quizDataFromSheet.map((item) =>
-      getQuizQuestions(item.quiz_url)
+      getQuizQuestions(item.quiz_url, showAnswer)
     );
     const quizQuestions = await Promise.all(quizQuestionpromises);
-    return subjects.map((subject, index) => ({
-      subject,
-      passmark: quizDataFromSheet[index].passmark,
-      questions: quizQuestions[index],
-    }));
+    let questionSplit: number[]
+    let result: any
+    if (total_questions) {
+      questionSplit = generateQuestionSplit(
+        subjects.length,
+        total_questions
+      );
+      result = quizQuestions.map((questions, index) => questions.splice(0, questionSplit[index])).flat()
+    } else {
+      questionSplit = generateQuestionSplit(
+        subjects.length,
+        DEFAULT_TOTAL_QUESTIONS
+      );
+      result = subjects.map((subject, index) => ({
+        subject,
+        passmark: quizDataFromSheet[index].passmark,
+        questions: quizQuestions[index].splice(0, questionSplit[index]),
+      }));
+    }
+    return result
   },
   startQuiz: async (subjects: string[], email: string) => {
     return await beginQuiz(subjects, email);
@@ -131,7 +165,7 @@ export const serverAdapter = {
     question_count: number;
   }) {
     // }) => {
-    let quizzes = await apiCallTogetQuiz(data.subjects); // you would implement this
+    let quizzes = await this.generateQuizes(data.subjects, true); // you would implement this
     // also take notes of the type change.
     const grading = this.gradeQuiz(quizzes, data.answers, data.question_count);
     const groupedGrading: {
