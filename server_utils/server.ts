@@ -115,12 +115,17 @@ export const serverAdapter = {
     let result = await getSheetTestData(subject);
     return result;
   },
-  generateQuizes: async (
-    name: string,
-    subjects: string[],
+  generateQuizes: async ({
+    name,
+    subjects,
     total_questions,
-    showAnswer = false
-  ) => {
+    showAnswer = false,
+  }: {
+    name: string;
+    subjects: string[];
+    total_questions: number;
+    showAnswer: boolean;
+  }) => {
     const DEFAULT_TOTAL_QUESTIONS = 30;
     const quizDataFromSheet: any[] = await bulkFetchQuizSubjectsFromSheet(
       subjects,
@@ -130,14 +135,13 @@ export const serverAdapter = {
       getQuizQuestions(item.quiz_url, showAnswer)
     );
     const quizQuestions = await Promise.all(quizQuestionpromises);
-    let questionSplit: number[]
-    let result: any
+    let questionSplit: number[];
+    let result: any;
     if (total_questions) {
-      questionSplit = generateQuestionSplit(
-        subjects.length,
-        total_questions
-      );
-      result = quizQuestions.map((questions, index) => questions.splice(0, questionSplit[index])).flat()
+      questionSplit = generateQuestionSplit(subjects.length, total_questions);
+      result = quizQuestions
+        .map((questions, index) => questions.splice(0, questionSplit[index]))
+        .flat();
     } else {
       questionSplit = generateQuestionSplit(
         subjects.length,
@@ -146,15 +150,16 @@ export const serverAdapter = {
       result = subjects.map((subject, index) => ({
         subject,
         passmark: quizDataFromSheet[index].passmark,
-        questions: quizQuestions[index].splice(0, questionSplit[index]),
+        questions: showAnswer
+          ? quizQuestions[index]
+          : quizQuestions[index].splice(0, questionSplit[index]),
       }));
     }
-    return result
+    return result;
   },
   startQuiz: async (subjects: string[], email: string) => {
     return await beginQuiz(subjects, email);
   },
-  // completeQuiz: async (data: {
   async completeQuiz(data: {
     email: string;
     name: string;
@@ -164,9 +169,12 @@ export const serverAdapter = {
     answers: Array<{ question_id: number; answer: number }>;
     question_count: number;
   }) {
-    // }) => {
-    let quizzes = await this.generateQuizes(data.subjects, true); // you would implement this
-    // also take notes of the type change.
+    
+    let quizzes = await this.generateQuizes({
+      name: data,
+      subjects: data.subjects,
+      showAnswer: true,
+    }); 
     const grading = this.gradeQuiz(quizzes, data.answers, data.question_count);
     const groupedGrading: {
       email: string;
@@ -181,17 +189,17 @@ export const serverAdapter = {
     if (grading.passed) {
       groupedGrading.name = data.name;
     }
-    grading.result.forEach(({ passed, score, skill }) => {
+    grading.result.forEach(({ passed, score, subject }) => {
       if (passed) {
-        groupedGrading.passed.push({ score, skill });
+        groupedGrading.passed.push({ score, skill: subject });
       } else {
-        groupedGrading.failed.push({ score, skill });
+        groupedGrading.failed.push({ score, skill: subject });
       }
     });
     return await updateTestStatus(groupedGrading);
   },
   gradeQuiz(
-    quizzes: Array<{ skill: string; questions: Array<any>; pass_mark: number }>,
+    quizzes: Array<{ subject: string; questions: Array<any>; passmark: number }>,
     answers: Array<{ question_id: string; answer: number }>,
     question_count: number
   ): {
@@ -201,51 +209,51 @@ export const serverAdapter = {
     result: Array<{
       score: number;
       passed: boolean;
-      pass_mark: number;
-      skill: string;
+      passmark: number;
+      subject: string;
     }>;
   } {
     /**This function is an internal function, you would need to make api calls to get
      * the quiz data.
      */
-    let avgPassmark = sum(quizzes.map((o) => o.pass_mark)) / quizzes.length;
+    let avgPassmark = sum(quizzes.map((o) => o.passmark)) / quizzes.length;
     // group the answers into their corresponding quizes
     let combinedQuestions = quizzes
       .map((quiz) => {
-        return quiz.questions.map((o) => ({ ...o, skill: quiz.skill }));
+        return quiz.questions.map((o) => ({ ...o, subject: quiz.subject }));
       })
       .flat();
     let transformedAnswers = answers.map((a) => {
       let found = combinedQuestions.find((o) => o.id === a.question_id);
       let isCorrect = false;
-      let skill = null;
+      let subject = null;
       if (found) {
         isCorrect = found.answers[a.answer].correct === true;
-        skill = found.skill;
+        subject = found.subject;
       }
-      return { ...a, correct: isCorrect, skill };
+      return { ...a, correct: isCorrect, subject };
     });
     let passedQuizAvg =
       (transformedAnswers.filter((o) => o.correct).length * 100) /
       question_count;
-    let graded = groupBy(transformedAnswers, "skill");
+    let graded = groupBy(transformedAnswers, "subject");
     let result = {};
     Object.keys(graded).forEach((gr) => {
       let key = gr;
-      let quizInstance = quizzes.find((o) => o.skill === gr);
+      let quizInstance = quizzes.find((o) => o.subject === gr);
       let value = graded[gr];
       let score = (value.filter((o) => o.correct).length * 100) / value.length;
 
       result[key] = {
         score,
-        passed: score > quizInstance.pass_mark,
-        pass_mark: quizInstance.pass_mark,
+        passed: score > quizInstance.passmark,
+        passmark: quizInstance.passmark,
       };
     });
     return {
       avgPassmark,
       totalQuizGrade: passedQuizAvg,
-      result: Object.keys(result).map((o) => ({ ...result[o], skill: o })),
+      result: Object.keys(result).map((o) => ({ ...result[o], subject: o })),
       passed: passedQuizAvg > avgPassmark,
     };
   },
