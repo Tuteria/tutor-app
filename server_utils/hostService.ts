@@ -157,3 +157,36 @@ export const getTutorInfoService = async (tutorId: string) => {
     slug: tutorId,
   }
 };
+
+async function postHelper(url, data, base = HOST) {
+  const response = await fetch(`${base}${url}`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(data)
+  });
+  return response;
+}
+
+export async function sendEmailNotification(data) {
+  let datToSend = data;
+  if (IS_TEST === "true") {
+    datToSend.to = [TEST_EMAIL];
+  }
+
+  const response = await fetch(`${NOTIFICATION_SERVICE}/send_message/`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(datToSend)
+  });
+  const result = await response.json();
+  return result;
+}
+
+export async function authenticateLoginDetails(data) {
+  let response = await postHelper('/new-subject-flow/login', data);
+  if (response.ok) {
+    const { data } = await response.json();
+    return data;
+  }
+  throw new Error("Error authenticating user");
+}
