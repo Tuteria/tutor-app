@@ -3,6 +3,7 @@ import {
   authenticateLoginDetails,
   getTutorInfoService,
   saveTutorInfoService,
+  saveTutorSubjectService,
   sendEmailNotification,
 } from "./hostService";
 import { sendClientLoginCodes } from './email';
@@ -38,5 +39,10 @@ export const serverAdapter = {
     const payload = sendClientLoginCodes(email, data.code);
     await this.sendNotification(payload);
     return { email: data.email };
+  },
+
+  async saveTutorSubject(payload: any) {
+    const data = await saveTutorSubjectService(payload);
+    return data;
   }
 };

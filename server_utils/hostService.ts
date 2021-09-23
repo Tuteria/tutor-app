@@ -14,15 +14,18 @@ const TEST_EMAIL = process.env.TEST_EMAIL || "";
 const TEST_NUMBER = process.env.TEST_NUMBER || "";
 
 export const saveTutorInfoService = async ({
-  tutorId,
-  type,
+  slug,
   data,
 }: {
-  tutorId: string;
-  type: string;
+  slug: string;
   data: { [key: string]: any };
 }) => {
-  return { slug: tutorId, type, data };
+  const response = await postHelper('/api/tutors/save-tutor-info', { slug, data });
+  if (response.ok) {
+    const { data } = await response.json();
+    return data;
+  }
+  throw new Error('Failed to save tutor info');
 };
 
 export const getTutorInfoService = async (tutorId: string) => {
@@ -183,10 +186,19 @@ export async function sendEmailNotification(data) {
 }
 
 export async function authenticateLoginDetails(data) {
-  let response = await postHelper('/new-subject-flow/login', data);
+  const response = await postHelper('/new-subject-flow/login', data);
   if (response.ok) {
     const { data } = await response.json();
     return data;
   }
   throw new Error("Error authenticating user");
+}
+
+export async function saveTutorSubjectService(data: any) {
+  const response = await postHelper('/api/tutors/save-tutor-subject', data);
+  if (response.ok) {
+    const { data } = await response.json();
+    return data;
+  }
+  throw new Error("Failed to save tutor subject");
 }
