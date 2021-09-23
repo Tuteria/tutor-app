@@ -5,7 +5,9 @@ import {
   getQuizData,
   getTutorInfoService,
   saveTutorInfoService,
+  saveUserSelectedSubjects,
   updateTestStatus,
+  userRetakeTest,
 } from "./hostService";
 import {
   getTuteriaSubjectList,
@@ -13,6 +15,7 @@ import {
   getTestableSubjects,
 } from "./sheetService";
 import { groupBy } from "lodash";
+import { SIGKILL } from "constants";
 
 const bulkFetchQuizSubjectsFromSheet = async (
   subjects: string[],
@@ -169,12 +172,11 @@ export const serverAdapter = {
     answers: Array<{ question_id: number; answer: number }>;
     question_count: number;
   }) {
-    
     let quizzes = await this.generateQuizes({
       name: data,
       subjects: data.subjects,
       showAnswer: true,
-    }); 
+    });
     const grading = this.gradeQuiz(quizzes, data.answers, data.question_count);
     const groupedGrading: {
       email: string;
@@ -199,7 +201,11 @@ export const serverAdapter = {
     return await updateTestStatus(groupedGrading);
   },
   gradeQuiz(
-    quizzes: Array<{ subject: string; questions: Array<any>; passmark: number }>,
+    quizzes: Array<{
+      subject: string;
+      questions: Array<any>;
+      passmark: number;
+    }>,
     answers: Array<{ question_id: string; answer: number }>,
     question_count: number
   ): {
@@ -264,6 +270,46 @@ export const serverAdapter = {
   //   // using the subjects array passed, get the list of all
   //   return {};
   // },
+  selectSubjects: async ({
+    email,
+    subjects,
+  }: {
+    email: string;
+    subjects: string[];
+  }) => {
+    const selectedSubjects = await saveUserSelectedSubjects({
+      email,
+      subjects,
+    });
+    const allowedQuizzes = await fetchAllowedQuizesForUser(email);
+    return selectedSubjects.object_list.map((item) => ({
+      ...item,
+      test_detail:
+        allowedQuizzes.find(
+          ({ name, testable }: any) => name === item.skill.name && testable
+        ) || null,
+    }));
+  },
+  retakeQuiz: async ({
+    email,
+    subjects,
+  }: {
+    email: string;
+    subjects: string[];
+  }) => {
+    const response = await userRetakeTest({ email, subjects });
+    const selectedSubjects = await saveUserSelectedSubjects({
+      email,
+      subjects: [],
+    });
+    return selectedSubjects.object_list.map((item) => ({
+      ...item,
+      test_detail:
+        response.find(
+          ({ name, testable }: any) => name === item.skill.name && testable
+        ) || null,
+    }));
+  },
 };
 
 function sum(array: number[]) {
