@@ -232,8 +232,8 @@ export const getTutorInfoService = async (tutorId: string) => {
   }
 };
 
-export const getQuizData = async (subject) => {
-  const response = await fetch(`${HOST}/api/questions/${subject}`);
+export const getQuizData = async (quiz_url: string) => {
+  const response = await fetch(`${HOST}/api/questions/${quiz_url}`);
   if (response.status < 500) {
     let result = await response.json();
     return result;
