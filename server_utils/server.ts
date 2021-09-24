@@ -95,8 +95,35 @@ const getQuizQuestions = async (subject: string, showAnswer: boolean) => {
   return transfromData(questions, showAnswer);
 };
 
+function verifyAccessToken(access_token, force = true, returnResult = false) {
+  let result = null;
+  try {
+    if (force) {
+      result = jwt.verify(access_token, process.env.SECRET_KEY);
+    } else {
+      result = jwt.decode(access_token);
+    }
+    return result;
+  } catch (error) {
+    return null;
+  }
+}
+
+export function getUserInfo(access_token, force = false) {
+  let new_token = access_token
+    .replace("Bearer", "")
+    .replace("Access", "")
+    .trim();
+  let data = verifyAccessToken(new_token, force);
+  if (data) {
+    return data
+  }
+  return null;
+}
+
 export const serverAdapter = {
   bulkFetchQuizSubjectsFromSheet,
+  getUserInfo,
   saveTutorInfo: async (data: any) => {
     return await saveTutorInfoService(data);
   },
@@ -164,8 +191,8 @@ export const serverAdapter = {
     }
     return result;
   },
-  startQuiz: async (subjects: string[], email: string) => {
-    return await beginQuiz(subjects, email);
+  startQuiz: async (data: {email: string, subjects: string[]}) => {
+    return await beginQuiz(data);
   },
   async completeQuiz(data: {
     email: string;

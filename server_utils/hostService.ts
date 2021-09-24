@@ -94,12 +94,15 @@ export const saveTutorInfoService = async ({
   slug: string;
   data: { [key: string]: any };
 }) => {
-  const response = await postHelper('/api/tutors/save-tutor-info', { slug, data });
+  const response = await postHelper("/api/tutors/save-tutor-info", {
+    slug,
+    data,
+  });
   if (response.ok) {
     const { data } = await response.json();
     return data;
   }
-  throw new Error('Failed to save tutor info');
+  throw new Error("Failed to save tutor info");
 };
 
 export const getTutorInfoService = async (tutorId: string) => {
@@ -232,14 +235,14 @@ export const getTutorInfoService = async (tutorId: string) => {
       isIdVerified: true,
     },
     slug: tutorId,
-  }
+  };
 };
 
 async function postHelper(url, data, base = HOST) {
   const response = await fetch(`${base}${url}`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify(data)
+    body: JSON.stringify(data),
   });
   return response;
 }
@@ -253,14 +256,14 @@ export async function sendEmailNotification(data) {
   const response = await fetch(`${NOTIFICATION_SERVICE}/send_message/`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify(datToSend)
+    body: JSON.stringify(datToSend),
   });
   const result = await response.json();
   return result;
 }
 
 export async function authenticateLoginDetails(data) {
-  const response = await postHelper('/new-subject-flow/login', data);
+  const response = await postHelper("/new-subject-flow/login", data);
   if (response.ok) {
     const { data } = await response.json();
     return data;
@@ -269,7 +272,7 @@ export async function authenticateLoginDetails(data) {
 }
 
 export async function saveTutorSubjectService(data: any) {
-  const response = await postHelper('/api/tutors/save-tutor-subject', data);
+  const response = await postHelper("/api/tutors/save-tutor-subject", data);
   if (response.ok) {
     const { data } = await response.json();
     return data;
@@ -286,13 +289,16 @@ export const getQuizData = async (quiz_url: string) => {
   throw new Error("Error fetching quiz from backend.");
 };
 
-export const beginQuiz = async (subjects: string[], email: string) => {
+export const beginQuiz = async (data: {
+  email: string;
+  subjects: string[];
+}) => {
   const response = await fetch(`${HOST}/new-subject-flow/begin-quiz`, {
     headers: {
       "Content-Type": "application/json",
     },
     method: "POST",
-    body: JSON.stringify({ subjects, email }),
+    body: JSON.stringify(data),
   });
   if (response.status < 500) {
     let result = await response.json();
