@@ -20,6 +20,6 @@ export default function LoginPage({ email }) {
 }
 
 export async function getServerSideProps({ query }) {
-  const { email }  = query;
+  const email = query.email || null;
   return { props: { email } };
 }
