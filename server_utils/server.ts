@@ -394,6 +394,33 @@ export const serverAdapter = {
       })
       .filter((item) => item.category);
   },
+  getTutorSubjects: async (email: string) => {
+    const selectedSubjects = await saveUserSelectedSubjects({
+      email,
+      subjects: [],
+    });
+    const [allowedQuizzes, subjectsData] = await Promise.all([
+      fetchAllowedQuizesForUser(email),
+      getTestableSubjects(),
+    ]);
+    return selectedSubjects.object_list
+      .map((item) => {
+        const { category, subcategory } = subjectsData.find(
+          (subject) => item.skill.name === subject.tuteria_name
+        ) || { category: null, subcategory: null };
+        return {
+          ...item,
+          test_detail:
+            allowedQuizzes.find(
+              ({ name, testable }: any) => name === item.skill.name && testable
+            ) || null,
+          category,
+          subcategory,
+        };
+      })
+      .filter((item) => item.category);
+  },
+
 };
 
 function sum(array: number[]) {
