@@ -1,10 +1,14 @@
+import jwt from 'jsonwebtoken';
 import {
   beginQuiz,
   bulkCreateQuizOnBackend,
   fetchAllowedQuizesForUser,
   getQuizData,
+  authenticateLoginDetails,
   getTutorInfoService,
   saveTutorInfoService,
+  saveTutorSubjectService,
+  sendEmailNotification,
   saveUserSelectedSubjects,
   updateTestStatus,
   userRetakeTest,
@@ -15,6 +19,7 @@ import {
   getTestableSubjects,
 } from "./sheetService";
 import { groupBy } from "lodash";
+import { sendClientLoginCodes } from './email';
 
 const bulkFetchQuizSubjectsFromSheet = async (
   subjects: string[],
@@ -261,6 +266,35 @@ export const serverAdapter = {
       result: Object.keys(result).map((o) => ({ ...result[o], subject: o })),
       passed: passedQuizAvg > avgPassmark,
     };
+  },
+
+  async sendNotification(data, kind = "email") {
+    if (kind == "email") {
+      await sendEmailNotification(data);
+    }
+  },
+
+  async upgradeAccessToken(userInfo) {
+    return jwt.sign(userInfo, process.env.SECRET_KEY, {
+      expiresIn: 60 * 60 * 24
+    });
+  },
+
+  async authenticateUserCode(email: string, code: string) {
+    const data = await authenticateLoginDetails({ email, code });
+    return data;
+  },
+
+  async loginUser(email: string) {
+    const data = await authenticateLoginDetails({ email });
+    const payload = sendClientLoginCodes(email, data.code);
+    await this.sendNotification(payload);
+    return { email: data.email };
+  },
+
+  async saveTutorSubject(payload: any) {
+    const data = await saveTutorSubjectService(payload);
+    return data;
   },
   // async gradeQuiz(
   //   answers: Array<{ question_id: string; answer: string }>,

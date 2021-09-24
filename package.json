@@ -10,7 +10,7 @@
     "dev:debug_local": "cross-env TEST_EMAIL=caracolasstore@gmail.com TEST_NUMBER=2348054133087 TEST_AGENT_ID=C025KQZ7NG1 SCHEDULER_SERVICE=http://staging-prod.tuteria.com:8092 PAYMENT_KIND=paystack HOST_ENDPOINT=http://127.0.0.1:8002 PAYMENT_KEY=paystack_dev SECRET_KEY=staging_secret_101 ADMIN_EMAIL=gbozee@example.com ADMIN_PASSWORD=punnisher2321 node --inspect server.js",
     "dev:prod": "cross-env PAYMENT_KEY=paystack_dev SECRET_KEY=staging_secret_101 ADMIN_EMAIL=gbozee@example.com ADMIN_PASSWORD=punnisher2321 node --inspect server.js",
     "build": "next build",
-    "start": "next start",
+    "start": "cross-env NODE_ENV=production next start",
     "lint": "next lint"
   },
   "dependencies": {
@@ -21,6 +21,7 @@
     "@types/react": "^17.0.16",
     "babel-plugin-emotion": "^10.0.27",
     "framer-motion": "^4",
+    "jsonwebtoken": "^8.5.1",
     "mobx": "^6.3.2",
     "mobx-react-lite": "^3.2.0",
     "mobx-state-tree": "^5.0.2",
