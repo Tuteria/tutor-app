@@ -11,11 +11,13 @@ import {
   saveUserSelectedSubjects,
   updateTestStatus,
   userRetakeTest,
+  fetchAllCountries,
 } from "./hostService";
 import {
   getTuteriaSubjectList,
   getSheetTestData,
   getTestableSubjects,
+  getLocationInfoFromSheet,
 } from "./sheetService";
 import { groupBy } from "lodash";
 import { sendClientLoginCodes } from "./email";
@@ -421,6 +423,11 @@ export const serverAdapter = {
       .filter((item) => item.category);
   },
 
+  getCountries: fetchAllCountries,
+  getRegions: async () => {
+    let { regions } = await getLocationInfoFromSheet();
+    return regions;
+  },
 };
 
 function sum(array: number[]) {

@@ -368,3 +368,9 @@ export const userRetakeTest = async (data: {
   }
   throw new Error("Error allowing user to retake test");
 };
+
+export async function fetchAllCountries() {
+  let countryData = await import("../data/countries.json");
+  let allCountries = countryData.default;
+  return allCountries;
+}
