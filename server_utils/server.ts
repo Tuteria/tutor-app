@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 import {
   beginQuiz,
   bulkCreateQuizOnBackend,
@@ -18,7 +18,7 @@ import {
   getTestableSubjects,
 } from "./sheetService";
 import { groupBy } from "lodash";
-import { sendClientLoginCodes } from './email';
+import { sendClientLoginCodes } from "./email";
 
 const bulkFetchQuizSubjectsFromSheet = async (
   subjects: string[],
@@ -94,8 +94,35 @@ const getQuizQuestions = async (subject: string, showAnswer: boolean) => {
   return transfromData(questions, showAnswer);
 };
 
+function verifyAccessToken(access_token, force = true, returnResult = false) {
+  let result = null;
+  try {
+    if (force) {
+      result = jwt.verify(access_token, process.env.SECRET_KEY);
+    } else {
+      result = jwt.decode(access_token);
+    }
+    return result;
+  } catch (error) {
+    return null;
+  }
+}
+
+export function getUserInfo(access_token, force = false) {
+  let new_token = access_token
+    .replace("Bearer", "")
+    .replace("Access", "")
+    .trim();
+  let data = verifyAccessToken(new_token, force);
+  if (data) {
+    return data;
+  }
+  return null;
+}
+
 export const serverAdapter = {
   bulkFetchQuizSubjectsFromSheet,
+  getUserInfo,
   saveTutorInfo: async (data: any) => {
     return await saveTutorInfoService(data);
   },
@@ -164,8 +191,8 @@ export const serverAdapter = {
     }
     return result;
   },
-  startQuiz: async (subjects: string[], email: string) => {
-    return await beginQuiz(subjects, email);
+  startQuiz: async (data: { email: string; subjects: string[] }) => {
+    return await beginQuiz(data);
   },
   async completeQuiz(data: {
     email: string;
@@ -276,7 +303,7 @@ export const serverAdapter = {
 
   async upgradeAccessToken(userInfo) {
     return jwt.sign(userInfo, process.env.SECRET_KEY, {
-      expiresIn: 60 * 60 * 24
+      expiresIn: 60 * 60 * 24,
     });
   },
 
@@ -314,14 +341,26 @@ export const serverAdapter = {
       email,
       subjects,
     });
-    const allowedQuizzes = await fetchAllowedQuizesForUser(email);
-    return selectedSubjects.object_list.map((item) => ({
-      ...item,
-      test_detail:
-        allowedQuizzes.find(
-          ({ name, testable }: any) => name === item.skill.name && testable
-        ) || null,
-    }));
+    const [allowedQuizzes, subjectsData] = await Promise.all([
+      fetchAllowedQuizesForUser(email),
+      getTestableSubjects(),
+    ]);
+    return selectedSubjects.object_list
+      .map((item) => {
+        const { category, subcategory } = subjectsData.find(
+          (subject) => item.skill.name === subject.tuteria_name
+        ) || { category: null, subcategory: null };
+        return {
+          ...item,
+          test_detail:
+            allowedQuizzes.find(
+              ({ name, testable }: any) => name === item.skill.name && testable
+            ) || null,
+          category,
+          subcategory,
+        };
+      })
+      .filter((item) => item.category);
   },
   retakeQuiz: async ({
     email,
@@ -331,18 +370,57 @@ export const serverAdapter = {
     subjects: string[];
   }) => {
     const response = await userRetakeTest({ email, subjects });
+    const [selectedSubjects, subjectsData] = await Promise.all([
+      saveUserSelectedSubjects({
+        email,
+        subjects: [],
+      }),
+      getTestableSubjects(),
+    ]);
+    return selectedSubjects.object_list
+      .map((item) => {
+        const { category, subcategory } = subjectsData.find(
+          (subject) => item.skill.name === subject.tuteria_name
+        ) || { category: null, subcategory: null };
+        return {
+          ...item,
+          test_detail:
+            response.find(
+              ({ name, testable }: any) => name === item.skill.name && testable
+            ) || null,
+          category,
+          subcategory,
+        };
+      })
+      .filter((item) => item.category);
+  },
+  getTutorSubjects: async (email: string) => {
     const selectedSubjects = await saveUserSelectedSubjects({
       email,
       subjects: [],
     });
-    return selectedSubjects.object_list.map((item) => ({
-      ...item,
-      test_detail:
-        response.find(
-          ({ name, testable }: any) => name === item.skill.name && testable
-        ) || null,
-    }));
+    const [allowedQuizzes, subjectsData] = await Promise.all([
+      fetchAllowedQuizesForUser(email),
+      getTestableSubjects(),
+    ]);
+    return selectedSubjects.object_list
+      .map((item) => {
+        const { category, subcategory } = subjectsData.find(
+          (subject) => item.skill.name === subject.tuteria_name
+        ) || { category: null, subcategory: null };
+        return {
+          ...item,
+          test_detail:
+            allowedQuizzes.find(
+              ({ name, testable }: any) => name === item.skill.name && testable
+            ) || null,
+          category,
+          subcategory,
+        };
+      })
+      .filter((item) => item.category);
   },
+
 };
 
 function sum(array: number[]) {

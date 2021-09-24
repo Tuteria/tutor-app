@@ -43,6 +43,8 @@ type TuteriaTestType = {
   pass_mark?: number;
   tuteria_name?: string;
   test_name?: string;
+  category?: string;
+  subcategory?: string 
 };
 export async function getTuteriaSubjectList() {
   let subjects: Array<TuteriaTestType> = await getTestableSubjects();
