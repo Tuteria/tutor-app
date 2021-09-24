@@ -5,7 +5,6 @@ import {
   fetchAllowedQuizesForUser,
   getQuizData,
   authenticateLoginDetails,
-  getTutorInfoService,
   saveTutorInfoService,
   saveTutorSubjectService,
   sendEmailNotification,
@@ -100,8 +99,9 @@ export const serverAdapter = {
   saveTutorInfo: async (data: any) => {
     return await saveTutorInfoService(data);
   },
-  getTutorInfo: async (tutorId: string) => {
-    return await getTutorInfoService(tutorId);
+  getTutorInfo: async (email: string) => {
+    const data = await authenticateLoginDetails({ email, auto_login: true, is_admin: true });
+    return data;
   },
   getTuteriaSubjectList: async (email: string) => {
     let tuteriaSubjectForTutor = await fetchAllowedQuizesForUser(email);

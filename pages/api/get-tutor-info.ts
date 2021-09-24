@@ -6,9 +6,9 @@ export default async function handler(
   res: NextApiResponse
 ) {
   if (req.method === "GET") {
-    const { tutor } = req.query;
+    const { email } = req.query;
     try {
-      const result = await serverAdapter.getTutorInfo(tutor as string);
+      const result = await serverAdapter.getTutorInfo(email as string);
       res.status(200).json({ status: true, data: result });
     } catch (error) {
       res.status(400).json({ status: false, error });
