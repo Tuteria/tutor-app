@@ -420,7 +420,12 @@ export const serverAdapter = {
       })
       .filter((item) => item.category);
   },
-
+  async getSkillsForSubject(subject: string) {
+    const subjects = await getTuteriaSubjectList();
+    const foundSubject = subjects.find(item => item.name === subject)
+    if (foundSubject) return foundSubject.subjects.map(item => item.shortName)
+    throw new Error("Subjects not found")
+  }
 };
 
 function sum(array: number[]) {
