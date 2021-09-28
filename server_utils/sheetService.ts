@@ -40,6 +40,7 @@ type TuteriaTestType = {
   shortName: string;
   skill: string;
   url: string;
+  slug: string;
   pass_mark?: number;
   tuteria_name?: string;
   test_name?: string;
@@ -61,16 +62,16 @@ export async function getTuteriaSubjectData() {
   let subjects: Array<TuteriaTestType> = await getTestableSubjects();
   let tuteriaSubjects = [...new Set(subjects.map((o) => o.tuteria_name))];
   let formattedTuteriaSubjects = tuteriaSubjects.map((subject) => {
-    const { category, subcategory } = subjects.find(
+    const { category, subcategory, slug } = subjects.find(
       ({ tuteria_name }) => tuteria_name === subject
     );
-    return { name: subject, category, subcategory };
+    return { name: subject, category, subcategory, slug };
   });
-  let result = formattedTuteriaSubjects.map(({ name, category, subcategory }, i) => {
+  let result = formattedTuteriaSubjects.map((item, i) => {
     let foundSubjects = subjects
-      .filter((o) => o.tuteria_name === name)
+      .filter((o) => o.tuteria_name === item.name)
       .map((x) => ({ ...x }));
-    return { name, category, subcategory, subjects: foundSubjects };
+    return { ...item, subjects: foundSubjects };
   });
   return result;
 }
