@@ -8,7 +8,7 @@ export default async function(req: NextApiRequest, res: NextApiResponse) {
       let data;
       if (email && code) {
         const userInfo = await serverAdapter.authenticateUserCode(email, code);
-        const access_token = await serverAdapter.upgradeAccessToken(userInfo)
+        const access_token = serverAdapter.upgradeAccessToken(userInfo)
         data = {access_token}
       } else {
         data = await serverAdapter.loginUser(email);

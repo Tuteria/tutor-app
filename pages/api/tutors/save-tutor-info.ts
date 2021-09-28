@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { serverAdapter } from "../../server_utils/server";
+import { serverAdapter } from "../../../server_utils/server";
 
 export default async function handler(
   req: NextApiRequest,
@@ -9,6 +9,7 @@ export default async function handler(
     try {
       const { slug, data } = req.body;
       const result = await serverAdapter.saveTutorInfo({ slug, data });
+      result.accessToken = serverAdapter.upgradeAccessToken(result);
       res.status(200).json({ status: true, data: result });
     } catch (error) {
       console.error(error);

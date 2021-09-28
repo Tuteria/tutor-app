@@ -303,7 +303,7 @@ export const serverAdapter = {
     }
   },
 
-  async upgradeAccessToken(userInfo) {
+  upgradeAccessToken(userInfo) {
     return jwt.sign(userInfo, process.env.SECRET_KEY, {
       expiresIn: 60 * 60 * 24,
     });

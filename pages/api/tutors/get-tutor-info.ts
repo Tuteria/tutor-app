@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { serverAdapter } from "../../server_utils/server";
+import { serverAdapter } from "../../../server_utils/server";
 
 export default async function handler(
   req: NextApiRequest,
