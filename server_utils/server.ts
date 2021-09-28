@@ -17,6 +17,7 @@ import {
   getTuteriaSubjectList,
   getSheetTestData,
   getTestableSubjects,
+  getTuteriaSubjectData,
 } from "./sheetService";
 import { groupBy } from "lodash";
 import { sendClientLoginCodes } from "./email";
@@ -420,12 +421,17 @@ export const serverAdapter = {
       })
       .filter((item) => item.category);
   },
-  async getSkillsForSubject(subject: string) {
-    const subjects = await getTuteriaSubjectList();
-    const foundSubject = subjects.find(item => item.name === subject)
-    if (foundSubject) return foundSubject.subjects.map(item => item.shortName)
-    throw new Error("Subjects not found")
-  }
+  async getTuteriaSubjects(subject: string) {
+    const subjects = await getTuteriaSubjectData();
+    const formattedSubjects = subjects.map(subject => ({
+      ...subject,
+      subjects: subject.subjects.map(({ shortName }) => shortName),
+    }));
+    if (!subject) return formattedSubjects;
+    const foundSubject = formattedSubjects.find(item => item.name === subject)
+    if (foundSubject) return foundSubject
+    throw new Error("Subject not found")
+  },
 };
 
 function sum(array: number[]) {
