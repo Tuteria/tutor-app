@@ -1,10 +1,10 @@
 import React from 'react';
-import { useRouter } from 'next/router';
 import Login from '@tuteria/shared-lib/src/tutor-application/Login';
 import { adapter } from '../server_utils/client';
+import { usePrefetchHook } from '../server_utils/util';
 
-export default function LoginPage({ email }) {
-  const router = useRouter();
+export default function LoginPage({ email, next }) {
+  const { navigate } = usePrefetchHook({ routes: [next] }); 
   const showOTP = email ? true : false;
   
   return (
@@ -14,12 +14,14 @@ export default function LoginPage({ email }) {
       onEmailSubmit={adapter.onEmailSubmit}
       onOTPSubmit={adapter.onVerifyOTP}
       onResendOTP={adapter.onEmailSubmit}
-      onNavigate={() => router.push('/lalaland')}
+      onNavigate={() => navigate(next)}
     />
   );
 }
 
 export async function getServerSideProps({ query }) {
   const email = query.email || "";
-  return { props: { email } };
+  const next = query.next || '/';
+
+  return { props: { email, next } };
 }

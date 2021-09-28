@@ -248,18 +248,18 @@ async function postHelper(url, data, base = HOST) {
 }
 
 export async function sendEmailNotification(data) {
-  let datToSend = data;
   if (IS_TEST === "true") {
-    datToSend.to = [TEST_EMAIL];
+    console.log(data);
+  } else {
+    const response = await fetch(`${NOTIFICATION_SERVICE}/send_message/`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    const result = await response.json();
+    return result;
   }
 
-  const response = await fetch(`${NOTIFICATION_SERVICE}/send_message/`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(datToSend),
-  });
-  const result = await response.json();
-  return result;
 }
 
 export async function authenticateLoginDetails(data) {

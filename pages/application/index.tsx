@@ -74,7 +74,8 @@ export  default function ApplicationPage({ countries, regions }) {
     storage.set(adapter.countryKey, countries);
     const data: any = adapter.decodeToken("");
     if (!data) {
-      navigate('/login');
+      const { pathname, search } = window.location;
+      navigate(`/login?next=${`${pathname}${search}`}`);
     } else {
       store.initializeTutorData(regions, countries, data);
       setIsLoading(false);
