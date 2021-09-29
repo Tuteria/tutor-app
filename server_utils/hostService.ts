@@ -45,6 +45,7 @@ export async function bulkCreateQuizOnBackend(
     passmark: number;
     duration: number;
     is_new: boolean;
+    questions: any[]
   }>
 > {
   let response = await fetch(`${HOST}/api/ensure-quiz-creation/`, {

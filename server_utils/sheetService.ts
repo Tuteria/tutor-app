@@ -103,25 +103,25 @@ export async function getTestableSubjects(
       };
     });
 }
-
-export async function getSheetTestData(shortName: string): Promise<
-  Array<{
-    pretext?: string;
-    question?: string;
-    image?: string;
-    optionA?: string;
-    optionB?: string;
-    optionC?: string;
-    optionD?: string;
-    answer?: string;
-    shared_text?: string;
-    shared_question?: string;
-    shared_images?: string;
-    options_layout?: string;
-    image_layout?: string;
-    is_latex?: string;
-  }>
-> {
+type QuizType = {
+  pretext?: string;
+  question?: string;
+  image?: string;
+  optionA?: string;
+  optionB?: string;
+  optionC?: string;
+  optionD?: string;
+  answer?: string;
+  shared_text?: string;
+  shared_question?: string;
+  shared_images?: string;
+  options_layout?: string;
+  image_layout?: string;
+  is_latex?: string;
+};
+export async function getSheetTestData(
+  shortName: string
+): Promise<Array<QuizType>> {
   let subjects = await getTestableSubjects(shortName);
   let results: any[] = await Promise.all(
     subjects.map((s) =>
@@ -133,4 +133,18 @@ export async function getSheetTestData(shortName: string): Promise<
   );
   const flattenedResult = results.flat();
   return flattenedResult;
+}
+
+export async function getQuizzesFromSubjects(
+  testsName: string[]
+): Promise<QuizType> {
+  let results: any = await Promise.all(
+    testsName.map((testName) =>
+      getSheetAPI({
+        link: QUIZES_SHEET_API,
+        sheet: testName,
+      })
+    )
+  );
+  return results;
 }

@@ -18,6 +18,7 @@ import {
   getSheetTestData,
   getTestableSubjects,
   getTuteriaSubjectData,
+  getQuizzesFromSubjects,
 } from "./sheetService";
 import { groupBy } from "lodash";
 import { sendClientLoginCodes } from "./email";
@@ -52,6 +53,45 @@ const bulkFetchQuizSubjectsFromSheet = async (
     return await bulkCreateQuizOnBackend(rr);
   }
   return rr;
+};
+
+type QuizDataType = {
+  skill: string;
+  url: string;
+  pass_mark: number;
+  questions: any;
+};
+
+type SavedQuizDataType = {
+  name: string;
+  testable: boolean;
+  quiz_url: string;
+  id: number;
+  slug: string;
+  passmark: number;
+  duration: number;
+  is_new: boolean;
+  questions: any;
+};
+
+const fetchQuizSubjectsFromSheet = async (
+  subjects: Array<{
+    name: string;
+    url: string;
+    test_name: string;
+    pass_mark: number;
+  }>
+): Promise<Array<SavedQuizDataType>> => {
+  let quizzes = await getQuizzesFromSubjects(
+    subjects.map(({ test_name }) => test_name)
+  );
+  let quizzesData = subjects.map((subject, index) => ({
+    skill: subject.name,
+    pass_mark: subject.pass_mark,
+    url: subject.url,
+    questions: quizzes[index],
+  }));
+  return await bulkCreateQuizOnBackend(quizzesData);
 };
 
 const transfromData = (data, showAnswer) =>
@@ -157,19 +197,24 @@ export const serverAdapter = {
     showAnswer = false,
   }: {
     name: string;
-    subjects: string[];
+    subjects: Array<{
+      name: string;
+      url: string;
+      test_name: string;
+      pass_mark: number;
+    }>;
     total_questions: number;
     showAnswer: boolean;
   }) => {
     const DEFAULT_TOTAL_QUESTIONS = 30;
-    const quizDataFromSheet: any[] = await bulkFetchQuizSubjectsFromSheet(
-      subjects,
-      true
+    const quizDataFromSheet: any = await fetchQuizSubjectsFromSheet(subjects);
+    // const quizQuestionPromises = subjects.map(({ url }) =>
+    //   getQuizQuestions(url, showAnswer)
+    // );
+    // const quizQuestions = await Promise.all(quizQuestionPromises);
+    const quizQuestions = quizDataFromSheet.map(({ questions }) =>
+      transfromData(questions, showAnswer)
     );
-    const quizQuestionpromises = quizDataFromSheet.map((item) =>
-      getQuizQuestions(item.quiz_url, showAnswer)
-    );
-    const quizQuestions = await Promise.all(quizQuestionpromises);
     let questionSplit: number[];
     let result: any;
     if (total_questions) {
@@ -423,14 +468,20 @@ export const serverAdapter = {
   },
   async getTuteriaSubjects(subject: string) {
     const subjects = await getTuteriaSubjectData();
-    const formattedSubjects = subjects.map(subject => ({
+    const formattedSubjects = subjects.map((subject) => ({
       ...subject,
-      subjects: subject.subjects.map(({ shortName }) => shortName),
+      subjects: subject.subjects.map(({ shortName, url, test_name }) => ({
+        name: shortName,
+        url,
+        test_name,
+      })),
     }));
     if (!subject) return formattedSubjects;
-    const foundSubject = formattedSubjects.find(item => item.name === subject)
-    if (foundSubject) return foundSubject
-    throw new Error("Subject not found")
+    const foundSubject = formattedSubjects.find(
+      (item) => item.name === subject
+    );
+    if (foundSubject) return foundSubject;
+    throw new Error("Subject not found");
   },
 };
 
