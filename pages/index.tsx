@@ -12,8 +12,13 @@ export default function Index() {
     try {
       setIsLoading(true);
       e.preventDefault();
-      await adapter.onEmailSubmit({ email });
-      navigate(`/login?email=${email}`)
+      const result: any = adapter.decodeToken();
+      if (result) {
+        navigate('/application');
+      } else {
+        await adapter.onEmailSubmit({ email });
+        navigate(`/login?email=${email}&next=/application`);
+      }
     } catch (e) {
       alert('Problem!!!');
       console.error(e);

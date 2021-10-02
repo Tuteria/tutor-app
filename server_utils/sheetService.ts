@@ -4,6 +4,33 @@ let SUBJECTS_API =
   "https://docs.google.com/spreadsheets/d/1BBI6HUCpHkHk_AgxBEGACpL90dV_D4mySG3-c0ewGVY/edit?usp=sharing";
 
 let SHEET_API = "https://sheet.tuteria.com";
+let PRICING_SHEET_API =
+  "https://docs.google.com/spreadsheets/d/1BBI6HUCpHkHk_AgxBEGACpL90dV_D4mySG3-c0ewGVY/edit?usp=sharing";
+
+async function getInfoArrayFromSheet(sheet, segments) {
+  const body = {
+    link: PRICING_SHEET_API,
+    sheet,
+    segments,
+  };
+  let response = await fetch(`${SHEET_API}/fetch-groups`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+  if (response.status < 400) {
+    try {
+      let result = await response.json();
+      return result.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+  debugger;
+  throw "Error fetching results";
+}
 
 function string_to_slug(str) {
   str = str.replace(/^\s+|\s+$/g, ""); // trim
@@ -147,4 +174,22 @@ export async function getQuizzesFromSubjects(
     )
   );
   return results;
+}
+export async function getLocationInfoFromSheet() {
+  let result = await getInfoArrayFromSheet("Location", [
+    { cell_range: "A2:B1121", heading: ["state", "vicinity"] },
+    {
+      cell_range: "J2:M38",
+      heading: ["state", "radius", "distanceThreshold", "farePerKM"],
+    },
+  ]);
+  return {
+    regions: result[0],
+    state_with_radius: result[1].map((o) => ({
+      ...o,
+      radius: parseFloat(o.radius),
+      distanceThreshold: parseFloat(o.distanceThreshold),
+      farePerKM: parseFloat(o.farePerKM),
+    })),
+  };
 }

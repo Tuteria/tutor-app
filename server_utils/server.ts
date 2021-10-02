@@ -5,13 +5,13 @@ import {
   fetchAllowedQuizesForUser,
   getQuizData,
   authenticateLoginDetails,
-  getTutorInfoService,
   saveTutorInfoService,
   saveTutorSubjectService,
   sendEmailNotification,
   saveUserSelectedSubjects,
   updateTestStatus,
   userRetakeTest,
+  fetchAllCountries,
 } from "./hostService";
 import {
   getTuteriaSubjectList,
@@ -19,6 +19,7 @@ import {
   getTestableSubjects,
   getTuteriaSubjectData,
   getQuizzesFromSubjects,
+  getLocationInfoFromSheet,
 } from "./sheetService";
 import { groupBy } from "lodash";
 import { sendClientLoginCodes } from "./email";
@@ -168,8 +169,13 @@ export const serverAdapter = {
   saveTutorInfo: async (data: any) => {
     return await saveTutorInfoService(data);
   },
-  getTutorInfo: async (tutorId: string) => {
-    return await getTutorInfoService(tutorId);
+  getTutorInfo: async (email: string) => {
+    const data = await authenticateLoginDetails({
+      email,
+      auto_login: true,
+      is_admin: true,
+    });
+    return data;
   },
   getTuteriaSubjectList: async (email: string) => {
     let tuteriaSubjectForTutor = await fetchAllowedQuizesForUser(email);
@@ -347,7 +353,7 @@ export const serverAdapter = {
     }
   },
 
-  async upgradeAccessToken(userInfo) {
+  upgradeAccessToken(userInfo) {
     return jwt.sign(userInfo, process.env.SECRET_KEY, {
       expiresIn: 60 * 60 * 24,
     });
@@ -482,6 +488,12 @@ export const serverAdapter = {
     );
     if (foundSubject) return foundSubject;
     throw new Error("Subject not found");
+  },
+
+  getCountries: fetchAllCountries,
+  getRegions: async () => {
+    let { regions } = await getLocationInfoFromSheet();
+    return regions;
   },
 };
 
