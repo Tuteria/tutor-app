@@ -1,9 +1,9 @@
 import DATA from "@tuteria/shared-lib/src/tutor-revamp/quizzes/sample-quiz-data";
 import storage from "@tuteria/shared-lib/src/local-storage";
-import jwt_decode from 'jwt-decode';
-import { upgradeAccessToken } from './util';
+import jwt_decode from "jwt-decode";
+import { upgradeAccessToken } from "./util";
 
-const CLIENT_TOKEN = "CLIENT_TOKEN";
+const NEW_TUTOR_TOKEN = "NEW_TUTOR_TOKEN";
 const REGION_KEY = "TEST-REGIONS-VICINITIES";
 const COUNTRY_KEY = "TEST-COUNTRIES";
 
@@ -28,26 +28,27 @@ export const adapter = {
       }, 3000);
     });
   },
-  async saveTutorInfo(key: string, value: any, slug: string)  {
+  async saveTutorInfo(key: string, value: any, slug: string, nextStep: string) {
     const options = {
-      "personal-info": 'personalInfo',
-      "location-info": 'locationInfo',
-      "education-history": 'educationWorkHistory',
-      "work-history": 'educationWorkHistory',
+      "personal-info": "personalInfo",
+      "location-info": "locationInfo",
+      "education-history": "educationWorkHistory",
+      "work-history": "educationWorkHistory",
     };
     const response = await fetch(`/api/tutors/save-tutor-info`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         slug,
         data: {
           [options[key]]: value,
+          currentEditableForm: nextStep
         },
       }),
     });
     if (response.ok) {
       const { data } = await response.json();
-      storage.set(CLIENT_TOKEN, data.accessToken);
+      storage.set(NEW_TUTOR_TOKEN, data.accessToken);
       delete data.accessToken;
       return data;
     }
@@ -67,7 +68,7 @@ export const adapter = {
       }, 2000);
     });
   },
-  toNextPath: async () => { },
+  toNextPath: async () => {},
   postResults: async (answers: Array<any>, subject) => {
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -80,7 +81,7 @@ export const adapter = {
     const response = await fetch("/api/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email })
+      body: JSON.stringify({ email }),
     });
     if (response.ok) {
       const data = await response.json();
@@ -93,17 +94,17 @@ export const adapter = {
     const response = await fetch("/api/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, code: otp })
+      body: JSON.stringify({ email, code: otp }),
     });
     if (response.ok) {
       const { data } = await response.json();
-      storage.set(CLIENT_TOKEN, data.access_token);
+      storage.set(NEW_TUTOR_TOKEN, data.access_token);
       return data;
     }
     throw "Error submitting";
   },
 
-  decodeToken(existingTokenFromUrl = "", key = CLIENT_TOKEN) {
+  decodeToken(existingTokenFromUrl = "", key = NEW_TUTOR_TOKEN) {
     let urlAccessToken = existingTokenFromUrl;
     if (!urlAccessToken) {
       //check the local storage for the token.
@@ -117,6 +118,7 @@ export const adapter = {
         return result;
       } catch (error) {
         console.log("failed");
+        throw error;
       }
     }
   },
