@@ -7,9 +7,11 @@ export default async function handler(
 ) {
   if (req.method === "POST") {
     try {
-      const result = await serverAdapter.saveTutorInfo(req.body);
+      const { slug, data } = req.body;
+      const result = await serverAdapter.saveTutorInfo({ slug, data });
       res.status(200).json({ status: true, data: result });
     } catch (error) {
+      console.error(error);
       res.status(400).json({ status: false, error });
     }
   } else {

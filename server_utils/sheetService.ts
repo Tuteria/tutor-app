@@ -40,9 +40,12 @@ type TuteriaTestType = {
   shortName: string;
   skill: string;
   url: string;
+  slug: string;
   pass_mark?: number;
   tuteria_name?: string;
   test_name?: string;
+  category?: string;
+  subcategory?: string;
 };
 export async function getTuteriaSubjectList() {
   let subjects: Array<TuteriaTestType> = await getTestableSubjects();
@@ -52,6 +55,23 @@ export async function getTuteriaSubjectList() {
       .filter((o) => o.tuteria_name === t)
       .map((x) => ({ ...x }));
     return { name: t, subjects: foundSubjects };
+  });
+  return result;
+}
+export async function getTuteriaSubjectData() {
+  let subjects: Array<TuteriaTestType> = await getTestableSubjects();
+  let tuteriaSubjects = [...new Set(subjects.map((o) => o.tuteria_name))];
+  let formattedTuteriaSubjects = tuteriaSubjects.map((subject) => {
+    const { category, subcategory, slug } = subjects.find(
+      ({ tuteria_name }) => tuteria_name === subject
+    );
+    return { name: subject, category, subcategory, slug };
+  });
+  let result = formattedTuteriaSubjects.map((item, i) => {
+    let foundSubjects = subjects
+      .filter((o) => o.tuteria_name === item.name)
+      .map((x) => ({ ...x }));
+    return { ...item, subjects: foundSubjects };
   });
   return result;
 }
@@ -83,25 +103,25 @@ export async function getTestableSubjects(
       };
     });
 }
-
-export async function getSheetTestData(shortName: string): Promise<
-  Array<{
-    pretext?: string;
-    question?: string;
-    image?: string;
-    optionA?: string;
-    optionB?: string;
-    optionC?: string;
-    optionD?: string;
-    answer?: string;
-    shared_text?: string;
-    shared_question?: string;
-    shared_images?: string;
-    options_layout?: string;
-    image_layout?: string;
-    is_latex?: string;
-  }>
-> {
+type QuizType = {
+  pretext?: string;
+  question?: string;
+  image?: string;
+  optionA?: string;
+  optionB?: string;
+  optionC?: string;
+  optionD?: string;
+  answer?: string;
+  shared_text?: string;
+  shared_question?: string;
+  shared_images?: string;
+  options_layout?: string;
+  image_layout?: string;
+  is_latex?: string;
+};
+export async function getSheetTestData(
+  shortName: string
+): Promise<Array<QuizType>> {
   let subjects = await getTestableSubjects(shortName);
   let results: any[] = await Promise.all(
     subjects.map((s) =>
@@ -113,4 +133,18 @@ export async function getSheetTestData(shortName: string): Promise<
   );
   const flattenedResult = results.flat();
   return flattenedResult;
+}
+
+export async function getQuizzesFromSubjects(
+  testsName: string[]
+): Promise<QuizType> {
+  let results: any = await Promise.all(
+    testsName.map((testName) =>
+      getSheetAPI({
+        link: QUIZES_SHEET_API,
+        sheet: testName,
+      })
+    )
+  );
+  return results;
 }

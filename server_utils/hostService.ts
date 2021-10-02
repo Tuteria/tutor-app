@@ -45,6 +45,7 @@ export async function bulkCreateQuizOnBackend(
     passmark: number;
     duration: number;
     is_new: boolean;
+    questions: any[]
   }>
 > {
   let response = await fetch(`${HOST}/api/ensure-quiz-creation/`, {
@@ -88,15 +89,21 @@ export async function fetchAllowedQuizesForUser(email: string): Promise<
 }
 
 export const saveTutorInfoService = async ({
-  tutorId,
-  type,
+  slug,
   data,
 }: {
-  tutorId: string;
-  type: string;
+  slug: string;
   data: { [key: string]: any };
 }) => {
-  return { slug: tutorId, type, data };
+  const response = await postHelper("/api/tutors/save-tutor-info", {
+    slug,
+    data,
+  });
+  if (response.ok) {
+    const { data } = await response.json();
+    return data;
+  }
+  throw new Error("Failed to save tutor info");
 };
 
 export const getTutorInfoService = async (tutorId: string) => {
@@ -229,8 +236,50 @@ export const getTutorInfoService = async (tutorId: string) => {
       isIdVerified: true,
     },
     slug: tutorId,
-  }
+  };
 };
+
+async function postHelper(url, data, base = HOST) {
+  const response = await fetch(`${base}${url}`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return response;
+}
+
+export async function sendEmailNotification(data) {
+  let datToSend = data;
+  if (IS_TEST === "true") {
+    datToSend.to = [TEST_EMAIL];
+  }
+
+  const response = await fetch(`${NOTIFICATION_SERVICE}/send_message/`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(datToSend),
+  });
+  const result = await response.json();
+  return result;
+}
+
+export async function authenticateLoginDetails(data) {
+  const response = await postHelper("/new-subject-flow/login", data);
+  if (response.ok) {
+    const { data } = await response.json();
+    return data;
+  }
+  throw new Error("Error authenticating user");
+}
+
+export async function saveTutorSubjectService(data: any) {
+  const response = await postHelper("/api/tutors/save-tutor-subject", data);
+  if (response.ok) {
+    const { data } = await response.json();
+    return data;
+  }
+  throw new Error("Failed to save tutor subject");
+}
 
 export const getQuizData = async (quiz_url: string) => {
   const response = await fetch(`${HOST}/api/questions/${quiz_url}`);
@@ -241,13 +290,16 @@ export const getQuizData = async (quiz_url: string) => {
   throw new Error("Error fetching quiz from backend.");
 };
 
-export const beginQuiz = async (subjects: string[], email: string) => {
+export const beginQuiz = async (data: {
+  email: string;
+  subjects: string[];
+}) => {
   const response = await fetch(`${HOST}/new-subject-flow/begin-quiz`, {
     headers: {
       "Content-Type": "application/json",
     },
     method: "POST",
-    body: JSON.stringify({ subjects, email }),
+    body: JSON.stringify(data),
   });
   if (response.status < 500) {
     let result = await response.json();

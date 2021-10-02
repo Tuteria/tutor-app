@@ -1,4 +1,7 @@
 import DATA from "@tuteria/shared-lib/src/tutor-revamp/quizzes/sample-quiz-data";
+import storage from "@tuteria/shared-lib/src/local-storage";
+
+const CLIENT_TOKEN = "CLIENT_TOKEN";
 
 export const adapter = {
   async fetchTutorInfo(id: string) {
@@ -48,4 +51,31 @@ export const adapter = {
       }, 3000);
     });
   },
+
+  async onEmailSubmit({ email }) {
+    const response = await fetch("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email })
+    });
+    if (response.ok) {
+      const data = await response.json();
+      return data;
+    }
+    throw "Error submitting";
+  },
+
+  async onVerifyOTP({ email, otp }) {
+    const response = await fetch("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, code: otp })
+    });
+    if (response.ok) {
+      const { data } = await response.json();
+      storage.set(CLIENT_TOKEN, data.access_token);
+      return data;
+    }
+    throw "Error submitting";
+  }
 };
