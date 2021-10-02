@@ -1,24 +1,18 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { serverAdapter } from '../../server_utils/server';
+import { defaultView } from "../../middlewares";
+import { serverAdapter } from "../../server_utils/server";
 
-export default async function(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === 'POST') {
-    try {
-      const { email, code } = req.body;
-      let data;
-      if (email && code) {
-        const userInfo = await serverAdapter.authenticateUserCode(email, code);
-        const access_token = serverAdapter.upgradeAccessToken(userInfo)
-        data = {access_token}
-      } else {
-        data = await serverAdapter.loginUser(email);
-      }
-      res.json({ status: true, data });
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({ status: false, error: error?.message });
+export default defaultView(
+  async (req) => {
+    const { email, code } = req.body;
+    let data;
+    if (email && code) {
+      const userInfo = await serverAdapter.authenticateUserCode(email, code);
+      const access_token = serverAdapter.upgradeAccessToken(userInfo);
+      data = { access_token };
+    } else {
+      data = await serverAdapter.loginUser(email);
     }
-  } else {
-    res.status(405).json({ msg: "Not Allowed Method" });
-  }
-}
+    return data;
+  },
+  { method: "POST" }
+);
