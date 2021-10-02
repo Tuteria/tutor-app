@@ -12,6 +12,7 @@ import {
   updateTestStatus,
   userRetakeTest,
   fetchAllCountries,
+  API_TEST,
 } from "./hostService";
 import {
   getTuteriaSubjectList,
@@ -151,7 +152,10 @@ function verifyAccessToken(access_token, force = true, returnResult = false) {
   }
 }
 
-export function getUserInfo(access_token, force = false) {
+export function getUserInfo(
+  access_token,
+  force = false
+): { personalInfo: { email: string } } {
   let new_token = access_token
     .replace("Bearer", "")
     .replace("Access", "")
@@ -164,10 +168,15 @@ export function getUserInfo(access_token, force = false) {
 }
 
 export const serverAdapter = {
+  apiTest: API_TEST,
   bulkFetchQuizSubjectsFromSheet,
   getUserInfo,
-  saveTutorInfo: async (data: any) => {
-    return await saveTutorInfoService(data);
+  async saveTutorInfo(data: any, encode = false) {
+    let result = await saveTutorInfoService(data);
+    if (encode) {
+      result.accessToken = this.upgradeAccessToken(result);
+    }
+    return result;
   },
   getTutorInfo: async (email: string) => {
     const data = await authenticateLoginDetails({

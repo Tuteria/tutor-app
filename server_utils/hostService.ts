@@ -3,6 +3,7 @@ import allRegions from "@tuteria/mobile-lib/src/data/regions.json";
 
 export let HOST = process.env.HOST_ENDPOINT || "http://backup.tuteria.com:8000";
 export let DEV = (process.env.IS_DEVELOPMENT || "development") == "development";
+export const API_TEST = process.env.DEVELOPER_ACCESS === "true" || false;
 const NOTIFICATION_SERVICE =
   process.env.NOTIFICATION_SERVICE || "http://email-service.tuteria.com:5000";
 const SCHEDULER_SERVICE =
@@ -45,7 +46,7 @@ export async function bulkCreateQuizOnBackend(
     passmark: number;
     duration: number;
     is_new: boolean;
-    questions: any[]
+    questions: any[];
   }>
 > {
   let response = await fetch(`${HOST}/api/ensure-quiz-creation/`, {
@@ -260,7 +261,6 @@ export async function sendEmailNotification(data) {
     const result = await response.json();
     return result;
   }
-
 }
 
 export async function authenticateLoginDetails(data) {

@@ -5,9 +5,8 @@ import { serverAdapter } from "../../../server_utils/server";
 // if there is an error, ensure that it is thrown with the error message to be displayed
 export default authCheck(
   async (req, userInfo) => {
-    const { slug, data } = req.body;
-    return await serverAdapter.saveTutorInfo({ slug, data }, true);
+    return await serverAdapter.saveTutorSubject(req.body);
   },
   // this is only used when testing the apis.
-  { method: "POST", includeToken: "accessToken" }
+  { method: "POST" }
 );
