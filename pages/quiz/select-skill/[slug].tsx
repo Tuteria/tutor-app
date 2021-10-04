@@ -10,13 +10,13 @@ import { usePrefetchHook } from "../../../server_utils/util";
 const store = RootStore.create({}, { adapter });
 
 const SelectSubjectTestPage = ({slug}) => {
-  const { navigate } = usePrefetchHook({ routes: ['/test'] });
+  const { navigate } = usePrefetchHook({ routes: ['/quiz/test'] });
   const [loading, setLoading] = React.useState(false);
 
   async function onNextClick() {
     try {
       await store.subject.generateQuiz()
-      navigate("/test")
+      navigate("/quiz/test")
     } catch (error) {
       console.log(error)
       throw error
