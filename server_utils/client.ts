@@ -1,11 +1,8 @@
-import DATA from "@tuteria/shared-lib/src/tutor-revamp/quizzes/sample-quiz-data";
+import { ServerAdapterType } from "@tuteria/shared-lib/src/adapter";
 import storage from "@tuteria/shared-lib/src/local-storage";
 import jwt_decode from "jwt-decode";
-import { ServerAdapterType } from "@tuteria/shared-lib/src/adapter";
 
 const NEW_TUTOR_TOKEN = "NEW_TUTOR_TOKEN";
-const REGION_KEY = "TEST-REGIONS-VICINITIES";
-const COUNTRY_KEY = "TEST-COUNTRIES";
 
 function decodeToken(existingTokenFromUrl = "", key = NEW_TUTOR_TOKEN) {
   let urlAccessToken = existingTokenFromUrl;
@@ -38,7 +35,9 @@ export const clientAdapter: ServerAdapterType = {
   deleteSubject: async () => {},
   fetchQuizQuestions: async () => {},
   getTutorSubjects: async () => {},
-  loadExistingTutorInfo: () => {},
+  loadExistingTutorInfo: () => {
+    return decodeToken();
+  },
   saveTutorInfo: async (payload) => {
     const response = await fetch(`/api/tutors/save-tutor-info`, {
       method: "POST",
