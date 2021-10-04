@@ -243,7 +243,7 @@ export const serverAdapter = {
         DEFAULT_TOTAL_QUESTIONS
       );
       result = subjects.map((subject, index) => ({
-        subject,
+        subject: subject.name,
         passmark: quizDataFromSheet[index].passmark,
         questions: showAnswer
           ? quizQuestions[index]
@@ -481,19 +481,20 @@ export const serverAdapter = {
       })
       .filter((item) => item.category);
   },
-  async getTuteriaSubjects(subject: string) {
+  async getTuteriaSubjects(subject?: string): Promise<any> {
     const subjects = await getTuteriaSubjectData();
     const formattedSubjects = subjects.map((subject) => ({
       ...subject,
-      subjects: subject.subjects.map(({ shortName, url, test_name }) => ({
+      subjects: subject.subjects.map(({ shortName, url, test_name, pass_mark }) => ({
         name: shortName,
         url,
         test_name,
+        pass_mark
       })),
     }));
     if (!subject) return formattedSubjects;
     const foundSubject = formattedSubjects.find(
-      (item) => item.name === subject
+      (item) => item.slug === subject
     );
     if (foundSubject) return foundSubject;
     throw new Error("Subject not found");

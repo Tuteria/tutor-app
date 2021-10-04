@@ -1,11 +1,12 @@
 import DATA from "@tuteria/shared-lib/src/tutor-revamp/quizzes/sample-quiz-data";
 import storage from "@tuteria/shared-lib/src/local-storage";
 import jwt_decode from "jwt-decode";
-import { upgradeAccessToken } from "./util";
 
 const NEW_TUTOR_TOKEN = "NEW_TUTOR_TOKEN";
 const REGION_KEY = "TEST-REGIONS-VICINITIES";
 const COUNTRY_KEY = "TEST-COUNTRIES";
+const TUTERIA_SUBJECT_KEY = "TUTERIA-SUBECTS";
+const TUTOR_QUIZZES = "TUTOR-QUIZZES"
 
 export const adapter = {
   regionKey: REGION_KEY,
@@ -42,7 +43,7 @@ export const adapter = {
         slug,
         data: {
           [options[key]]: value,
-          currentEditableForm: nextStep
+          currentEditableForm: nextStep,
         },
       }),
     });
@@ -121,5 +122,46 @@ export const adapter = {
         throw error;
       }
     }
+  },
+
+  async getTutorSubjects() {
+    try {
+      const tuteriaSubjectsInStorage = storage.get(TUTERIA_SUBJECT_KEY);
+      let tuteriaSubjects;
+      const tutorToken = storage.get(NEW_TUTOR_TOKEN);
+      if (Object.keys(tuteriaSubjectsInStorage).length) {
+        tuteriaSubjects = tuteriaSubjectsInStorage;
+      } else {
+        const response: any = await fetch("/api/quiz/get-tuteria-subjects", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + tutorToken,
+          },
+          method: "POST",
+          body: JSON.stringify({}),
+        });
+        const { data } = await response.json();
+        tuteriaSubjects = data;
+        storage.set(TUTERIA_SUBJECT_KEY, data);
+      }
+      return { tuteriaSubjects, tutorSubjects: [] };
+    } catch (error) {
+      throw "Failed to fetch tutor subjects";
+    }
+  },
+
+  async generateQuiz(payload) {
+    const tutorToken = storage.get(NEW_TUTOR_TOKEN);
+    const response = await fetch("/api/quiz/generate", {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + tutorToken,
+      },
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    const { data } = await response.json();
+    storage.set(TUTOR_QUIZZES, data)
+    return data;
   },
 };

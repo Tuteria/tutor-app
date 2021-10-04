@@ -4,7 +4,7 @@ import { serverAdapter } from "../../../server_utils/server";
 export default authCheck(
   async (req, userInfo) => {
     let result = await serverAdapter.getTuteriaSubjects(
-      req.query.name as string
+      req.body.subject
     );
     return result;
   },
