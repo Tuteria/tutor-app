@@ -2,21 +2,21 @@ import { LoadingState } from "@tuteria/shared-lib/src/components/data-display/Lo
 import { RootStore } from "@tuteria/shared-lib/src/stores";
 import { SelectQuizzesToTake } from "@tuteria/shared-lib/src/tutor-revamp/TestPage";
 import { observer } from "mobx-react-lite";
-import { useRouter } from "next/router";
 import React from "react";
 import { adapter } from "../../../server_utils/client";
 import { serverAdapter } from "../../../server_utils/server";
+import { usePrefetchHook } from "../../../server_utils/util";
 
 const store = RootStore.create({}, { adapter });
 
 const SelectSubjectTestPage = ({slug}) => {
-  const router = useRouter();
+  const { navigate } = usePrefetchHook({ routes: ['/test'] });
   const [loading, setLoading] = React.useState(false);
 
-  async function onNextClick(payload) {
+  async function onNextClick() {
     try {
-      const response = await adapter.generateQuiz(payload)
-      console.log(response)
+      await store.subject.generateQuiz()
+      navigate("/test")
     } catch (error) {
       console.log(error)
       throw error
@@ -39,7 +39,7 @@ const SelectSubjectTestPage = ({slug}) => {
   return (
     <SelectQuizzesToTake 
       store={store}
-      toSubjectPage={() => router.push("/")}
+      toSubjectPage={() => navigate("/")}
       onNextClick={onNextClick}
     />
   );
