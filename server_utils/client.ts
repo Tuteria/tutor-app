@@ -1,7 +1,6 @@
 import DATA from "@tuteria/shared-lib/src/tutor-revamp/quizzes/sample-quiz-data";
 import storage from "@tuteria/shared-lib/src/local-storage";
 import jwt_decode from "jwt-decode";
-import { upgradeAccessToken } from "./util";
 
 const NEW_TUTOR_TOKEN = "NEW_TUTOR_TOKEN";
 const REGION_KEY = "TEST-REGIONS-VICINITIES";
@@ -122,4 +121,28 @@ export const adapter = {
       }
     }
   },
+
+  async registerTutor(payload: any) {
+    const token = storage.get(NEW_TUTOR_TOKEN, "");
+    const response = await fetch('/api/register', {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        ...payload,
+        token,
+      }),
+    });
+
+    if (response.ok) {
+      const { data } = await response.json();
+      if('accessToken' in data) {
+        storage.set(NEW_TUTOR_TOKEN, data.accessToken);
+        delete data.accessToken;
+      }
+      return data;
+    }
+
+    throw "Failed to register user";
+  }
+
 };

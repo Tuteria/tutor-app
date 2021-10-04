@@ -12,15 +12,9 @@ export default function Index() {
     try {
       setIsLoading(true);
       e.preventDefault();
-      const result: any = adapter.decodeToken();
-      if (result) {
-        navigate('/application');
-      } else {
-        await adapter.onEmailSubmit({ email });
-        navigate(`/login?email=${email}&next=/application`);
-      }
+      const { redirectUrl } = await adapter.registerTutor({ email });
+      navigate(redirectUrl);
     } catch (e) {
-      alert('Problem!!!');
       console.error(e);
       setIsLoading(false);
     }
@@ -33,6 +27,7 @@ export default function Index() {
         <form onSubmit={onSubmit}>
           <Box mb="10px">
             <Input
+              name="email"
               onChange={(e) => setEmail(e.target.value)}
               value={email}
               type="email"

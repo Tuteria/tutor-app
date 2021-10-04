@@ -375,9 +375,13 @@ export const serverAdapter = {
 
   async loginUser(email: string) {
     const data = await authenticateLoginDetails({ email });
-    const payload = sendClientLoginCodes(email, data.code);
-    await this.sendNotification(payload);
-    return { email: data.email };
+    if ('code' in data) {
+      const payload = sendClientLoginCodes(email, data.code);
+      await this.sendNotification(payload);
+      return { email: data.email };
+    }
+    const accessToken = this.upgradeAccessToken(data);
+    return { accessToken }
   },
 
   async saveTutorSubject(payload: any) {
