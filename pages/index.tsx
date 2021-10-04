@@ -1,44 +1,18 @@
-import { Box, Button, Input, Text } from '@chakra-ui/react';
-import React, { useState } from 'react';
-import { usePrefetchHook } from '../server_utils/util';
-import { adapter } from '../server_utils/client';
+import LandingPage from "@tuteria/shared-lib/src/tutor-application/pages/LandingPage";
+import React from "react";
+import { clientAdapter } from "../server_utils/client";
+import { usePrefetchHook } from "../server_utils/util";
 
 export default function Index() {
-  const [email, setEmail] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const { navigate } = usePrefetchHook({ routes: ['/login'] });
+  const { navigate } = usePrefetchHook({ routes: ["/login"] });
 
-  const onSubmit = async (e) => {
+  const onSubmit = async (data: { email: string }) => {
     try {
-      setIsLoading(true);
-      e.preventDefault();
-      const { redirectUrl } = await adapter.registerTutor({ email });
+      const { redirectUrl } = await clientAdapter.beginTutorApplication(data);
       navigate(redirectUrl);
     } catch (e) {
-      console.error(e);
-      setIsLoading(false);
+      throw e;
     }
   };
-
-  return (
-    <Box m="10px auto" w="100%" maxW="600px">
-      <Text>Welcome to the Landing Page.</Text>
-      <Box>
-        <form onSubmit={onSubmit}>
-          <Box mb="10px">
-            <Input
-              name="email"
-              onChange={(e) => setEmail(e.target.value)}
-              value={email}
-              type="email"
-              required
-            />
-          </Box>
-          <Button colorScheme="blue" isLoading={isLoading} type="submit">
-            Save
-          </Button>
-        </form>
-      </Box>
-    </Box>
-  );
+  return <LandingPage onSubmit={onSubmit} />;
 }
