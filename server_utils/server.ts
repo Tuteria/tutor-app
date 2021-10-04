@@ -25,6 +25,19 @@ import {
 import { groupBy } from "lodash";
 import { sendClientLoginCodes } from "./email";
 
+export type TuteriaSubjectType = {
+  slug: string;
+  name: string;
+  subjects: Array<{
+    name: string;
+    url: string;
+    test_name: string;
+    pass_mark: number;
+  }>;
+  category?: string;
+  subcategory?: string;
+};
+
 const bulkFetchQuizSubjectsFromSheet = async (
   subjects: string[],
   create = false
@@ -243,7 +256,7 @@ export const serverAdapter = {
         DEFAULT_TOTAL_QUESTIONS
       );
       result = subjects.map((subject, index) => ({
-        subject,
+        subject: subject.name,
         passmark: quizDataFromSheet[index].passmark,
         questions: showAnswer
           ? quizQuestions[index]
@@ -375,13 +388,13 @@ export const serverAdapter = {
 
   async loginUser(email: string) {
     const data = await authenticateLoginDetails({ email });
-    if ('code' in data) {
+    if ("code" in data) {
       const payload = sendClientLoginCodes(email, data.code);
       await this.sendNotification(payload);
       return { email: data.email };
     }
     const accessToken = this.upgradeAccessToken(data);
-    return { accessToken }
+    return { accessToken };
   },
 
   async saveTutorSubject(payload: any) {
@@ -485,19 +498,24 @@ export const serverAdapter = {
       })
       .filter((item) => item.category);
   },
-  async getTuteriaSubjects(subject: string) {
+  async getTuteriaSubjects(
+    subject?: string
+  ): Promise<Array<TuteriaSubjectType> | TuteriaSubjectType> {
     const subjects = await getTuteriaSubjectData();
     const formattedSubjects = subjects.map((subject) => ({
       ...subject,
-      subjects: subject.subjects.map(({ shortName, url, test_name }) => ({
-        name: shortName,
-        url,
-        test_name,
-      })),
+      subjects: subject.subjects.map(
+        ({ shortName, url, test_name, pass_mark }) => ({
+          name: shortName,
+          url,
+          test_name,
+          pass_mark,
+        })
+      ),
     }));
     if (!subject) return formattedSubjects;
     const foundSubject = formattedSubjects.find(
-      (item) => item.name === subject
+      (item) => item.slug === subject
     );
     if (foundSubject) return foundSubject;
     throw new Error("Subject not found");

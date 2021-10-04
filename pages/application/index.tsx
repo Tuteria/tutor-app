@@ -30,6 +30,7 @@ export default function ApplicationPage({ allCountries, allRegions }) {
       );
       setIsLoading(false);
     } catch (error) {
+      debugger;
       console.error(error);
       const { pathname, search } = window.location;
       navigate(`/login?next=${`${pathname}${search}`}`);

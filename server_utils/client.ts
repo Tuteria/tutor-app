@@ -1,8 +1,11 @@
 import { ServerAdapterType } from "@tuteria/shared-lib/src/adapter";
 import storage from "@tuteria/shared-lib/src/local-storage";
 import jwt_decode from "jwt-decode";
+import { TuteriaSubjectType } from "./server";
 
 const NEW_TUTOR_TOKEN = "NEW_TUTOR_TOKEN";
+const TUTOR_QUIZZES = "TUTOR-QUIZZES";
+const TUTERIA_SUBJECT_KEY = "TUTERIA-SUBECTS";
 
 function decodeToken(existingTokenFromUrl = "", key = NEW_TUTOR_TOKEN) {
   let urlAccessToken = existingTokenFromUrl;
@@ -34,7 +37,32 @@ export const clientAdapter: ServerAdapterType = {
   uploadApiHandler: async () => {},
   deleteSubject: async () => {},
   fetchQuizQuestions: async () => {},
-  getTutorSubjects: async () => {},
+  async getTutorSubjects() {
+    try {
+      const tuteriaSubjectsInStorage = storage.get(TUTERIA_SUBJECT_KEY);
+      let tuteriaSubjects;
+      const tutorToken = storage.get(NEW_TUTOR_TOKEN);
+      if (Object.keys(tuteriaSubjectsInStorage).length) {
+        tuteriaSubjects = tuteriaSubjectsInStorage;
+      } else {
+        const response: any = await fetch("/api/quiz/get-tuteria-subjects", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + tutorToken,
+          },
+          method: "POST",
+          body: JSON.stringify({}),
+        });
+        const { data } = await response.json();
+        tuteriaSubjects = data;
+        storage.set(TUTERIA_SUBJECT_KEY, data);
+      }
+      return { tuteriaSubjects, tutorSubjects: [] };
+    } catch (error) {
+      throw "Failed to fetch tutor subjects";
+    }
+  },
+
   loadExistingTutorInfo: () => {
     return decodeToken();
   },
@@ -98,5 +126,19 @@ export const clientAdapter: ServerAdapterType = {
       return data;
     }
     throw "Error submitting";
+  },
+  async generateQuiz(payload: TuteriaSubjectType) {
+    const tutorToken = storage.get(NEW_TUTOR_TOKEN);
+    const response = await fetch("/api/quiz/generate", {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + tutorToken,
+      },
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    const { data } = await response.json();
+    storage.set(TUTOR_QUIZZES, data);
+    return data;
   },
 };
