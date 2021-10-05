@@ -1,6 +1,7 @@
 import { ServerAdapterType } from "@tuteria/shared-lib/src/adapter";
 import storage from "@tuteria/shared-lib/src/local-storage";
 import jwt_decode from "jwt-decode";
+import { beginQuiz } from "./hostService";
 import { TuteriaSubjectType } from "./server";
 
 const NEW_TUTOR_TOKEN = "NEW_TUTOR_TOKEN";
@@ -87,21 +88,23 @@ export const clientAdapter: ServerAdapterType = {
       throw "Error fetching tutor subjects";
     }
     if (subjectInfo) {
-      return {
-        tutorSubejcts: tutorSubjects
+      const rr = {
+        tutorSubjects: tutorSubjects
           .filter(
             (o) => o.name.toLowerCase() === subjectInfo.name.toLowerCase()
           )
           .map((_tSubject) => {
-            let quizzes = subjectInfo.subjects.filter((x) =>
-              quizzesAllowed
-                .map((o) => o.name.toLowerCase())
-                .includes(x.name.toLowerCase())
-            );
+            // let quizzes = subjectInfo.subjects.filter((x) =>
+            //   quizzesAllowed
+            //     .map((o) => o.name.toLowerCase())
+            //     .includes(x.name.toLowerCase())
+            // );
+            const quizzes = subjectInfo.subjects;
             return { ..._tSubject, quizzes };
           }),
         tuteriaSubjects,
       };
+      return rr;
     }
     try {
       const tuteriaSubjectsInStorage = storage.get(TUTERIA_SUBJECT_KEY);
@@ -135,9 +138,9 @@ export const clientAdapter: ServerAdapterType = {
     const token = storage.get(NEW_TUTOR_TOKEN, "");
     const response = await fetch(`/api/tutors/save-tutor-info`, {
       method: "POST",
-      headers: { 
+      headers: {
         Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json" 
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
     });
@@ -209,5 +212,21 @@ export const clientAdapter: ServerAdapterType = {
     const { data } = await response.json();
     storage.set(TUTOR_QUIZZES, data);
     return data;
+  },
+  async beginQuiz(payload: { subjects: string[] }) {
+    const tutorToken = storage.get(NEW_TUTOR_TOKEN);
+    const response: any = await fetch("/api/quiz/begin", {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + tutorToken,
+      },
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    if (response.ok) {
+      const { data } = response.json();
+      return data
+    }
+    throw "Failed to start test"
   },
 };

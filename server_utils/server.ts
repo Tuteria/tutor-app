@@ -116,9 +116,11 @@ const transfromData = (data, showAnswer) =>
     content: item.content,
     figure: item.image,
     is_latex: item.is_latex || false,
-    comprehension: {
-      passage: item.comprehension,
-    },
+    comprehension: item.comprehension
+      ? {
+          passage: item.comprehension,
+        }
+      : null,
     options_display: item.options_layout || "vertical",
     answers: item.answer_set.map((option) => {
       const optionData = {
@@ -180,6 +182,37 @@ export function getUserInfo(
   return null;
 }
 
+function formatSubjects(subjects) {
+  const result = subjects.map((item) => {
+    // const { category, subcategory } = subjectsData.find(
+    //   (subject) => item.skill.name === subject.tuteria_name
+    // ) || { category: null, subcategory: null };
+    let mapping = {
+      1: "pending",
+      2: "active",
+      3: "suspended",
+      4: "denied",
+      5: "in-progress",
+    };
+    return {
+      // ...item,
+      id: item.pk,
+      name: item.skill.name,
+      title: item.heading || "",
+      description: item.description,
+      certifications: item.certifications,
+      tuteriaStatus: item.status,
+      status: mapping[item.status],
+      // test_detail: test_detail.find(
+      //   ({ name, testable }: any) => name === item.skill.name && testable
+      // ) || null,
+      // category,
+      // subcategory,
+    };
+  });
+  return result;
+}
+
 export const serverAdapter = {
   apiTest: API_TEST,
   bulkFetchQuizSubjectsFromSheet,
@@ -220,50 +253,51 @@ export const serverAdapter = {
   },
   generateQuizes: async ({
     name,
+    slug,
     subjects,
-    total_questions,
+    pass_mark,
     showAnswer = false,
   }: {
     name: string;
+    slug: string;
+    pass_mark: string;
     subjects: Array<{
       name: string;
       url: string;
       test_name: string;
       pass_mark: number;
     }>;
-    total_questions: number;
     showAnswer: boolean;
   }) => {
     const DEFAULT_TOTAL_QUESTIONS = 30;
+    const QUIZ_DURATION = 30;
+    const QUIZ_TYPE = "Multiple choice";
     const quizDataFromSheet: any = await fetchQuizSubjectsFromSheet(subjects);
-    // const quizQuestionPromises = subjects.map(({ url }) =>
-    //   getQuizQuestions(url, showAnswer)
-    // );
-    // const quizQuestions = await Promise.all(quizQuestionPromises);
     const quizQuestions = quizDataFromSheet.map(({ questions }) =>
       transfromData(questions, showAnswer)
     );
     let questionSplit: number[];
-    let result: any;
-    if (total_questions) {
-      questionSplit = generateQuestionSplit(subjects.length, total_questions);
-      result = quizQuestions
-        .map((questions, index) => questions.splice(0, questionSplit[index]))
-        .flat();
-    } else {
+    let questions: any;
+    if (subjects.length > 1) {
       questionSplit = generateQuestionSplit(
         subjects.length,
         DEFAULT_TOTAL_QUESTIONS
       );
-      result = subjects.map((subject, index) => ({
-        subject: subject.name,
-        passmark: quizDataFromSheet[index].passmark,
-        questions: showAnswer
-          ? quizQuestions[index]
-          : quizQuestions[index].splice(0, questionSplit[index]),
-      }));
+      questions = quizQuestions
+        .map((questions, index) => questions.splice(0, questionSplit[index]))
+        .flat();
+    } else {
+      questions = quizQuestions[0];
     }
-    return result;
+
+    return {
+      title: name,
+      slug,
+      pass_mark,
+      type: QUIZ_TYPE,
+      duration: QUIZ_DURATION,
+      questions,
+    };
   },
   startQuiz: async (data: { email: string; subjects: string[] }) => {
     return await beginQuiz(data);
@@ -419,26 +453,19 @@ export const serverAdapter = {
       email,
       subjects,
     });
-    const [allowedQuizzes, subjectsData] = await Promise.all([
+    const [
+      allowedQuizzes,
+      // subjectsData
+    ] = await Promise.all([
       fetchAllowedQuizesForUser(email),
-      getTestableSubjects(),
+      // getTestableSubjects(),
     ]);
-    return selectedSubjects.object_list
-      .map((item) => {
-        const { category, subcategory } = subjectsData.find(
-          (subject) => item.skill.name === subject.tuteria_name
-        ) || { category: null, subcategory: null };
-        return {
-          ...item,
-          test_detail:
-            allowedQuizzes.find(
-              ({ name, testable }: any) => name === item.skill.name && testable
-            ) || null,
-          category,
-          subcategory,
-        };
-      })
-      .filter((item) => item.category);
+    // const { category, subcategory } = subjectsData.find(
+    //   (subject) => item.skill.name === subject.tuteria_name
+    // ) || { category: null, subcategory: null };
+    const skills = formatSubjects(selectedSubjects);
+    return { skills, allowedQuizzes };
+    // .filter((item) => item.category);
   },
   retakeQuiz: async ({
     email,
@@ -448,42 +475,27 @@ export const serverAdapter = {
     subjects: string[];
   }) => {
     const response = await userRetakeTest({ email, subjects });
-    const [selectedSubjects, subjectsData] = await Promise.all([
-      saveUserSelectedSubjects({
-        email,
-        subjects: [],
-      }),
-      getTestableSubjects(),
-    ]);
-    return selectedSubjects
-      .map((item) => {
-        const { category, subcategory } = subjectsData.find(
-          (subject) => item.skill.name === subject.tuteria_name
-        ) || { category: null, subcategory: null };
-        return {
-          ...item,
-          test_detail:
-            response.find(
-              ({ name, testable }: any) => name === item.skill.name && testable
-            ) || null,
-          category,
-          subcategory,
-        };
-      })
-      .filter((item) => item.category);
+    // const [selectedSubjects,
+    //   subjectsData
+    // ] = await Promise.all([
+    //   saveUserSelectedSubjects({
+    //     email,
+    //     subjects: [],
+    //   }),
+    //   getTestableSubjects(),
+    // ]);
+    // const { category, subcategory } = subjectsData.find(
+    //   (subject) => item.skill.name === subject.tuteria_name
+    // ) || { category: null, subcategory: null };
+    const skills = formatSubjects(response);
+    return skills;
+    // .filter((item) => item.category);
   },
   getTutorSubjects: async (email: string) => {
     const selectedSubjects = await saveUserSelectedSubjects({
       email,
       subjects: [],
     });
-    let mapping = {
-      1: "pending",
-      2: "active",
-      3: "suspended",
-      4: "denied",
-      5: "in-progress",
-    };
     const [
       allowedQuizzes,
       //  subjectsData
@@ -491,22 +503,7 @@ export const serverAdapter = {
       fetchAllowedQuizesForUser(email),
       // getTestableSubjects(),
     ]);
-    let skills = selectedSubjects.map((item) => {
-      // const { category, subcategory } = subjectsData.find(
-      //   (subject) => item.skill.name === subject.tuteria_name
-      // ) || { category: null, subcategory: null };
-      return {
-        id: item.pk,
-        name: item.skill.name,
-        title: item.heading || "",
-        description: item.description,
-        certifications: item.certifications,
-        tuteriaStatus: item.status,
-        status: mapping[item.status],
-        // category,
-        // subcategory,
-      };
-    });
+    let skills = formatSubjects(selectedSubjects);
     return { skills, allowedQuizzes };
     // .filter((item) => item.category);
   },

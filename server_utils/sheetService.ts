@@ -89,10 +89,10 @@ export async function getTuteriaSubjectData() {
   let subjects: Array<TuteriaTestType> = await getTestableSubjects();
   let tuteriaSubjects = [...new Set(subjects.map((o) => o.tuteria_name))];
   let formattedTuteriaSubjects = tuteriaSubjects.map((subject) => {
-    const { category, subcategory, slug } = subjects.find(
+    const { category, subcategory, slug, pass_mark } = subjects.find(
       ({ tuteria_name }) => tuteria_name === subject
     );
-    return { name: subject, category, subcategory, slug };
+    return { name: subject, category, subcategory, slug, pass_mark };
   });
   let result = formattedTuteriaSubjects.map((item, i) => {
     let foundSubjects = subjects

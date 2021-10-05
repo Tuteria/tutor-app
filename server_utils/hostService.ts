@@ -302,8 +302,8 @@ export const beginQuiz = async (data: {
     body: JSON.stringify(data),
   });
   if (response.status < 500) {
-    let result = await response.json();
-    return result;
+    let { data } = await response.json();
+    return data;
   }
   throw new Error("Error starting quiz from backend.");
 };

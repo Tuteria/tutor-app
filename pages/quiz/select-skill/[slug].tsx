@@ -21,14 +21,16 @@ const SelectSubjectTestPage: React.FC<{ subjectInfo: TuteriaSubjectType }> = ({
   );
 
   async function onNextClick(selectedQuizzes: string[]) {
+    const payload = {
+      ...subjectInfo,
+      subjects: subjectInfo.subjects.filter((x) => {
+        return selectedQuizzes.includes(x.name);
+      }),
+    }
+    const subjects = payload.subjects.map(({url}) => url).join(',')
     try {
-      await clientAdapter.generateQuiz({
-        ...subjectInfo,
-        subjects: subjectInfo.subjects.filter((x) => {
-          return selectedQuizzes.includes(x.name);
-        }),
-      });
-      navigate("/quiz/test");
+      await clientAdapter.beginQuiz({subjects: [subjectInfo.name]})
+      navigate(`/quiz/test/${subjectInfo.slug}?skills=${subjects}`);
     } catch (error) {
       console.log(error);
       throw error;
