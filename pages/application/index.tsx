@@ -1,3 +1,4 @@
+import { useToast } from "@chakra-ui/toast";
 import { loadAdapter } from "@tuteria/shared-lib/src/adapter";
 import { LoadingState } from "@tuteria/shared-lib/src/components/data-display/LoadingState";
 import storage from "@tuteria/shared-lib/src/storage";
@@ -13,6 +14,7 @@ const store = initializeStore(clientAdapter);
 
 export default function ApplicationPage({ allCountries, allRegions }) {
   const [isLoading, setIsLoading] = useState(true);
+  const toast = useToast();
   const { navigate } = usePrefetchHook({
     routes: ["/login"],
   });
@@ -30,10 +32,19 @@ export default function ApplicationPage({ allCountries, allRegions }) {
       );
       setIsLoading(false);
     } catch (error) {
-      debugger;
-      console.error(error);
-      const { pathname, search } = window.location;
-      navigate(`/login?next=${`${pathname}${search}`}`);
+      if (error === "Invalid Credentials") {
+        console.error(error);
+        const { pathname, search } = window.location;
+        navigate(`/login?next=${`${pathname}${search}`}`);
+      } else {
+        toast({
+          title: `An error occured.`,
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+          position: "top",
+        });
+      }
     }
   }, []);
 

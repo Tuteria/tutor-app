@@ -455,7 +455,7 @@ export const serverAdapter = {
       }),
       getTestableSubjects(),
     ]);
-    return selectedSubjects.object_list
+    return selectedSubjects
       .map((item) => {
         const { category, subcategory } = subjectsData.find(
           (subject) => item.skill.name === subject.tuteria_name
@@ -477,26 +477,38 @@ export const serverAdapter = {
       email,
       subjects: [],
     });
-    const [allowedQuizzes, subjectsData] = await Promise.all([
+    let mapping = {
+      1: "pending",
+      2: "active",
+      3: "suspended",
+      4: "denied",
+      5: "in-progress",
+    };
+    const [
+      allowedQuizzes,
+      //  subjectsData
+    ] = await Promise.all([
       fetchAllowedQuizesForUser(email),
-      getTestableSubjects(),
+      // getTestableSubjects(),
     ]);
-    return selectedSubjects.object_list
-      .map((item) => {
-        const { category, subcategory } = subjectsData.find(
-          (subject) => item.skill.name === subject.tuteria_name
-        ) || { category: null, subcategory: null };
-        return {
-          ...item,
-          test_detail:
-            allowedQuizzes.find(
-              ({ name, testable }: any) => name === item.skill.name && testable
-            ) || null,
-          category,
-          subcategory,
-        };
-      })
-      .filter((item) => item.category);
+    let skills = selectedSubjects.map((item) => {
+      // const { category, subcategory } = subjectsData.find(
+      //   (subject) => item.skill.name === subject.tuteria_name
+      // ) || { category: null, subcategory: null };
+      return {
+        id: item.pk,
+        name: item.skill.name,
+        title: item.heading || "",
+        description: item.description,
+        certifications: item.certifications,
+        tuteriaStatus: item.status,
+        status: mapping[item.status],
+        // category,
+        // subcategory,
+      };
+    });
+    return { skills, allowedQuizzes };
+    // .filter((item) => item.category);
   },
   async getTuteriaSubjects(
     subject?: string
