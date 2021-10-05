@@ -82,7 +82,7 @@ export async function fetchAllowedQuizesForUser(email: string): Promise<
   if (response.status < 500) {
     let result = await response.json();
     if (result.status) {
-      return result.data;
+      return result.data.filter((o) => o.testable);
     }
     return result;
   }
@@ -331,7 +331,18 @@ export const updateTestStatus = async (data: {
 export const saveUserSelectedSubjects = async (data: {
   email: string;
   subjects: string[];
-}) => {
+}): Promise<
+  Array<{
+    pk: number;
+    skill: { name: string };
+    status: number;
+    heading?: string;
+    description?: string;
+    price?: string;
+    has_updated_price: boolean;
+    certifications: any[];
+  }>
+> => {
   let response = await fetch(`${HOST}/new-subject-flow/select-subjects`, {
     headers: {
       "Content-Type": "application/json",
@@ -342,7 +353,7 @@ export const saveUserSelectedSubjects = async (data: {
   if (response.status < 500) {
     let result = await response.json();
     if (result.status) {
-      return result.data;
+      return result.data.object_list;
     }
     return result;
   }

@@ -1,3 +1,4 @@
+import { useToast } from "@chakra-ui/toast";
 import FormWrapper from "@tuteria/shared-lib/src/components/FormWrapper";
 import { IRootStore } from "@tuteria/shared-lib/src/stores";
 import TutorPageWrapper from "@tuteria/shared-lib/src/tutor-revamp";
@@ -36,12 +37,14 @@ const stepsArray: any = [
     completed: false,
   },
   { key: "work-history", name: "Work History", completed: false },
-  { key: "subject-addition", name: "Subject Selection", completed: false },
+  { key: "subject-selection", name: "Subject Selection", completed: false },
 ];
 const TutorPageComponent: React.FC<{
   store: IRootStore;
   onTakeTest: () => any;
 }> = ({ store, onTakeTest }) => {
+  const toast = useToast();
+
   const [formIndex, setFormIndex] = useState(1);
   const [steps, setSteps] = useState<any[]>(stepsArray);
   const [activeStep, setActiveStep] = useState(store.currentEditableForm);
@@ -66,6 +69,15 @@ const TutorPageComponent: React.FC<{
     );
     scrollToId(id);
   };
+  function onError() {
+    toast({
+      title: `An error occured.`,
+      status: "error",
+      duration: 5000,
+      isClosable: true,
+      position: "top",
+    });
+  }
 
   const countries = store.locationInfo.countries.map((country) => country.name);
 
@@ -99,9 +111,15 @@ const TutorPageComponent: React.FC<{
           store={store.personalInfo}
           onSubmit={(formData: any) => {
             store.personalInfo.onFormSubmit(formData);
-            store.onFormSubmit(formData, "personal-info").then(() => {
-              handleFormSubmit("location-info", "personal-info");
-            });
+            store
+              .onFormSubmit(formData, "personal-info", "location-info")
+              .then(() => {
+                handleFormSubmit("location-info", "personal-info");
+              })
+              .catch((error) => {
+                onError();
+                throw error;
+              });
           }}
         />
 
@@ -119,9 +137,15 @@ const TutorPageComponent: React.FC<{
           ]}
           onSubmit={(formData: any) => {
             store.locationInfo.updateFields(formData);
-            store.onFormSubmit(formData, "location-info").then(() => {
-              handleFormSubmit("education-history", "location-info");
-            });
+            store
+              .onFormSubmit(formData, "location-info", "education-history")
+              .then(() => {
+                handleFormSubmit("education-history", "location-info");
+              })
+              .catch((error) => {
+                onError();
+                throw error;
+              });
           }}
         />
 
@@ -139,9 +163,15 @@ const TutorPageComponent: React.FC<{
           textData={educationHistoryData}
           completed={store.educationWorkHistory.educationCompleted}
           onSubmit={(formData: any) => {
-            store.onFormSubmit(formData, "education-history").then(() => {
-              handleFormSubmit("work-history", "education-history");
-            });
+            store
+              .onFormSubmit(formData, "education-history", "work-history")
+              .then(() => {
+                handleFormSubmit("work-history", "education-history");
+              })
+              .catch((error) => {
+                onError();
+                throw error;
+              });
           }}
         />
 
@@ -158,28 +188,36 @@ const TutorPageComponent: React.FC<{
           textData={workHistoryData}
           completed={store.educationWorkHistory.workCompleted}
           onSubmit={(formData: any) => {
-            store.onFormSubmit(formData, "work-history").then(() => {
-              handleFormSubmit("subject-addition", "work-history");
-            });
+            store
+              .onFormSubmit(formData, "work-history", "subject-selection")
+              .then(() => {
+                handleFormSubmit("subject-selection", "work-history");
+              });
           }}
         />
         <TutorSubjectsPage
           formHeader={subjectData.lockedForm.title}
           lockedDescription={subjectData.lockedForm.description}
           store={store.subject}
-          label="subject-addition"
+          label="subject-selection"
           completed={
             store.subject.tutorSubjects.length > 0 &&
-            activeStep === "subject-addition"
+            activeStep === "subject-selection"
           }
           showWelcomeModal={
-            activeStep === "subject-addition" &&
+            activeStep === "subject-selection" &&
             store.subject.tutorSubjects.length === 0
           }
           currentStep={activeStep}
           isCollapsed={false}
           onSubmit={(formData: any) => {
-            store.onFormSubmit(formData, "subject-addition").then(() => {});
+            store
+              .onFormSubmit(formData, "subject-selection")
+              .then(() => {})
+              .catch((error) => {
+                onError();
+                throw error;
+              });
           }}
           onTakeTest={onTakeTest}
         />

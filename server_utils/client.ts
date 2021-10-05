@@ -1,8 +1,11 @@
 import { ServerAdapterType } from "@tuteria/shared-lib/src/adapter";
 import storage from "@tuteria/shared-lib/src/local-storage";
 import jwt_decode from "jwt-decode";
+import { TuteriaSubjectType } from "./server";
 
 const NEW_TUTOR_TOKEN = "NEW_TUTOR_TOKEN";
+const TUTOR_QUIZZES = "TUTOR-QUIZZES";
+const TUTERIA_SUBJECT_KEY = "TUTERIA-SUBECTS";
 
 function decodeToken(existingTokenFromUrl = "", key = NEW_TUTOR_TOKEN) {
   let urlAccessToken = existingTokenFromUrl;
@@ -29,12 +32,102 @@ function cleanTutorInfo(tutor_data: any) {
   };
 }
 
+async function postFetcher(url, data = {}, auth = false) {
+  let headers: any = {
+    "Content-Type": "application/json",
+  };
+  if (auth) {
+    const tutorToken = storage.get(NEW_TUTOR_TOKEN);
+
+    headers.Authorization = `Bearer ${tutorToken}`;
+  }
+  const response: any = await fetch(url, {
+    headers,
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+  return response;
+}
+async function getFetcher(url, auth = false) {
+  let headers: any = {
+    "Content-Type": "application/json",
+  };
+  if (auth) {
+    const tutorToken = storage.get(NEW_TUTOR_TOKEN);
+
+    headers.Authorization = `Bearer ${tutorToken}`;
+  }
+  const response = await fetch(url, {
+    method: "GET",
+    headers,
+  });
+  return response;
+}
+
 export const clientAdapter: ServerAdapterType = {
   cloudinaryApiHandler: async () => {},
   uploadApiHandler: async () => {},
   deleteSubject: async () => {},
   fetchQuizQuestions: async () => {},
-  getTutorSubjects: async () => {},
+  async getTutorSubjects(subjectInfo?: TuteriaSubjectType) {
+    let tutorSubjects = [];
+    let tuteriaSubjects = [];
+    let quizzesAllowed = [];
+    try {
+      let response = await getFetcher("/api/tutors/get-tutor-subjects", true);
+      if (response.ok) {
+        let {
+          data: { skills, allowedQuizzes },
+        } = await response.json();
+        tutorSubjects = skills;
+        quizzesAllowed = allowedQuizzes;
+      }
+    } catch (error) {
+      console.log(error);
+      throw "Error fetching tutor subjects";
+    }
+    if (subjectInfo) {
+      return {
+        tutorSubejcts: tutorSubjects
+          .filter(
+            (o) => o.name.toLowerCase() === subjectInfo.name.toLowerCase()
+          )
+          .map((_tSubject) => {
+            let quizzes = subjectInfo.subjects.filter((x) =>
+              quizzesAllowed
+                .map((o) => o.name.toLowerCase())
+                .includes(x.name.toLowerCase())
+            );
+            return { ..._tSubject, quizzes };
+          }),
+        tuteriaSubjects,
+      };
+    }
+    try {
+      const tuteriaSubjectsInStorage = storage.get(TUTERIA_SUBJECT_KEY);
+      let tuteriaSubjects;
+      const tutorToken = storage.get(NEW_TUTOR_TOKEN);
+      if (Object.keys(tuteriaSubjectsInStorage).length) {
+        tuteriaSubjects = tuteriaSubjectsInStorage;
+      } else {
+        const response: any = await fetch("/api/quiz/get-tuteria-subjects", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + tutorToken,
+          },
+          method: "POST",
+          body: JSON.stringify({}),
+        });
+        const { data } = await response.json();
+        tuteriaSubjects = data;
+        storage.set(TUTERIA_SUBJECT_KEY, data);
+      }
+      return { tuteriaSubjects, tutorSubjects: [] };
+    } catch (error) {
+      throw "Failed to fetch tutor subjects";
+    }
+  },
+
   loadExistingTutorInfo: () => {
     return decodeToken();
   },
@@ -102,5 +195,19 @@ export const clientAdapter: ServerAdapterType = {
       return data;
     }
     throw "Error submitting";
+  },
+  async generateQuiz(payload: TuteriaSubjectType) {
+    const tutorToken = storage.get(NEW_TUTOR_TOKEN);
+    const response = await fetch("/api/quiz/generate", {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + tutorToken,
+      },
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    const { data } = await response.json();
+    storage.set(TUTOR_QUIZZES, data);
+    return data;
   },
 };
