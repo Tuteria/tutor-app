@@ -11,7 +11,7 @@ function decodeToken(existingTokenFromUrl = "", key = NEW_TUTOR_TOKEN) {
   let urlAccessToken = existingTokenFromUrl;
   if (!urlAccessToken) {
     //check the local storage for the token.
-    urlAccessToken = storage.get(key);
+    urlAccessToken = storage.get(key, "");
   }
   if (urlAccessToken) {
     //attempt to decode it. if successful, save it to local storage and update the store
@@ -157,7 +157,7 @@ export const clientAdapter: ServerAdapterType = {
     if (data) {
       return cleanTutorInfo(data);
     } else {
-      throw "Invalid Credential";
+      throw "Invalid Credentials";
     }
   },
   beginTutorApplication: async (data: any) => {

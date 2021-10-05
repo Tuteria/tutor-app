@@ -24,12 +24,14 @@ export default function ApplicationPage({ allCountries, allRegions }) {
     storage.set(adapter.countryKey, allCountries);
     try {
       const cleanedData = clientAdapter.validateCredentials();
+      storage.set(adapter.supportedCountriesKey, cleanedData.supportedCountries);
       store.initializeTutorData(
         allRegions,
         allCountries,
         cleanedData.supportedCountries,
         cleanedData.tutor_data
       );
+      store.fetchTutorSubjects();
       setIsLoading(false);
     } catch (error) {
       if (error === "Invalid Credentials") {
@@ -62,11 +64,12 @@ export default function ApplicationPage({ allCountries, allRegions }) {
 }
 
 export async function getStaticProps() {
-  const [allRegions, allCountries] = await Promise.all([
+  const [allRegions, allCountries, tuteriaSubjects] = await Promise.all([
     serverAdapter.getRegions(),
     serverAdapter.getCountries(),
+    serverAdapter.getTuteriaSubjects(),
   ]);
   return {
-    props: { allRegions, allCountries },
+    props: { allRegions, allCountries, tuteriaSubjects },
   };
 }
