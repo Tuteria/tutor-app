@@ -12,30 +12,32 @@ import { usePrefetchHook } from "../../server_utils/util";
 const adapter = loadAdapter(clientAdapter);
 const store = initializeStore(clientAdapter);
 
-export default function ApplicationPage({ allCountries, allRegions }) {
+export default function ApplicationPage({ allCountries, allRegions, tuteriaSubjects }) {
   const [isLoading, setIsLoading] = useState(true);
   const toast = useToast();
   const { navigate } = usePrefetchHook({
     routes: ["/login"],
   });
 
-  useEffect(() => {
-    storage.set(adapter.regionKey, allRegions);
-    storage.set(adapter.countryKey, allCountries);
+  async function initialize() {
     try {
       const cleanedData = clientAdapter.validateCredentials();
+      storage.set(adapter.regionKey, allRegions);
+      storage.set(adapter.countryKey, allCountries);
       storage.set(adapter.supportedCountriesKey, cleanedData.supportedCountries);
+      storage.set(adapter.tuteriaSubjectsKey, tuteriaSubjects);
       store.initializeTutorData(
         allRegions,
         allCountries,
         cleanedData.supportedCountries,
         cleanedData.tutor_data
       );
-      store.fetchTutorSubjects();
+      if (store.currentEditableForm === "subject-selection") {
+        await store.fetchTutorSubjects();
+      }
       setIsLoading(false);
-    } catch (error) {
+    } catch(error) {
       if (error === "Invalid Credentials") {
-        console.error(error);
         const { pathname, search } = window.location;
         navigate(`/login?next=${`${pathname}${search}`}`);
       } else {
@@ -47,7 +49,11 @@ export default function ApplicationPage({ allCountries, allRegions }) {
           position: "top",
         });
       }
-    }
+    }   
+  }
+
+  useEffect(() => {
+    initialize();
   }, []);
 
   if (isLoading) {
