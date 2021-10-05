@@ -132,9 +132,13 @@ export const clientAdapter: ServerAdapterType = {
     return decodeToken();
   },
   saveTutorInfo: async (payload) => {
+    const token = storage.get(NEW_TUTOR_TOKEN, "");
     const response = await fetch(`/api/tutors/save-tutor-info`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json" 
+      },
       body: JSON.stringify(payload),
     });
     if (response.ok) {

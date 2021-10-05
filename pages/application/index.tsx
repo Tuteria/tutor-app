@@ -23,7 +23,7 @@ export default function ApplicationPage({ allCountries, allRegions }) {
     storage.set(adapter.regionKey, allRegions);
     storage.set(adapter.countryKey, allCountries);
     try {
-      const cleanedData: any = clientAdapter.validateCredentials();
+      const cleanedData = clientAdapter.validateCredentials();
       store.initializeTutorData(
         allRegions,
         allCountries,
