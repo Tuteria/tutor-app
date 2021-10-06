@@ -5,7 +5,7 @@ import { TuteriaSubjectType } from "./server";
 
 const NEW_TUTOR_TOKEN = "NEW_TUTOR_TOKEN";
 const TUTOR_QUIZZES = "TUTOR-QUIZZES";
-const TUTERIA_SUBJECT_KEY = "TUTERIA-SUBECTS";
+const TUTERIA_SUBJECTS_KEY = "TUTERIA_SUBJECTS";
 
 function decodeToken(existingTokenFromUrl = "", key = NEW_TUTOR_TOKEN) {
   let urlAccessToken = existingTokenFromUrl;
@@ -41,7 +41,7 @@ async function postFetcher(url, data = {}, auth = false) {
 
     headers.Authorization = `Bearer ${tutorToken}`;
   }
-  const response: any = await fetch(url, {
+  const response = await fetch(url, {
     headers,
     method: "POST",
     body: JSON.stringify(data),
@@ -115,10 +115,10 @@ function buildQuizInfo(
   };
 }
 export const clientAdapter: ServerAdapterType = {
-  cloudinaryApiHandler: async () => {},
-  uploadApiHandler: async () => {},
-  deleteSubject: async () => {},
-  fetchQuizQuestions: async () => {},
+  cloudinaryApiHandler: async () => { },
+  uploadApiHandler: async () => { },
+  deleteSubject: async () => { },
+  fetchQuizQuestions: async () => { },
   async buildQuizData(
     subjectInfo: TuteriaSubjectType,
     quizzes: Array<{ subject: string; passmark: number; questions: any[] }>
@@ -162,29 +162,7 @@ export const clientAdapter: ServerAdapterType = {
       };
       return rr;
     }
-    try {
-      const tuteriaSubjectsInStorage = storage.get(TUTERIA_SUBJECT_KEY);
-      let tuteriaSubjects;
-      const tutorToken = storage.get(NEW_TUTOR_TOKEN);
-      if (Object.keys(tuteriaSubjectsInStorage).length) {
-        tuteriaSubjects = tuteriaSubjectsInStorage;
-      } else {
-        const response: any = await fetch("/api/quiz/get-tuteria-subjects", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + tutorToken,
-          },
-          method: "POST",
-          body: JSON.stringify({}),
-        });
-        const { data } = await response.json();
-        tuteriaSubjects = data;
-        storage.set(TUTERIA_SUBJECT_KEY, data);
-      }
-      return { tuteriaSubjects, tutorSubjects: [] };
-    } catch (error) {
-      throw "Failed to fetch tutor subjects";
-    }
+    return { tutorSubjects, tuteriaSubjects };
   },
 
   loadExistingTutorInfo: () => {
@@ -208,9 +186,9 @@ export const clientAdapter: ServerAdapterType = {
     }
     throw "Failed to save tutor info";
   },
-  submitSelectedSubjects: async () => {},
-  updateTutorSubjectInfo: async () => {},
-  updateUserPassword: async () => {},
+  submitSelectedSubjects: async () => { },
+  updateTutorSubjectInfo: async () => { },
+  updateUserPassword: async () => { },
   validateCredentials: () => {
     let data = decodeToken();
     if (data) {
@@ -285,4 +263,17 @@ export const clientAdapter: ServerAdapterType = {
     }
     throw "Failed to start test";
   },
+
+  getTuteriaSubjects() {
+    return storage.get(TUTERIA_SUBJECTS_KEY, []);
+  },
+
+  saveTutorSubjects: async (subjects) => {
+    const response = await postFetcher('/api/tutors/select-subjects', { subjects }, true);
+    if (response.ok) {
+      const { data } = await response.json();
+      return data;
+    }
+    throw "Failed to save tutor subjects";
+  }
 };

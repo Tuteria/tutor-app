@@ -1,7 +1,7 @@
 import { useToast } from "@chakra-ui/toast";
 import { loadAdapter } from "@tuteria/shared-lib/src/adapter";
 import { LoadingState } from "@tuteria/shared-lib/src/components/data-display/LoadingState";
-import storage from "@tuteria/shared-lib/src/storage";
+import storage from "@tuteria/shared-lib/src/local-storage";
 import { initializeStore } from "@tuteria/shared-lib/src/stores";
 import React, { useEffect, useState } from "react";
 import TutorPageComponent from "../../components/TutorPageComponent";
@@ -37,6 +37,7 @@ export default function ApplicationPage({ allCountries, allRegions, tuteriaSubje
       }
       setIsLoading(false);
     } catch(error) {
+      console.log(error);
       if (error === "Invalid Credentials") {
         const { pathname, search } = window.location;
         navigate(`/login?next=${`${pathname}${search}`}`);
