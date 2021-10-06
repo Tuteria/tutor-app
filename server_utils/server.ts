@@ -422,7 +422,8 @@ export const serverAdapter = {
         groupedGrading.failed.push({ score, skill: subject });
       }
     });
-    return await updateTestStatus(groupedGrading);
+    const response = await updateTestStatus(groupedGrading);
+    return response.testsTaken;
   },
   gradeQuiz(
     quizzes: Array<{
