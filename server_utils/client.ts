@@ -294,7 +294,7 @@ export const clientAdapter: ServerAdapterType = {
     );
     if (response.ok) {
       const { data } = await response.json();
-      return data;
+      return data.skills;
     }
     throw "Failed to save tutor subjects";
   },

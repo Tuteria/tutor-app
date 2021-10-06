@@ -92,7 +92,7 @@ export async function getTuteriaSubjectData() {
     const { category, subcategory, slug, pass_mark } = subjects.find(
       ({ tuteria_name }) => tuteria_name === subject
     );
-    return { name: subject, category, subcategory, slug, pass_mark };
+    return { name: subject, category, subcategory: [subcategory], slug, pass_mark };
   });
   let result = formattedTuteriaSubjects.map((item, i) => {
     let foundSubjects = subjects
