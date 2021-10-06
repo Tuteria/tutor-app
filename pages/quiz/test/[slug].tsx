@@ -9,6 +9,9 @@ import {
 } from "../../../server_utils/server";
 import { usePrefetchHook } from "../../../server_utils/util";
 import { LoadingState } from "@tuteria/shared-lib/src/components/data-display/LoadingState";
+import { gradeQuiz } from "@tuteria/shared-lib/src/tutor-revamp/quizzes/quiz-grader";
+import ResultsPage from "@tuteria/shared-lib/src/tutor-revamp/Results";
+import { Box } from "@chakra-ui/layout";
 
 const quizStore = QuizStore.create({}, { adapter: loadAdapter(clientAdapter) });
 
@@ -33,29 +36,37 @@ const Quiz: React.FC<{
 }> = ({ subjectInfo, quizzes }) => {
   const { navigate } = usePrefetchHook({ routes: ["/application"] });
   const [loaded, setLoaded] = React.useState(false);
+  const [completed, setCompleted] = React.useState(false);
+
   React.useEffect(() => {
     let queryParams = getQueryValues();
     let subjectsToTake = (queryParams.skills || "").split(",");
     const newSubjectInfo = {
       ...subjectInfo,
       subjects: subjectInfo.subjects.filter((o) =>
-      subjectsToTake.includes(o.url)
+        subjectsToTake.includes(o.url)
       ),
     };
     if (newSubjectInfo.subjects.length === 0) {
       navigate("/application");
     } else {
       clientAdapter.buildQuizData(newSubjectInfo, quizzes).then((quiz) => {
-        quizStore.setTestSubject(quiz.title);
-        quizStore.initializeQuiz(quiz);
-        quizStore.setSubjectsToTake(newSubjectInfo.subjects)
+        quizStore.initializeQuiz(quiz, newSubjectInfo.subjects);
         setLoaded(true);
       });
     }
   }, []);
 
-  async function onQuizSubmit(){
-    await quizStore.handleSubmission()
+  async function onQuizSubmit() {
+    let gradedResult = gradeQuiz(
+      quizzes,
+      quizStore.serverAnswerFormat,
+      quizStore.quiz.questions.length
+    );
+    let result = await quizStore.handleSubmission(gradedResult);
+    quizStore.setQuizResults(gradedResult);
+    setCompleted(true);
+    return result;
   }
 
   function redirect() {
@@ -64,7 +75,24 @@ const Quiz: React.FC<{
   if (!loaded) {
     return <LoadingState text="Loading quiz..." />;
   }
-  return <QuizPage index={0} store={quizStore} navigate={redirect} />;
+  return (
+    <Box>
+      {completed ? (
+        <ResultsPage
+          subject={subjectInfo.name}
+          quizResults={quizStore.quizResults}
+          navigate={redirect}
+        />
+      ) : (
+        <QuizPage
+          completed={completed}
+          onQuizSubmit={onQuizSubmit}
+          index={0}
+          store={quizStore}
+        />
+      )}
+    </Box>
+  );
 };
 
 export default Quiz;

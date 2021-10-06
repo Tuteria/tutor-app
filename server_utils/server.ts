@@ -22,7 +22,6 @@ import {
   getQuizzesFromSubjects,
   getLocationInfoFromSheet,
 } from "./sheetService";
-import { groupBy } from "lodash";
 import { sendClientLoginCodes } from "./email";
 
 export type TuteriaSubjectType = {
@@ -389,19 +388,8 @@ export const serverAdapter = {
         subject: string;
       }>;
     };
-    // avg_passmark: number;
-    // time_elapsed: boolean;
-    // subjects: string[];
-    // answers: Array<{ question_id: number; answer: number }>;
-    // question_count: number;
   }) {
     let grading = data.grading;
-    // let quizzes = await this.generateQuizes({
-    //   name: data,
-    //   subjects: data.subjects,
-    //   showAnswer: true,
-    // });
-    // const grading = this.gradeQuiz(quizzes, data.answers, data.question_count);
     const groupedGrading: {
       email: string;
       name?: string;
@@ -422,71 +410,7 @@ export const serverAdapter = {
         groupedGrading.failed.push({ score, skill: subject });
       }
     });
-    const response = await updateTestStatus(groupedGrading);
-    return response.testsTaken;
-  },
-  gradeQuiz(
-    quizzes: Array<{
-      subject: string;
-      questions: Array<any>;
-      passmark: number;
-    }>,
-    answers: Array<{ question_id: string; answer: number }>,
-    question_count: number
-  ): {
-    passed: boolean;
-    avgPassmark: number;
-    totalQuizGrade: number;
-    result: Array<{
-      score: number;
-      passed: boolean;
-      passmark: number;
-      subject: string;
-    }>;
-  } {
-    /**This function is an internal function, you would need to make api calls to get
-     * the quiz data.
-     */
-    let avgPassmark = sum(quizzes.map((o) => o.passmark)) / quizzes.length;
-    // group the answers into their corresponding quizes
-    let combinedQuestions = quizzes
-      .map((quiz) => {
-        return quiz.questions.map((o) => ({ ...o, subject: quiz.subject }));
-      })
-      .flat();
-    let transformedAnswers = answers.map((a) => {
-      let found = combinedQuestions.find((o) => o.id === a.question_id);
-      let isCorrect = false;
-      let subject = null;
-      if (found) {
-        isCorrect = found.answers[a.answer].correct === true;
-        subject = found.subject;
-      }
-      return { ...a, correct: isCorrect, subject };
-    });
-    let passedQuizAvg =
-      (transformedAnswers.filter((o) => o.correct).length * 100) /
-      question_count;
-    let graded = groupBy(transformedAnswers, "subject");
-    let result = {};
-    Object.keys(graded).forEach((gr) => {
-      let key = gr;
-      let quizInstance = quizzes.find((o) => o.subject === gr);
-      let value = graded[gr];
-      let score = (value.filter((o) => o.correct).length * 100) / value.length;
-
-      result[key] = {
-        score,
-        passed: score > quizInstance.passmark,
-        passmark: quizInstance.passmark,
-      };
-    });
-    return {
-      avgPassmark,
-      totalQuizGrade: passedQuizAvg,
-      result: Object.keys(result).map((o) => ({ ...result[o], subject: o })),
-      passed: passedQuizAvg > avgPassmark,
-    };
+    return await updateTestStatus(groupedGrading);
   },
 
   async sendNotification(data, kind = "email") {
@@ -521,13 +445,7 @@ export const serverAdapter = {
     const data = await saveTutorSubjectService(payload);
     return data;
   },
-  // async gradeQuiz(
-  //   answers: Array<{ question_id: string; answer: string }>,
-  //   subjects: string[]
-  // ) {
-  //   // using the subjects array passed, get the list of all
-  //   return {};
-  // },
+
   selectSubjects: async ({
     email,
     subjects,
@@ -622,7 +540,3 @@ export const serverAdapter = {
     return regions;
   },
 };
-
-function sum(array: number[]) {
-  return array.reduce((a, b) => a + b, 0);
-}
