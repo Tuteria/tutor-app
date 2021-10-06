@@ -2,6 +2,7 @@
 import React from "react";
 import Head from "next/head";
 import "react-phone-input-2/lib/style.css";
+import "katex/dist/katex.min.css";
 // import App from "next/app";
 import ZetaProvider from "@tuteria/shared-lib/src/bootstrap";
 require("react-dom");

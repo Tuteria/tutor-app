@@ -46,7 +46,6 @@ const Quiz: React.FC<{
       navigate("/application");
     } else {
       clientAdapter.buildQuizData(newSubjectInfo, quizzes).then((quiz) => {
-        // store.initializeQuizQuestions({ questions: DATA.quiz.questions });
         quizStore.setTestSubject(quiz.title);
         quizStore.initializeQuiz(quiz);
         setLoaded(true);
@@ -60,7 +59,7 @@ const Quiz: React.FC<{
   if (!loaded) {
     return <LoadingState text="Loading quiz..." />;
   }
-  return <QuizPage index={0} store={quizStore} navigate={() => {}} />;
+  return <QuizPage index={0} store={quizStore} navigate={redirect} />;
 };
 
 export default Quiz;
