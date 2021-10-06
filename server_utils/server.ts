@@ -378,22 +378,30 @@ export const serverAdapter = {
   async completeQuiz(data: {
     email: string;
     name: string;
-    avg_passmark: number;
-    time_elapsed: boolean;
-    subjects: string[];
-    answers: Array<{ question_id: number; answer: number }>;
-    question_count: number;
+    grading: {
+      passed: boolean;
+      avgPassmark: number;
+      totalQuizGrade: number;
+      result: Array<{
+        score: number;
+        passed: boolean;
+        passmark: number;
+        subject: string;
+      }>;
+    };
+    // avg_passmark: number;
+    // time_elapsed: boolean;
+    // subjects: string[];
+    // answers: Array<{ question_id: number; answer: number }>;
+    // question_count: number;
   }) {
-    const tuteriaSubjects = await this.getTuteriaSubjects();
-    const subjectsToGrade = tuteriaSubjects
-      .find((subject) => subject.name === data.name)
-      .subjects.filter((item) => data.subjects.includes(item.name));
-    let quizzes = await this.generateQuizes({
-      name: data,
-      subjects: data.subjects,
-      showAnswer: true,
-    });
-    const grading = this.gradeQuiz(quizzes, data.answers, data.question_count);
+    let grading = data.grading;
+    // let quizzes = await this.generateQuizes({
+    //   name: data,
+    //   subjects: data.subjects,
+    //   showAnswer: true,
+    // });
+    // const grading = this.gradeQuiz(quizzes, data.answers, data.question_count);
     const groupedGrading: {
       email: string;
       name?: string;
