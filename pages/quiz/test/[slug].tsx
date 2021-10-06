@@ -39,7 +39,7 @@ const Quiz: React.FC<{
     const newSubjectInfo = {
       ...subjectInfo,
       subjects: subjectInfo.subjects.filter((o) =>
-        subjectsToTake.includes(o.url)
+      subjectsToTake.includes(o.url)
       ),
     };
     if (newSubjectInfo.subjects.length === 0) {
@@ -48,6 +48,7 @@ const Quiz: React.FC<{
       clientAdapter.buildQuizData(newSubjectInfo, quizzes).then((quiz) => {
         quizStore.setTestSubject(quiz.title);
         quizStore.initializeQuiz(quiz);
+        quizStore.setSubjectsToTake(newSubjectInfo.subjects)
         setLoaded(true);
       });
     }

@@ -126,11 +126,13 @@ const fetchQuizSubjectsFromSheet = async (
     url: subject.url,
     questions: quizzes[index],
   }));
-  const result: Array<SavedQuizDataType> = await bulkCreateQuizOnBackend(quizzesData);
-  return result.map(item => ({
+  const result: Array<SavedQuizDataType> = await bulkCreateQuizOnBackend(
+    quizzesData
+  );
+  return result.map((item) => ({
     ...item,
-    questions: transformData(item.questions)
-  }))
+    questions: transformData(item.questions, true),
+  }));
 };
 
 const generateQuestionSplit = (
@@ -301,10 +303,6 @@ export const serverAdapter = {
   }) => {
     const DEFAULT_TOTAL_QUESTIONS = 30;
     const quizDataFromSheet: any = await fetchQuizSubjectsFromSheet(subjects);
-    // const quizQuestionPromises = subjects.map(({ url }) =>
-    //   getQuizQuestions(url, showAnswer)
-    // );
-    // const quizQuestions = await Promise.all(quizQuestionPromises);
     const quizQuestions = quizDataFromSheet.map(({ questions }) =>
       transformData(questions, showAnswer)
     );
@@ -312,9 +310,7 @@ export const serverAdapter = {
     let result: any;
     if (total_questions) {
       questionSplit = generateQuestionSplit(subjects.length, total_questions);
-      result = quizQuestions
-        .map((questions, index) => questions)
-        .flat();
+      result = quizQuestions.map((questions, index) => questions).flat();
     } else {
       questionSplit = generateQuestionSplit(
         subjects.length,
@@ -323,9 +319,7 @@ export const serverAdapter = {
       result = subjects.map((subject, index) => ({
         subject: subject.name,
         passmark: quizDataFromSheet[index].passmark,
-        questions: showAnswer
-          ? quizQuestions[index]
-          : quizQuestions[index],
+        questions: showAnswer ? quizQuestions[index] : quizQuestions[index],
       }));
     }
     return result;
@@ -390,6 +384,10 @@ export const serverAdapter = {
     answers: Array<{ question_id: number; answer: number }>;
     question_count: number;
   }) {
+    const tuteriaSubjects = await this.getTuteriaSubjects();
+    const subjectsToGrade = tuteriaSubjects
+      .find((subject) => subject.name === data.name)
+      .subjects.filter((item) => data.subjects.includes(item.name));
     let quizzes = await this.generateQuizes({
       name: data,
       subjects: data.subjects,
