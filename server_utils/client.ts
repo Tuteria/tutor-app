@@ -272,7 +272,7 @@ export const clientAdapter: ServerAdapterType = {
     const response = await postFetcher('/api/tutors/select-subjects', { subjects }, true);
     if (response.ok) {
       const { data } = await response.json();
-      return data;
+      return data.skills;
     }
     throw "Failed to save tutor subjects";
   }
