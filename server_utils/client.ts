@@ -1,7 +1,6 @@
 import { ServerAdapterType } from "@tuteria/shared-lib/src/adapter";
 import storage from "@tuteria/shared-lib/src/local-storage";
 import jwt_decode from "jwt-decode";
-import { beginQuiz } from "./hostService";
 import { TuteriaSubjectType } from "./server";
 
 const NEW_TUTOR_TOKEN = "NEW_TUTOR_TOKEN";
@@ -64,12 +63,69 @@ async function getFetcher(url, auth = false) {
   });
   return response;
 }
-
+const generateQuestionSplit = (
+  numOfSubjects: number,
+  total_questions: number
+): number[] => {
+  const numOfQuestions = new Array(numOfSubjects);
+  numOfQuestions.fill(0);
+  for (let i = 0; i < total_questions; i++) {
+    let pointer = i % numOfSubjects;
+    numOfQuestions[pointer] = numOfQuestions[pointer] + 1;
+  }
+  return numOfQuestions;
+};
+function buildQuizInfo(
+  subjectInfo: TuteriaSubjectType,
+  quizDataFromSheet: Array<{
+    subject: string;
+    passmark: number;
+    questions: any[];
+  }>
+) {
+  const DEFAULT_TOTAL_QUESTIONS = 30;
+  const QUIZ_DURATION = 30;
+  const QUIZ_TYPE = "Multiple choice";
+  const subjects = subjectInfo.subjects.map((o) => o.name);
+  const filteredQuizzes = quizDataFromSheet.filter((x) =>
+    subjects.includes(x.subject)
+  );
+  const questionsFromFilteredQuizzes = filteredQuizzes.map((o) => o.questions);
+  let questionSplit: number[];
+  let questions: any;
+  if (filteredQuizzes.length > 1) {
+    questionSplit = generateQuestionSplit(
+      filteredQuizzes.length,
+      DEFAULT_TOTAL_QUESTIONS
+    );
+    questions = questionsFromFilteredQuizzes
+      .map((questions, index) => questions.splice(0, questionSplit[index]))
+      .flat();
+  } else {
+    questions = questionsFromFilteredQuizzes[0];
+  }
+  let pass_mark = 70;
+  return {
+    title: subjectInfo.name,
+    slug: subjectInfo.slug,
+    pass_mark,
+    type: QUIZ_TYPE,
+    duration: QUIZ_DURATION,
+    questions,
+  };
+}
 export const clientAdapter: ServerAdapterType = {
   cloudinaryApiHandler: async () => {},
   uploadApiHandler: async () => {},
   deleteSubject: async () => {},
   fetchQuizQuestions: async () => {},
+  async buildQuizData(
+    subjectInfo: TuteriaSubjectType,
+    quizzes: Array<{ subject: string; passmark: number; questions: any[] }>
+  ) {
+    let allowedToTakeInfo = buildQuizInfo(subjectInfo, quizzes);
+    return allowedToTakeInfo;
+  },
   async getTutorSubjects(subjectInfo?: TuteriaSubjectType) {
     let tutorSubjects = [];
     let tuteriaSubjects = [];
@@ -225,8 +281,8 @@ export const clientAdapter: ServerAdapterType = {
     });
     if (response.ok) {
       const { data } = response.json();
-      return data
+      return data;
     }
-    throw "Failed to start test"
+    throw "Failed to start test";
   },
 };

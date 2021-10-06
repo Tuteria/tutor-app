@@ -212,11 +212,45 @@ function formatSubjects(subjects) {
   });
   return result;
 }
-
+function buildQuizInfo(
+  subjectInfo: TuteriaSubjectType,
+  quizDataFromSheet,
+  showAnswer = false
+) {
+  const DEFAULT_TOTAL_QUESTIONS = 30;
+  const QUIZ_DURATION = 30;
+  const QUIZ_TYPE = "Multiple choice";
+  const quizQuestions = quizDataFromSheet.map(({ questions }) =>
+    transfromData(questions, showAnswer)
+  );
+  let questionSplit: number[];
+  let questions: any;
+  if (subjectInfo.subjects.length > 1) {
+    questionSplit = generateQuestionSplit(
+      subjectInfo.subjects.length,
+      DEFAULT_TOTAL_QUESTIONS
+    );
+    questions = quizQuestions
+      .map((questions, index) => questions.splice(0, questionSplit[index]))
+      .flat();
+  } else {
+    questions = quizQuestions[0];
+  }
+  let pass_mark = 70;
+  return {
+    title: subjectInfo.name,
+    slug: subjectInfo.slug,
+    pass_mark,
+    type: QUIZ_TYPE,
+    duration: QUIZ_DURATION,
+    questions,
+  };
+}
 export const serverAdapter = {
   apiTest: API_TEST,
   bulkFetchQuizSubjectsFromSheet,
   getUserInfo,
+  getQuizzesForTuteriaSubject: fetchQuizSubjectsFromSheet,
   async saveTutorInfo(data: any, encode = false) {
     let result = await saveTutorInfoService(data);
     if (encode) {
@@ -249,6 +283,53 @@ export const serverAdapter = {
   },
   getQuizSheetData: async (subject: string) => {
     let result = await getSheetTestData(subject);
+    return result;
+  },
+  generateQuizzes: async ({
+    name,
+    subjects,
+    total_questions,
+    showAnswer = false,
+  }: {
+    name: string;
+    subjects: Array<{
+      name: string;
+      url: string;
+      test_name: string;
+      pass_mark: number;
+    }>;
+    total_questions: number;
+    showAnswer: boolean;
+  }) => {
+    const DEFAULT_TOTAL_QUESTIONS = 30;
+    const quizDataFromSheet: any = await fetchQuizSubjectsFromSheet(subjects);
+    // const quizQuestionPromises = subjects.map(({ url }) =>
+    //   getQuizQuestions(url, showAnswer)
+    // );
+    // const quizQuestions = await Promise.all(quizQuestionPromises);
+    const quizQuestions = quizDataFromSheet.map(({ questions }) =>
+      transfromData(questions, showAnswer)
+    );
+    let questionSplit: number[];
+    let result: any;
+    if (total_questions) {
+      questionSplit = generateQuestionSplit(subjects.length, total_questions);
+      result = quizQuestions
+        .map((questions, index) => questions)
+        .flat();
+    } else {
+      questionSplit = generateQuestionSplit(
+        subjects.length,
+        DEFAULT_TOTAL_QUESTIONS
+      );
+      result = subjects.map((subject, index) => ({
+        subject: subject.name,
+        passmark: quizDataFromSheet[index].passmark,
+        questions: showAnswer
+          ? quizQuestions[index]
+          : quizQuestions[index],
+      }));
+    }
     return result;
   },
   generateQuizes: async ({
