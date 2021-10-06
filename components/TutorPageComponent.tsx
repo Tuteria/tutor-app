@@ -1,7 +1,7 @@
 import { useToast } from "@chakra-ui/toast";
 import FormWrapper from "@tuteria/shared-lib/src/components/FormWrapper";
 import { IRootStore } from "@tuteria/shared-lib/src/stores";
-import { FormStepType } from "@tuteria/shared-lib/src/stores/types";
+import { FormStepType } from "@tuteria/shared-lib/src/stores";
 import TutorPageWrapper from "@tuteria/shared-lib/src/tutor-revamp";
 import educationHistoryData from "@tuteria/shared-lib/src/tutor-revamp/formData/educationHistory.json";
 import personalInfoData from "@tuteria/shared-lib/src/tutor-revamp/formData/personalInfo.json";

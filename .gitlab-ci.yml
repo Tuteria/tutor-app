@@ -4,9 +4,8 @@ services:
 
 stages:
   - build
-
 variables:
-  CONTAINER_IMAGE: registry.gitlab.com/tuteria/tutor-frontend-app/tutor-application
+  CONTAINER_IMAGE: registry.gitlab.com/tuteria/v2/tutor-frontend-app/tutor-application
 
 before_script:
   - docker login -u gbozee -p abiola2321 registry.gitlab.com
