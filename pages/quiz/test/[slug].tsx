@@ -54,6 +54,10 @@ const Quiz: React.FC<{
     }
   }, []);
 
+  async function onQuizSubmit(){
+    await quizStore.handleSubmission()
+  }
+
   function redirect() {
     navigate("/application");
   }

@@ -3,8 +3,6 @@ import storage from "@tuteria/shared-lib/src/local-storage";
 import jwt_decode from "jwt-decode";
 import { TuteriaSubjectType } from "./server";
 
-import { groupBy } from "lodash";
-
 const NEW_TUTOR_TOKEN = "NEW_TUTOR_TOKEN";
 const TUTOR_QUIZZES = "TUTOR-QUIZZES";
 const TUTERIA_SUBJECTS_KEY = "TUTERIA_SUBJECTS";
@@ -119,78 +117,11 @@ function buildQuizInfo(
     questions,
   };
 }
-function sum(array: number[]) {
-  return array.reduce((a, b) => a + b, 0);
-}
-
-function gradeQuiz(
-  quizzes: Array<{
-    subject: string;
-    questions: Array<any>;
-    passmark: number;
-  }>,
-  answers: Array<{ question_id: string; answer: number }>,
-  question_count: number
-): {
-  passed: boolean;
-  avgPassmark: number;
-  totalQuizGrade: number;
-  result: Array<{
-    score: number;
-    passed: boolean;
-    passmark: number;
-    subject: string;
-  }>;
-} {
-  /**This function is an internal function, you would need to make api calls to get
-   * the quiz data.
-   */
-  let avgPassmark = sum(quizzes.map((o) => o.passmark)) / quizzes.length;
-  // group the answers into their corresponding quizes
-  let combinedQuestions = quizzes
-    .map((quiz) => {
-      return quiz.questions.map((o) => ({ ...o, subject: quiz.subject }));
-    })
-    .flat();
-  let transformedAnswers = answers.map((a) => {
-    let found = combinedQuestions.find((o) => o.id === a.question_id);
-    let isCorrect = false;
-    let subject = null;
-    if (found) {
-      isCorrect = found.answers[a.answer].correct === true;
-      subject = found.subject;
-    }
-    return { ...a, correct: isCorrect, subject };
-  });
-  let passedQuizAvg =
-    (transformedAnswers.filter((o) => o.correct).length * 100) /
-    question_count;
-  let graded = groupBy(transformedAnswers, "subject");
-  let result = {};
-  Object.keys(graded).forEach((gr) => {
-    let key = gr;
-    let quizInstance = quizzes.find((o) => o.subject === gr);
-    let value = graded[gr];
-    let score = (value.filter((o) => o.correct).length * 100) / value.length;
-
-    result[key] = {
-      score,
-      passed: score > quizInstance.passmark,
-      passmark: quizInstance.passmark,
-    };
-  });
-  return {
-    avgPassmark,
-    totalQuizGrade: passedQuizAvg,
-    result: Object.keys(result).map((o) => ({ ...result[o], subject: o })),
-    passed: passedQuizAvg > avgPassmark,
-  };
-},
 export const clientAdapter: ServerAdapterType = {
-  cloudinaryApiHandler: async () => { },
-  uploadApiHandler: async () => { },
-  deleteSubject: async () => { },
-  fetchQuizQuestions: async () => { },
+  cloudinaryApiHandler: async () => {},
+  uploadApiHandler: async () => {},
+  deleteSubject: async () => {},
+  fetchQuizQuestions: async () => {},
   async buildQuizData(
     subjectInfo: TuteriaSubjectType,
     quizzes: Array<{ subject: string; passmark: number; questions: any[] }>
@@ -198,17 +129,20 @@ export const clientAdapter: ServerAdapterType = {
     let allowedToTakeInfo = buildQuizInfo(subjectInfo, quizzes);
     return allowedToTakeInfo;
   },
-  async gradeQuiz(quizzes:Array<{subject:string;passmark:number,questions:any}>,answers:any[],subjectInfo:TuteriaSubjectType){
-    let graded = gradeQuiz(quizzes,answers,DEFAULT_TOTAL_QUESTIONS)
-    let response = await postFetcher("/api/exam/complete",{
-      name: subjectInfo.name,
-      grading:graded
-    },true)
-    if(response.ok){
-      let result = await response.json()
-      return result.data
+  async submitQuizResults(payload) {
+    let response = await postFetcher(
+      "/api/exam/complete",
+      {
+        name: payload.name,
+        grading: payload.grading,
+      },
+      true
+    );
+    if (response.ok) {
+      let result = await response.json();
+      return result.data;
     }
-    throw "Error grading quiz"
+    throw "Error grading quiz";
   },
   async getTutorSubjects(subjectInfo?: TuteriaSubjectType) {
     let tutorSubjects = [];
@@ -270,9 +204,9 @@ export const clientAdapter: ServerAdapterType = {
     }
     throw "Failed to save tutor info";
   },
-  submitSelectedSubjects: async () => { },
-  updateTutorSubjectInfo: async () => { },
-  updateUserPassword: async () => { },
+  submitSelectedSubjects: async () => {},
+  updateTutorSubjectInfo: async () => {},
+  updateUserPassword: async () => {},
   validateCredentials: () => {
     let data = decodeToken();
     if (data) {
@@ -353,11 +287,15 @@ export const clientAdapter: ServerAdapterType = {
   },
 
   saveTutorSubjects: async (subjects) => {
-    const response = await postFetcher('/api/tutors/select-subjects', { subjects }, true);
+    const response = await postFetcher(
+      "/api/tutors/select-subjects",
+      { subjects },
+      true
+    );
     if (response.ok) {
       const { data } = await response.json();
       return data;
     }
     throw "Failed to save tutor subjects";
-  }
+  },
 };
