@@ -1,6 +1,7 @@
 import { useToast } from "@chakra-ui/toast";
 import FormWrapper from "@tuteria/shared-lib/src/components/FormWrapper";
 import { IRootStore } from "@tuteria/shared-lib/src/stores";
+import { FormStepType } from "@tuteria/shared-lib/src/stores/types";
 import TutorPageWrapper from "@tuteria/shared-lib/src/tutor-revamp";
 import educationHistoryData from "@tuteria/shared-lib/src/tutor-revamp/formData/educationHistory.json";
 import personalInfoData from "@tuteria/shared-lib/src/tutor-revamp/formData/personalInfo.json";
@@ -28,9 +29,25 @@ const TutorSubjectsPage = Dynamic(
   () => import("@tuteria/shared-lib/src/tutor-revamp/Subject")
 );
 
+const VerificationIdentity = Dynamic(
+  () => import("@tuteria/shared-lib/src/tutor-revamp/VerificationIdentity")
+);
+
+const ScheduleCard = Dynamic(
+  () => import("@tuteria/shared-lib/src/tutor-revamp/Schedule")
+);
+
+const Agreements = Dynamic(
+  () => import("@tuteria/shared-lib/src/tutor-revamp/Agreements")
+);
+const LearningProcess = Dynamic(
+  () => import("@tuteria/shared-lib/src/tutor-revamp/NewDevelopment")
+);
+
 const stepsArray: any = [
-  { key: "personal-info", name: "Personal Info", completed: false },
-  { key: "location-info", name: "Location Info", completed: false },
+  { key: "personal-info", name: "Personal Information", completed: false },
+  { key: "password-info", name: "Password Information", completed: false },
+  { key: "location-info", name: "Location Information", completed: false },
   {
     key: "education-history",
     name: "Education History",
@@ -38,7 +55,14 @@ const stepsArray: any = [
   },
   { key: "work-history", name: "Work History", completed: false },
   { key: "subject-selection", name: "Subject Selection", completed: false },
+  {
+    key: "verification-info",
+    name: "Identity Verification",
+    completed: false,
+  },
+  { key: "schedule-info", name: "Schedule Information", completed: false },
 ];
+
 const TutorPageComponent: React.FC<{
   store: IRootStore;
   onTakeTest: () => any;
@@ -53,7 +77,7 @@ const TutorPageComponent: React.FC<{
     scrollToId(activeStep);
   }, []);
 
-  const handleFormSubmit = (id, presentStep) => {
+  const handleFormSubmit = (id: FormStepType, presentStep: FormStepType) => {
     setFormIndex((index) => index + 1);
     setActiveStep(id);
     store.setEditableForm(id);
@@ -201,8 +225,11 @@ const TutorPageComponent: React.FC<{
           store={store.subject}
           label="subject-selection"
           completed={
-            store.subject.tutorSubjects.length > 0 &&
-            activeStep === "subject-selection"
+            (store.subject.tutorSubjects.length > 0 &&
+              activeStep === "subject-selection") ||
+            (store.subject.tutorSubjects.length === 0 &&
+              activeStep === "subject-selection") ||
+            store.subject.tutorSubjects.length > 0
           }
           showWelcomeModal={
             activeStep === "subject-selection" &&
@@ -210,16 +237,58 @@ const TutorPageComponent: React.FC<{
           }
           currentStep={activeStep}
           isCollapsed={false}
+          onTakeTest={onTakeTest}
           onSubmit={(formData: any) => {
             store
-              .onFormSubmit(formData, "subject-selection")
-              .then(() => {})
+              .onFormSubmit(formData, "subject-selection", "verification-info")
+              .then(() => {
+                handleFormSubmit("verification-info", "subject-selection");
+              })
               .catch((error) => {
                 onError();
                 throw error;
               });
           }}
-          onTakeTest={onTakeTest}
+          rootStore={store}
+        />
+        <VerificationIdentity
+          formHeader={"Identity Verification"}
+          lockedDescription="Verify your identity in order to complete steps"
+          label="verification-info"
+          isCollapsed={false}
+          currentStep={activeStep}
+          store={store.identity}
+          onSubmit={(formData: any) => {
+            store
+              .onFormSubmit(formData, "verification-info", "schedule-info")
+              .then(() => {
+                handleFormSubmit("schedule-info", "verification-info");
+              });
+          }}
+        />
+        <ScheduleCard
+          handleChange={() => {}}
+          formHeader={"Tutor Schedule"}
+          lockedDescription="select your teaching schedule"
+          isCollapsed={false}
+          store={store.schedule}
+          onSubmit={(formData: any) => {}}
+        />
+
+        <Agreements
+          formHeader={"Tutor Agreements"}
+          lockedDescription="Tutor agreements"
+          isCollapsed={false}
+          store={store.agreement}
+          onSubmit={(formData: any) => {}}
+        />
+
+        <LearningProcess
+          formHeader={"New development"}
+          lockedDescription="Learning process"
+          isCollapsed={false}
+          store={store.agreement}
+          onSubmit={(formData: any) => {}}
         />
       </FormWrapper>
     </TutorPageWrapper>
