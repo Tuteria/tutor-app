@@ -39,16 +39,16 @@ const Quiz: React.FC<{
     const newSubjectInfo = {
       ...subjectInfo,
       subjects: subjectInfo.subjects.filter((o) =>
-        subjectsToTake.includes(o.url)
+      subjectsToTake.includes(o.url)
       ),
     };
     if (newSubjectInfo.subjects.length === 0) {
       navigate("/application");
     } else {
       clientAdapter.buildQuizData(newSubjectInfo, quizzes).then((quiz) => {
-        // store.initializeQuizQuestions({ questions: DATA.quiz.questions });
         quizStore.setTestSubject(quiz.title);
         quizStore.initializeQuiz(quiz);
+        quizStore.setSubjectsToTake(newSubjectInfo.subjects)
         setLoaded(true);
       });
     }
@@ -60,7 +60,7 @@ const Quiz: React.FC<{
   if (!loaded) {
     return <LoadingState text="Loading quiz..." />;
   }
-  return <QuizPage index={0} store={quizStore} navigate={() => {}} />;
+  return <QuizPage index={0} store={quizStore} navigate={redirect} />;
 };
 
 export default Quiz;

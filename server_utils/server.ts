@@ -28,6 +28,7 @@ import { sendClientLoginCodes } from "./email";
 export type TuteriaSubjectType = {
   slug: string;
   name: string;
+  pass_mark: number;
   subjects: Array<{
     name: string;
     url: string;
@@ -70,49 +71,10 @@ const bulkFetchQuizSubjectsFromSheet = async (
   return rr;
 };
 
-type QuizDataType = {
-  skill: string;
-  url: string;
-  pass_mark: number;
-  questions: any;
-};
-
-type SavedQuizDataType = {
-  name: string;
-  testable: boolean;
-  quiz_url: string;
-  id: number;
-  slug: string;
-  passmark: number;
-  duration: number;
-  is_new: boolean;
-  questions: any;
-};
-
-const fetchQuizSubjectsFromSheet = async (
-  subjects: Array<{
-    name: string;
-    url: string;
-    test_name: string;
-    pass_mark: number;
-  }>
-): Promise<Array<SavedQuizDataType>> => {
-  let quizzes = await getQuizzesFromSubjects(
-    subjects.map(({ test_name }) => test_name)
-  );
-  let quizzesData = subjects.map((subject, index) => ({
-    skill: subject.name,
-    pass_mark: subject.pass_mark,
-    url: subject.url,
-    questions: quizzes[index],
-  }));
-  return await bulkCreateQuizOnBackend(quizzesData);
-};
-
-const transfromData = (data, showAnswer) =>
+const transformData = (data: any, showAnswer = false) =>
   data.map((item) => ({
     id: item.id,
-    pretext: item.pretext,
+    pretext: item.pretext || null,
     content: item.content,
     figure: item.image,
     is_latex: item.is_latex || false,
@@ -135,6 +97,44 @@ const transfromData = (data, showAnswer) =>
     }),
   }));
 
+type SavedQuizDataType = {
+  name: string;
+  testable: boolean;
+  quiz_url: string;
+  id: number;
+  slug: string;
+  passmark: number;
+  duration: number;
+  is_new: boolean;
+  questions: any;
+};
+
+const fetchQuizSubjectsFromSheet = async (
+  subjects: Array<{
+    name: string;
+    url: string;
+    test_name: string;
+    pass_mark: number;
+  }>
+): Promise<Array<any>> => {
+  let quizzes = await getQuizzesFromSubjects(
+    subjects.map(({ test_name }) => test_name)
+  );
+  let quizzesData = subjects.map((subject, index) => ({
+    skill: subject.name,
+    pass_mark: subject.pass_mark,
+    url: subject.url,
+    questions: quizzes[index],
+  }));
+  const result: Array<SavedQuizDataType> = await bulkCreateQuizOnBackend(
+    quizzesData
+  );
+  return result.map((item) => ({
+    ...item,
+    questions: transformData(item.questions, true),
+  }));
+};
+
 const generateQuestionSplit = (
   numOfSubjects: number,
   total_questions: number
@@ -150,7 +150,7 @@ const generateQuestionSplit = (
 
 const getQuizQuestions = async (subject: string, showAnswer: boolean) => {
   const questions = await getQuizData(subject);
-  return transfromData(questions, showAnswer);
+  return transformData(questions, showAnswer);
 };
 
 function verifyAccessToken(access_token, force = true, returnResult = false) {
@@ -221,7 +221,7 @@ function buildQuizInfo(
   const QUIZ_DURATION = 30;
   const QUIZ_TYPE = "Multiple choice";
   const quizQuestions = quizDataFromSheet.map(({ questions }) =>
-    transfromData(questions, showAnswer)
+    transformData(questions, showAnswer)
   );
   let questionSplit: number[];
   let questions: any;
@@ -303,20 +303,14 @@ export const serverAdapter = {
   }) => {
     const DEFAULT_TOTAL_QUESTIONS = 30;
     const quizDataFromSheet: any = await fetchQuizSubjectsFromSheet(subjects);
-    // const quizQuestionPromises = subjects.map(({ url }) =>
-    //   getQuizQuestions(url, showAnswer)
-    // );
-    // const quizQuestions = await Promise.all(quizQuestionPromises);
     const quizQuestions = quizDataFromSheet.map(({ questions }) =>
-      transfromData(questions, showAnswer)
+      transformData(questions, showAnswer)
     );
     let questionSplit: number[];
     let result: any;
     if (total_questions) {
       questionSplit = generateQuestionSplit(subjects.length, total_questions);
-      result = quizQuestions
-        .map((questions, index) => questions)
-        .flat();
+      result = quizQuestions.map((questions, index) => questions).flat();
     } else {
       questionSplit = generateQuestionSplit(
         subjects.length,
@@ -325,9 +319,7 @@ export const serverAdapter = {
       result = subjects.map((subject, index) => ({
         subject: subject.name,
         passmark: quizDataFromSheet[index].passmark,
-        questions: showAnswer
-          ? quizQuestions[index]
-          : quizQuestions[index],
+        questions: showAnswer ? quizQuestions[index] : quizQuestions[index],
       }));
     }
     return result;
@@ -355,7 +347,7 @@ export const serverAdapter = {
     const QUIZ_TYPE = "Multiple choice";
     const quizDataFromSheet: any = await fetchQuizSubjectsFromSheet(subjects);
     const quizQuestions = quizDataFromSheet.map(({ questions }) =>
-      transfromData(questions, showAnswer)
+      transformData(questions, showAnswer)
     );
     let questionSplit: number[];
     let questions: any;
@@ -392,6 +384,10 @@ export const serverAdapter = {
     answers: Array<{ question_id: number; answer: number }>;
     question_count: number;
   }) {
+    const tuteriaSubjects = await this.getTuteriaSubjects();
+    const subjectsToGrade = tuteriaSubjects
+      .find((subject) => subject.name === data.name)
+      .subjects.filter((item) => data.subjects.includes(item.name));
     let quizzes = await this.generateQuizes({
       name: data,
       subjects: data.subjects,

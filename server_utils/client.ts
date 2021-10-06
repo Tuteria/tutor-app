@@ -75,10 +75,11 @@ const generateQuestionSplit = (
   }
   return numOfQuestions;
 };
+
 function buildQuizInfo(
   subjectInfo: TuteriaSubjectType,
   quizDataFromSheet: Array<{
-    subject: string;
+    name: string;
     passmark: number;
     questions: any[];
   }>
@@ -88,10 +89,13 @@ function buildQuizInfo(
   const QUIZ_TYPE = "Multiple choice";
   const subjects = subjectInfo.subjects.map((o) => o.name);
   const filteredQuizzes = quizDataFromSheet.filter((x) =>
-    subjects.includes(x.subject)
+    subjects.includes(x.name)
   );
   const questionsFromFilteredQuizzes = filteredQuizzes.map((o) => o.questions);
-  let questionSplit: number[];
+  let questionSplit: number[] = generateQuestionSplit(
+    filteredQuizzes.length,
+    DEFAULT_TOTAL_QUESTIONS
+  );
   let questions: any;
   if (filteredQuizzes.length > 1) {
     questionSplit = generateQuestionSplit(
@@ -99,16 +103,15 @@ function buildQuizInfo(
       DEFAULT_TOTAL_QUESTIONS
     );
     questions = questionsFromFilteredQuizzes
-      .map((questions, index) => questions.splice(0, questionSplit[index]))
+      .map((questions, index) => questions.slice(0, questionSplit[index]))
       .flat();
   } else {
     questions = questionsFromFilteredQuizzes[0];
   }
-  let pass_mark = 70;
   return {
     title: subjectInfo.name,
     slug: subjectInfo.slug,
-    pass_mark,
+    pass_mark: subjectInfo.pass_mark,
     type: QUIZ_TYPE,
     duration: QUIZ_DURATION,
     questions,
