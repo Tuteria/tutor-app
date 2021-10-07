@@ -1,5 +1,5 @@
-import allCountries from "@tuteria/mobile-lib/src/data/countries.json";
-import allRegions from "@tuteria/mobile-lib/src/data/regions.json";
+import allCountries from "@tuteria/shared-lib/src/data/countries.json";
+import allRegions from "@tuteria/shared-lib/src/data/regions.json";
 
 export let HOST = process.env.HOST_ENDPOINT || "http://backup.tuteria.com:8000";
 export let DEV = (process.env.IS_DEVELOPMENT || "development") == "development";
