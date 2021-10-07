@@ -36,7 +36,7 @@ const Quiz: React.FC<{
   subjectInfo: TuteriaSubjectType;
   quizzes: any[];
 }> = ({ subjectInfo, quizzes }) => {
-  const { navigate } = usePrefetchHook({ routes: ["/application"] });
+  const { navigate } = usePrefetchHook({ routes: ["/apply"] });
   const [loaded, setLoaded] = React.useState(false);
   const [completed, setCompleted] = React.useState(false);
   const [fetchedQuizzes, setFetchedQuizzes] = React.useState(quizzes)
@@ -51,7 +51,7 @@ const Quiz: React.FC<{
       ),
     };
     if (newSubjectInfo.subjects.length === 0) {
-      navigate("/application");
+      navigate("/apply");
     } else {
       clientAdapter.buildQuizData(newSubjectInfo, quizzes).then(([quiz, quizzes]) => {
         quizStore.initializeQuiz(quiz, newSubjectInfo.subjects);
@@ -74,7 +74,7 @@ const Quiz: React.FC<{
   }
 
   function redirect() {
-    navigate("/application");
+    navigate("/apply");
   }
   if (!loaded) {
     return <LoadingState text="Loading quiz..." />;

@@ -15,3 +15,5 @@ build:
   script:
     - docker build -t $CONTAINER_IMAGE:latest .
     - docker push $CONTAINER_IMAGE:latest
+  only:
+    - develop
