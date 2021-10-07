@@ -14,19 +14,21 @@ import ResultsPage from "@tuteria/shared-lib/src/tutor-revamp/Results";
 import { Box } from "@chakra-ui/layout";
 
 const quizStore = QuizStore.create({}, { adapter: loadAdapter(clientAdapter) });
-
+function splitArrayString(query) {
+  var vars = query.split("&");
+  let result = {};
+  for (var i = 0; i < vars.length; i++) {
+    var pair = vars[i].split("=");
+    let p = decodeURIComponent(pair[0]);
+    let q = decodeURIComponent(pair[1]);
+    result[p] = q;
+  }
+  return result;
+}
 function getQueryValues(): any {
   if (typeof window !== "undefined") {
     var query = window.location.search.substring(1);
-    var vars = query.split("&");
-    let result = {};
-    for (var i = 0; i < vars.length; i++) {
-      var pair = vars[i].split("=");
-      let p = decodeURIComponent(pair[0]);
-      let q = decodeURIComponent(pair[1]);
-      result[p] = q;
-    }
-    return result;
+    return splitArrayString(query);
   }
   return {};
 }
@@ -37,6 +39,7 @@ const Quiz: React.FC<{
   const { navigate } = usePrefetchHook({ routes: ["/application"] });
   const [loaded, setLoaded] = React.useState(false);
   const [completed, setCompleted] = React.useState(false);
+  const [fetchedQuizzes, setFetchedQuizzes] = React.useState(quizzes)
 
   React.useEffect(() => {
     let queryParams = getQueryValues();
@@ -50,8 +53,9 @@ const Quiz: React.FC<{
     if (newSubjectInfo.subjects.length === 0) {
       navigate("/application");
     } else {
-      clientAdapter.buildQuizData(newSubjectInfo, quizzes).then((quiz) => {
+      clientAdapter.buildQuizData(newSubjectInfo, quizzes).then(([quiz, quizzes]) => {
         quizStore.initializeQuiz(quiz, newSubjectInfo.subjects);
+        setFetchedQuizzes(quizzes)
         setLoaded(true);
       });
     }
@@ -59,7 +63,7 @@ const Quiz: React.FC<{
 
   async function onQuizSubmit() {
     let gradedResult = gradeQuiz(
-      quizzes,
+      fetchedQuizzes,
       quizStore.serverAnswerFormat,
       quizStore.quiz.questions.length
     );
@@ -80,6 +84,7 @@ const Quiz: React.FC<{
       {completed ? (
         <ResultsPage
           subject={subjectInfo.name}
+          totalQuestions={quizStore.quiz.questions.length}
           quizResults={quizStore.quizResults}
           navigate={redirect}
         />
@@ -100,7 +105,9 @@ export default Quiz;
 export async function getStaticPaths() {
   const subjects =
     (await serverAdapter.getTuteriaSubjects()) as Array<TuteriaSubjectType>;
-  const paths = subjects.map(({ slug }) => ({ params: { slug } }));
+  const paths = subjects.map(({ slug }) => {
+    return { params: { slug } };
+  });
   return { paths, fallback: false };
 }
 
@@ -108,9 +115,13 @@ export async function getStaticProps({ params }) {
   const subjectInfo = (await serverAdapter.getTuteriaSubjects(
     params.slug
   )) as TuteriaSubjectType;
-  // const quizzes = await serverAdapter.getQuizzesForTuteriaSubject(
-  //   subjectInfo.subjects
-  // );
-  const quizzes = []
-  return { props: { subjectInfo, quizzes } };
+  let quizzes = []
+  try {
+    quizzes = await serverAdapter.getQuizzesForTuteriaSubject(
+      subjectInfo.subjects
+    );
+  } catch (error) {
+    console.log(subjectInfo.name)
+  }
+  return { props: { subjectInfo, quizzes }, revalidate: 60 };
 }

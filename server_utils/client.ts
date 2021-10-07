@@ -77,7 +77,7 @@ const generateQuestionSplit = (
 };
 
 const DEFAULT_TOTAL_QUESTIONS = 30;
-function buildQuizInfo(
+async function buildQuizInfo(
   subjectInfo: TuteriaSubjectType,
   quizDataFromSheet: Array<{
     name: string;
@@ -88,7 +88,23 @@ function buildQuizInfo(
   const QUIZ_DURATION = 30;
   const QUIZ_TYPE = "Multiple choice";
   const subjects = subjectInfo.subjects.map((o) => o.name);
-  const filteredQuizzes = quizDataFromSheet.filter((x) =>
+  let fetchedQuizzes;
+  if (quizDataFromSheet.length > 0) {
+    fetchedQuizzes = quizDataFromSheet;
+  } else {
+    const response = await postFetcher(
+      "/api/quiz/tuteria-subjects-quizzes",
+      {
+        subjects: subjectInfo.subjects,
+      },
+      true
+    );
+    if (response.ok) {
+      const { data } = await response.json();
+      fetchedQuizzes = data;
+    }
+  }
+  const filteredQuizzes = fetchedQuizzes.filter((x) =>
     subjects.includes(x.name)
   );
   const questionsFromFilteredQuizzes = filteredQuizzes.map((o) => o.questions);
@@ -108,14 +124,17 @@ function buildQuizInfo(
   } else {
     questions = questionsFromFilteredQuizzes[0];
   }
-  return {
-    title: subjectInfo.name,
-    slug: subjectInfo.slug,
-    pass_mark: subjectInfo.pass_mark,
-    type: QUIZ_TYPE,
-    duration: QUIZ_DURATION,
-    questions,
-  };
+  return [
+    {
+      title: subjectInfo.name,
+      slug: subjectInfo.slug,
+      pass_mark: subjectInfo.pass_mark,
+      type: QUIZ_TYPE,
+      duration: QUIZ_DURATION,
+      questions,
+    },
+    fetchedQuizzes,
+  ];
 }
 export const clientAdapter: ServerAdapterType = {
   cloudinaryApiHandler: async (files, progressCallBack) => {
@@ -126,10 +145,7 @@ export const clientAdapter: ServerAdapterType = {
   },
   deleteSubject: async () => {},
   async buildQuizData(subjectInfo, quizzes) {
-    let allowedToTakeInfo = buildQuizInfo(
-      subjectInfo,
-      quizzes.map((o) => ({ ...o, name: o.subject }))
-    );
+    let allowedToTakeInfo = buildQuizInfo(subjectInfo, quizzes);
     return allowedToTakeInfo;
   },
   async submitQuizResults(payload) {
