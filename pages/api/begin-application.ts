@@ -11,7 +11,7 @@ export default defaultView(async (req) => {
   const response: Response = { redirectUrl: '/application' };
   const user = serverAdapter.getUserInfo(token);
 
-  if (user && user.personalInfo.email === email) {
+  if (user && user.personalInfo?.email === email) {
     const data = await serverAdapter.getTutorInfo(email);
     response.accessToken = serverAdapter.upgradeAccessToken(data);
   } else {
