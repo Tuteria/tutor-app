@@ -8,10 +8,10 @@ type Response = {
 
 export default defaultView(async (req) => {
   const { token, email } = req.body;
-  const response: Response = { redirectUrl: '/application' };
+  const response: Response = { redirectUrl: '/apply' };
   const user = serverAdapter.getUserInfo(token);
 
-  if (user && user.personalInfo.email === email) {
+  if (user && user.personalInfo?.email === email) {
     const data = await serverAdapter.getTutorInfo(email);
     response.accessToken = serverAdapter.upgradeAccessToken(data);
   } else {
@@ -19,7 +19,7 @@ export default defaultView(async (req) => {
     if (accessToken) {
       response.accessToken = accessToken;
     } else {
-      response.redirectUrl = `login?email=${email}&next=/application`;
+      response.redirectUrl = `login?email=${email}&next=/apply`;
     }
   }
   return response;

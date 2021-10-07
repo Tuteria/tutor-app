@@ -4,10 +4,10 @@ import { LoadingState } from "@tuteria/shared-lib/src/components/data-display/Lo
 import storage from "@tuteria/shared-lib/src/local-storage";
 import { initializeStore } from "@tuteria/shared-lib/src/stores";
 import React, { useEffect, useState } from "react";
-import TutorPageComponent from "../../components/TutorPageComponent";
-import { clientAdapter } from "../../server_utils/client";
-import { serverAdapter } from "../../server_utils/server";
-import { usePrefetchHook } from "../../server_utils/util";
+import TutorPageComponent from "../components/TutorPageComponent";
+import { clientAdapter } from "../server_utils/client";
+import { serverAdapter } from "../server_utils/server";
+import { usePrefetchHook } from "../server_utils/util";
 
 const adapter = loadAdapter(clientAdapter);
 const store = initializeStore(clientAdapter);
