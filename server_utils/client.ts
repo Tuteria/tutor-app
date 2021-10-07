@@ -118,15 +118,18 @@ function buildQuizInfo(
   };
 }
 export const clientAdapter: ServerAdapterType = {
-  cloudinaryApiHandler: async () => {},
-  uploadApiHandler: async () => {},
+  cloudinaryApiHandler: async (files, progressCallBack) => {
+    return [];
+  },
+  uploadApiHandler: async (files) => {
+    return [];
+  },
   deleteSubject: async () => {},
-  fetchQuizQuestions: async () => {},
-  async buildQuizData(
-    subjectInfo: TuteriaSubjectType,
-    quizzes: Array<{ subject: string; passmark: number; questions: any[] }>
-  ) {
-    let allowedToTakeInfo = buildQuizInfo(subjectInfo, quizzes);
+  async buildQuizData(subjectInfo, quizzes) {
+    let allowedToTakeInfo = buildQuizInfo(
+      subjectInfo,
+      quizzes.map((o) => ({ ...o, name: o.subject }))
+    );
     return allowedToTakeInfo;
   },
   async submitQuizResults(payload) {

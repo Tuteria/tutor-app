@@ -513,7 +513,7 @@ export const serverAdapter = {
   },
   async getTuteriaSubjects(
     subject?: string
-  ): Promise<Array<TuteriaSubjectType> | TuteriaSubjectType> {
+  ): Promise<Array<TuteriaSubjectType> | TuteriaSubjectType | any> {
     const subjects = await getTuteriaSubjectData();
     const formattedSubjects = subjects.map((subject) => ({
       ...subject,

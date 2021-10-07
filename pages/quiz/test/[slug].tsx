@@ -15,7 +15,7 @@ import { Box } from "@chakra-ui/layout";
 
 const quizStore = QuizStore.create({}, { adapter: loadAdapter(clientAdapter) });
 
-function getQueryValues() {
+function getQueryValues(): any {
   if (typeof window !== "undefined") {
     var query = window.location.search.substring(1);
     var vars = query.split("&");
@@ -40,7 +40,7 @@ const Quiz: React.FC<{
 
   React.useEffect(() => {
     let queryParams = getQueryValues();
-    let subjectsToTake = (queryParams.skills || "").split(",");
+    let subjectsToTake = (queryParams?.skills || "").split(",");
     const newSubjectInfo = {
       ...subjectInfo,
       subjects: subjectInfo.subjects.filter((o) =>
@@ -108,8 +108,9 @@ export async function getStaticProps({ params }) {
   const subjectInfo = (await serverAdapter.getTuteriaSubjects(
     params.slug
   )) as TuteriaSubjectType;
-  const quizzes = await serverAdapter.getQuizzesForTuteriaSubject(
-    subjectInfo.subjects
-  );
+  // const quizzes = await serverAdapter.getQuizzesForTuteriaSubject(
+  //   subjectInfo.subjects
+  // );
+  const quizzes = []
   return { props: { subjectInfo, quizzes } };
 }

@@ -267,7 +267,6 @@ const TutorPageComponent: React.FC<{
           }}
         />
         <ScheduleCard
-          handleChange={() => {}}
           formHeader={"Tutor Schedule"}
           lockedDescription="select your teaching schedule"
           isCollapsed={false}

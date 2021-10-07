@@ -28,7 +28,7 @@
     "jsonwebtoken": "^8.5.1",
     "jwt-decode": "^3.1.2",
     "next-pwa": "^5.2.23",
-    "@tuteria/shared-lib": "git+https://shared_token:ZY_2UskKCcprWpixb9Vc@gitlab.com/tuteria/v2/shared-lib.git#0.0.1b",
+    "@tuteria/shared-lib": "git+https://shared_token:ZY_2UskKCcprWpixb9Vc@gitlab.com/tuteria/v2/shared-lib.git#0.0.1c",
     "next-transpile-modules": "git+https://github.com/gbozee/next-transpile-modules.git#2.3.2",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
