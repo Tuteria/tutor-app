@@ -24,7 +24,7 @@ const MyApp = ({ Component, pageProps }) => {
           />
           <meta name="description" content="Description" />
           <meta name="keywords" content="Keywords" />
-          <title>Next.js PWA Example</title>
+          <title>Tuteria Tutor Application</title>
 
           <link rel="manifest" href="/manifest.json" />
           <link
