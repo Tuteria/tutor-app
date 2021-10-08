@@ -396,13 +396,12 @@ export const serverAdapter = {
       passed: any[];
       failed: any[];
     } = {
+      name: data.name,
       email: data.email,
       passed: [],
       failed: [],
     };
-    if (grading.passed) {
-      groupedGrading.name = data.name;
-    }
+    
     grading.result.forEach(({ passed, score, subject }) => {
       if (passed) {
         groupedGrading.passed.push({ score, skill: subject });
