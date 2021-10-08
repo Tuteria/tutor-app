@@ -148,7 +148,18 @@ export const clientAdapter: ServerAdapterType = {
   uploadApiHandler: async (files) => {
     return [];
   },
-  deleteSubject: async () => {},
+  deleteSubject: async (id) => {
+    const response = await postFetcher(
+      "/api/tutors/delete-tutor-subject",
+      { id },
+      true
+    );
+    if (response.ok) {
+      const { data } = await response.json();
+      return data;
+    }
+    throw "Failed to delete tutor subjects";
+  },
   async buildQuizData(subjectInfo, quizzes) {
     let allowedToTakeInfo = buildQuizInfo(subjectInfo, quizzes);
     return allowedToTakeInfo;

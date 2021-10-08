@@ -13,6 +13,7 @@ import {
   userRetakeTest,
   fetchAllCountries,
   API_TEST,
+  deleteTutorSubject,
 } from "./hostService";
 import {
   getTuteriaSubjectList,
@@ -539,4 +540,8 @@ export const serverAdapter = {
     let { regions } = await getLocationInfoFromSheet();
     return regions;
   },
+  deleteSubject: async(data: { email: string, ids: number[] }) => {
+    const response = await deleteTutorSubject(data);
+    return response;
+  }
 };
