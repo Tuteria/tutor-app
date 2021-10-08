@@ -3,15 +3,13 @@ import QuizPage from "@tuteria/shared-lib/src/tutor-revamp/quizzes/QuizPage";
 import QuizStore from "@tuteria/shared-lib/src/tutor-revamp/quizzes/quizStore";
 import { clientAdapter } from "../../../server_utils/client";
 import { loadAdapter } from "@tuteria/shared-lib/src/adapter";
-import {
-  serverAdapter,
-  TuteriaSubjectType,
-} from "../../../server_utils/server";
+import { serverAdapter } from "../../../server_utils/server";
 import { usePrefetchHook } from "../../../server_utils/util";
 import { LoadingState } from "@tuteria/shared-lib/src/components/data-display/LoadingState";
 import { gradeQuiz } from "@tuteria/shared-lib/src/tutor-revamp/quizzes/quiz-grader";
 import ResultsPage from "@tuteria/shared-lib/src/tutor-revamp/Results";
 import { Box } from "@chakra-ui/layout";
+import { TuteriaSubjectType } from "../../../server_utils/types";
 
 const quizStore = QuizStore.create({}, { adapter: loadAdapter(clientAdapter) });
 function splitArrayString(query) {
@@ -39,7 +37,7 @@ const Quiz: React.FC<{
   const { navigate } = usePrefetchHook({ routes: ["/apply"] });
   const [loaded, setLoaded] = React.useState(false);
   const [completed, setCompleted] = React.useState(false);
-  const [fetchedQuizzes, setFetchedQuizzes] = React.useState(quizzes)
+  const [fetchedQuizzes, setFetchedQuizzes] = React.useState(quizzes);
 
   React.useEffect(() => {
     let queryParams = getQueryValues();
@@ -53,11 +51,13 @@ const Quiz: React.FC<{
     if (newSubjectInfo.subjects.length === 0) {
       navigate("/apply");
     } else {
-      clientAdapter.buildQuizData(newSubjectInfo, quizzes).then(([quiz, quizzes]) => {
-        quizStore.initializeQuiz(quiz, newSubjectInfo.subjects);
-        setFetchedQuizzes(quizzes)
-        setLoaded(true);
-      });
+      clientAdapter
+        .buildQuizData(newSubjectInfo, quizzes)
+        .then(([quiz, quizzes]) => {
+          quizStore.initializeQuiz(quiz, newSubjectInfo.subjects);
+          setFetchedQuizzes(quizzes);
+          setLoaded(true);
+        });
     }
   }, []);
 
@@ -115,13 +115,13 @@ export async function getStaticProps({ params }) {
   const subjectInfo = (await serverAdapter.getTuteriaSubjects(
     params.slug
   )) as TuteriaSubjectType;
-  let quizzes = []
+  let quizzes = [];
   try {
     quizzes = await serverAdapter.getQuizzesForTuteriaSubject(
       subjectInfo.subjects
     );
   } catch (error) {
-    console.log(subjectInfo.name)
+    console.log(subjectInfo.name);
   }
   return { props: { subjectInfo, quizzes } };
 }

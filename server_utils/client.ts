@@ -1,7 +1,7 @@
 import { ServerAdapterType } from "@tuteria/shared-lib/src/adapter";
 import storage from "@tuteria/shared-lib/src/local-storage";
 import jwt_decode from "jwt-decode";
-import { TuteriaSubjectType } from "./server";
+import { TuteriaSubjectType } from "./types";
 
 import BANK_DATA from "@tuteria/shared-lib/src/data/banks.json";
 

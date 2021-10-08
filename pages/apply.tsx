@@ -6,7 +6,7 @@ import { initializeStore } from "@tuteria/shared-lib/src/stores";
 import React, { useEffect, useState } from "react";
 import TutorPageComponent from "../components/TutorPageComponent";
 import { clientAdapter } from "../server_utils/client";
-import { serverAdapter } from "../server_utils/server";
+import { serverAdapter, TuteriaSubjectType } from "../server_utils/server";
 import { usePrefetchHook } from "../server_utils/util";
 
 const adapter = loadAdapter(clientAdapter);
@@ -15,7 +15,11 @@ const store = initializeStore(clientAdapter);
 export default function ApplicationPage({
   allCountries,
   allRegions,
-  tuteriaSubjects,
+  tuteriaSubjects = [],
+}: {
+  allCountries: any[];
+  allRegions: any[];
+  tuteriaSubjects: TuteriaSubjectType[];
 }) {
   const [isLoading, setIsLoading] = useState(true);
   const toast = useToast();
@@ -72,9 +76,13 @@ export default function ApplicationPage({
   }
   return (
     <TutorPageComponent
+      onEditSubject={(subject) => {
+        navigate(`/skills/${subject.id}`);
+      }}
       store={store}
-      onTakeTest={() => {
-        navigate(`/application/test?subject=${store.subject.testSubject}`);
+      onTakeTest={(subject) => {
+        let instance = tuteriaSubjects.find((o) => o.name === subject.name);
+        navigate(`/quiz/select-skill/${instance.slug}`);
       }}
     />
   );
