@@ -6,7 +6,8 @@ import { initializeStore } from "@tuteria/shared-lib/src/stores";
 import React, { useEffect, useState } from "react";
 import TutorPageComponent from "../components/TutorPageComponent";
 import { clientAdapter } from "../server_utils/client";
-import { serverAdapter, TuteriaSubjectType } from "../server_utils/server";
+import { serverAdapter } from "../server_utils/server";
+import { TuteriaSubjectType } from "../server_utils/types";
 import { usePrefetchHook } from "../server_utils/util";
 
 const adapter = loadAdapter(clientAdapter);
