@@ -123,5 +123,5 @@ export async function getStaticProps({ params }) {
   } catch (error) {
     console.log(subjectInfo.name)
   }
-  return { props: { subjectInfo, quizzes }, revalidate: 60 };
+  return { props: { subjectInfo, quizzes } };
 }

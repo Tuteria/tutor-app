@@ -3,6 +3,8 @@ import storage from "@tuteria/shared-lib/src/local-storage";
 import jwt_decode from "jwt-decode";
 import { TuteriaSubjectType } from "./server";
 
+import BANK_DATA from "@tuteria/shared-lib/src/data/banks.json";
+
 const NEW_TUTOR_TOKEN = "NEW_TUTOR_TOKEN";
 const TUTOR_QUIZZES = "TUTOR-QUIZZES";
 const TUTERIA_SUBJECTS_KEY = "TUTERIA_SUBJECTS";
@@ -137,6 +139,9 @@ async function buildQuizInfo(
   ];
 }
 export const clientAdapter: ServerAdapterType = {
+  fetchBanksInfo: async (countryCode) => {
+    return BANK_DATA.NG.map((o) => o.name);
+  },
   cloudinaryApiHandler: async (files, progressCallBack) => {
     return [];
   },

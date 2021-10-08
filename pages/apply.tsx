@@ -12,7 +12,11 @@ import { usePrefetchHook } from "../server_utils/util";
 const adapter = loadAdapter(clientAdapter);
 const store = initializeStore(clientAdapter);
 
-export default function ApplicationPage({ allCountries, allRegions, tuteriaSubjects }) {
+export default function ApplicationPage({
+  allCountries,
+  allRegions,
+  tuteriaSubjects,
+}) {
   const [isLoading, setIsLoading] = useState(true);
   const toast = useToast();
   const { navigate } = usePrefetchHook({
@@ -24,7 +28,10 @@ export default function ApplicationPage({ allCountries, allRegions, tuteriaSubje
       const cleanedData = clientAdapter.validateCredentials();
       storage.set(adapter.regionKey, allRegions);
       storage.set(adapter.countryKey, allCountries);
-      storage.set(adapter.supportedCountriesKey, cleanedData.supportedCountries);
+      storage.set(
+        adapter.supportedCountriesKey,
+        cleanedData.supportedCountries
+      );
       storage.set(adapter.tuteriaSubjectsKey, tuteriaSubjects);
       store.initializeTutorData(
         allRegions,
@@ -33,10 +40,13 @@ export default function ApplicationPage({ allCountries, allRegions, tuteriaSubje
         cleanedData.tutor_data
       );
       if (store.currentEditableForm === "subject-selection") {
-        await store.fetchTutorSubjects();
+        await store.subject.fetchTutorSubjects();
+      }
+      if (store.currentEditableForm === "payment-info") {
+        await store.fetchBanksInfo();
       }
       setIsLoading(false);
-    } catch(error) {
+    } catch (error) {
       console.log(error);
       if (error === "Invalid Credentials") {
         const { pathname, search } = window.location;
@@ -50,7 +60,7 @@ export default function ApplicationPage({ allCountries, allRegions, tuteriaSubje
           position: "top",
         });
       }
-    }   
+    }
   }
 
   useEffect(() => {
