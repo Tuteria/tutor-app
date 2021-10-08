@@ -491,8 +491,9 @@ export const serverAdapter = {
     // const { category, subcategory } = subjectsData.find(
     //   (subject) => item.skill.name === subject.tuteria_name
     // ) || { category: null, subcategory: null };
-    const skills = formatSubjects(response);
-    return skills;
+    // const skills = formatSubjects(response);
+    // return skills;
+    return response
     // .filter((item) => item.category);
   },
   getTutorSubjects: async (email: string) => {
