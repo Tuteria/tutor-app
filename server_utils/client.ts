@@ -124,7 +124,7 @@ async function buildQuizInfo(
       .map((questions, index) => questions.slice(0, questionSplit[index]))
       .flat();
   } else {
-    questions = questionsFromFilteredQuizzes[0];
+    questions = questionsFromFilteredQuizzes[0].slice(0, questionSplit[0]);
   }
   return [
     {

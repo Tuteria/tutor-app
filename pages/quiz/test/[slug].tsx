@@ -65,7 +65,8 @@ const Quiz: React.FC<{
     let gradedResult = gradeQuiz(
       fetchedQuizzes,
       quizStore.serverAnswerFormat,
-      quizStore.quiz.questions.length
+      quizStore.quiz.questions.length,
+      quizStore.subjectsToTake 
     );
     let result = await quizStore.handleSubmission(gradedResult);
     quizStore.setQuizResults(gradedResult);
