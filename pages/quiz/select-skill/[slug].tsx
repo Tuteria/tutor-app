@@ -3,10 +3,8 @@ import { LoadingState } from "@tuteria/shared-lib/src/components/data-display/Lo
 import QuizSelectionView from "@tuteria/shared-lib/src/tutor-revamp/QuizSelectionView";
 import React from "react";
 import { clientAdapter } from "../../../server_utils/client";
-import {
-  serverAdapter,
-  TuteriaSubjectType,
-} from "../../../server_utils/server";
+import { serverAdapter } from "../../../server_utils/server";
+import { TuteriaSubjectType } from "../../../server_utils/types";
 import { usePrefetchHook } from "../../../server_utils/util";
 
 const SelectSubjectTestPage: React.FC<{ subjectInfo: TuteriaSubjectType }> = ({
@@ -26,10 +24,10 @@ const SelectSubjectTestPage: React.FC<{ subjectInfo: TuteriaSubjectType }> = ({
       subjects: subjectInfo.subjects.filter((x) => {
         return selectedQuizzes.includes(x.name);
       }),
-    }
-    const subjects = payload.subjects.map(({url}) => url).join(',')
+    };
+    const subjects = payload.subjects.map(({ url }) => url).join(",");
     try {
-      await clientAdapter.beginQuiz({subjects: [subjectInfo.name]})
+      await clientAdapter.beginQuiz({ subjects: [subjectInfo.name] });
       navigate(`/quiz/test/${subjectInfo.slug}?skills=${subjects}`);
     } catch (error) {
       console.log(error);

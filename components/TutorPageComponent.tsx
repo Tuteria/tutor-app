@@ -46,11 +46,14 @@ const GuarantorsInfoForm = Dynamic(
   () => import("@tuteria/shared-lib/src/tutor-revamp/Guarantors")
 );
 
-const NewDevelopment = React.lazy(
+const NewDevelopment = Dynamic(
   () => import("@tuteria/shared-lib/src/tutor-revamp/NewDevelopment")
 );
-const PaymentInfo = React.lazy(
+const PaymentInfo = Dynamic(
   () => import("@tuteria/shared-lib/src/tutor-revamp/PaymentInfo")
+);
+const SpecialNeeds = Dynamic(
+  () => import("@tuteria/shared-lib/src/tutor-revamp/SpecialNeeds")
 );
 
 const stepsArray: any = [
@@ -91,7 +94,8 @@ const stepsArray: any = [
 const TutorPageComponent: React.FC<{
   store: IRootStore;
   onTakeTest: any;
-}> = ({ store, onTakeTest, ...rest }) => {
+  onEditSubject: (subject: any) => any;
+}> = ({ store, onTakeTest, onEditSubject, ...rest }) => {
   let nextStep: any;
   const toast = useToast();
 
@@ -132,6 +136,19 @@ const TutorPageComponent: React.FC<{
   }
 
   const countries = store.locationInfo.countries.map((country) => country.name);
+  // function onSubmitForm(formData: any, nextStep, currentStep, storeSubmission) {
+  //     store.personalInfo.onFormSubmit(formData);
+  //     store
+  //       .onFormSubmit(formData, currentStep, nextStep)
+  //       .then(() => {
+  //         handleFormSubmit(nextStep, currentStep);
+  //       })
+  //       .catch((error) => {
+  //         onError();
+  //         throw error;
+  //       });
+  //   }
+  // }
 
   return (
     <TutorPageWrapper
@@ -176,6 +193,21 @@ const TutorPageComponent: React.FC<{
               });
           }}
         />
+        {/* <PasswordSection
+          formHeader={"Password Information"}
+          label="password-info"
+          lockedDescription="Set your password"
+          isCollapsed={false}
+          onSubmit={(formData: any) => {
+            nextStep = "location-info";
+            store.password.onFormSubmit(formData);
+            store.onFormSubmit(formData, "password-info", nextStep).then(() => {
+              store.setPasswordStatus(true);
+              handleFormSubmit(nextStep, "password-info");
+            });
+          }}
+          store={store.password}
+        /> */}
 
         <LocationInfo
           store={store.locationInfo}
@@ -275,6 +307,7 @@ const TutorPageComponent: React.FC<{
           currentStep={activeStep}
           isCollapsed={false}
           onTakeTest={onTakeTest}
+          onEditSubject={onEditSubject}
           onSubmit={async (formData: any) => {
             nextStep = STEPS.VERIFICATION;
             return await store
@@ -420,6 +453,22 @@ const TutorPageComponent: React.FC<{
           label={STEPS.NEW_DEVELOPMENT}
           formSummary={["New development"]}
           store={store.others}
+          onSubmit={async (formData: any) => {
+            nextStep = STEPS.SPECIAL_NEEDS;
+            // store.agreement.updateFields(formData);
+            await store
+              .onFormSubmit(formData, STEPS.NEW_DEVELOPMENT, nextStep)
+              .then(() => {
+                handleFormSubmit(nextStep, STEPS.NEW_DEVELOPMENT);
+              });
+          }}
+        />
+        <SpecialNeeds
+          formHeader={"Special needs"}
+          lockedDescription="If you are specially trained to teach learners with disabilities, or if you have a disability, please let us know."
+          label={STEPS.SPECIAL_NEEDS}
+          formSummary={["New development"]}
+          store={store.teachingProfile}
           onSubmit={async (formData: any) => {
             nextStep = STEPS.SPECIAL_NEEDS;
             // store.agreement.updateFields(formData);

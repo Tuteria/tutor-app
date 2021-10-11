@@ -24,20 +24,7 @@ import {
   getLocationInfoFromSheet,
 } from "./sheetService";
 import { sendClientLoginCodes } from "./email";
-
-export type TuteriaSubjectType = {
-  slug: string;
-  name: string;
-  pass_mark: number;
-  subjects: Array<{
-    name: string;
-    url: string;
-    test_name: string;
-    pass_mark: number;
-  }>;
-  category?: string;
-  subcategory?: string;
-};
+import { TuteriaSubjectType } from "./types";
 
 const bulkFetchQuizSubjectsFromSheet = async (
   subjects: string[],
@@ -182,7 +169,19 @@ export function getUserInfo(
   return null;
 }
 
-function formatSubjects(subjects) {
+function formatSubjects(
+  subjects: {
+    status: number;
+    skill: { name: string };
+    description?: string;
+    heading?: string;
+    certifications: any[];
+    pk: any;
+    price?: any;
+    other_info?: any;
+  }[],
+  allowedQuizzes: Array<{ name: string }> = []
+) {
   const result = subjects.map((item) => {
     // const { category, subcategory } = subjectsData.find(
     //   (subject) => item.skill.name === subject.tuteria_name
@@ -194,6 +193,11 @@ function formatSubjects(subjects) {
       4: "denied",
       5: "in-progress",
     };
+    let status = mapping[item.status];
+    let exists = allowedQuizzes.find((o) => o.name === item.skill.name);
+    if (exists) {
+      status = "not-started";
+    }
     return {
       // ...item,
       id: item.pk,
@@ -202,7 +206,11 @@ function formatSubjects(subjects) {
       description: item.description,
       certifications: item.certifications,
       tuteriaStatus: item.status,
-      status: mapping[item.status],
+      status,
+      teachingStyle: item.other_info?.teachingStyle || "",
+      trackRecords: item.other_info?.trackRecords || "",
+      teachingRequirements: item.other_info?.teachingRequirements || [],
+      preliminaryQuestions: item.other_info?.preliminaryQuestions || [],
       // test_detail: test_detail.find(
       //   ({ name, testable }: any) => name === item.skill.name && testable
       // ) || null,
@@ -397,13 +405,12 @@ export const serverAdapter = {
       passed: any[];
       failed: any[];
     } = {
+      name: data.name,
       email: data.email,
       passed: [],
       failed: [],
     };
-    if (grading.passed) {
-      groupedGrading.name = data.name;
-    }
+    
     grading.result.forEach(({ passed, score, subject }) => {
       if (passed) {
         groupedGrading.passed.push({ score, skill: subject });
@@ -468,7 +475,7 @@ export const serverAdapter = {
     // const { category, subcategory } = subjectsData.find(
     //   (subject) => item.skill.name === subject.tuteria_name
     // ) || { category: null, subcategory: null };
-    const skills = formatSubjects(selectedSubjects);
+    const skills = formatSubjects(selectedSubjects, allowedQuizzes);
     return { skills, allowedQuizzes };
     // .filter((item) => item.category);
   },
@@ -492,8 +499,9 @@ export const serverAdapter = {
     // const { category, subcategory } = subjectsData.find(
     //   (subject) => item.skill.name === subject.tuteria_name
     // ) || { category: null, subcategory: null };
-    const skills = formatSubjects(response);
-    return skills;
+    // const skills = formatSubjects(response);
+    // return skills;
+    return response
     // .filter((item) => item.category);
   },
   getTutorSubjects: async (email: string) => {
@@ -508,7 +516,7 @@ export const serverAdapter = {
       fetchAllowedQuizesForUser(email),
       // getTestableSubjects(),
     ]);
-    let skills = formatSubjects(selectedSubjects);
+    let skills = formatSubjects(selectedSubjects, allowedQuizzes);
     return { skills, allowedQuizzes };
     // .filter((item) => item.category);
   },
