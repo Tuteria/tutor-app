@@ -91,7 +91,7 @@ const Quiz: React.FC<{
     window.addEventListener("popstate", handleBackButtonClick);
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
-      window.removeEventListener("unload", handleUnload);
+      // window.removeEventListener("unload", handleUnload);
       window.removeEventListener("hashchange", handleBackButtonClick);
     };
   }, []);
