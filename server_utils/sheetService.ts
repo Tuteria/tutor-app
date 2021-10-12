@@ -29,7 +29,6 @@ async function getInfoArrayFromSheet(sheet, segments) {
       throw error;
     }
   }
-  debugger;
   throw "Error fetching results";
 }
 
@@ -108,7 +107,7 @@ export async function getTuteriaSubjectData() {
   });
   let result = formattedTuteriaSubjects.map((item, i) => {
     let foundSubjects = subjects
-      .filter((o) => o.tuteria_name === item.name)
+      .filter((o) => (o.tuteria_name === item.name) && o.test_name)
       .map((x) => ({ ...x }));
     return { ...item, subjects: foundSubjects };
   });
@@ -133,7 +132,7 @@ export async function getTestableSubjects(
       });
   }
   return subjects
-    .filter((o) => o.test_name)
+    // .filter((o) => o.test_name)
     .map((data) => {
       return {
         ...data,
