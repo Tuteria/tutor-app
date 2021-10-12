@@ -8,10 +8,8 @@ import { serverAdapter } from "../../../server_utils/server";
 export default authCheck(
   async (req, userInfo) => {
     const form = formidable({ multiples: true, uploadDir: './public' });
-    const { fields, files } = await new Promise((resolve, reject) => {
-      
+    const { fields, files } = await new Promise((resolve, reject) => {  
       form.parse(req, (err, fields, files) => {
-        console.log({ fields, files });
         if (err) {
           reject(err);
         } else {
