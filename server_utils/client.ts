@@ -4,6 +4,7 @@ import jwt_decode from "jwt-decode";
 import { TuteriaSubjectType } from "./types";
 
 import BANK_DATA from "@tuteria/shared-lib/src/data/banks.json";
+import { uploadToCloudinary } from "@tuteria/shared-lib/src/utils";
 
 const NEW_TUTOR_TOKEN = "NEW_TUTOR_TOKEN";
 const TUTOR_QUIZZES = "TUTOR-QUIZZES";
@@ -142,8 +143,19 @@ export const clientAdapter: ServerAdapterType = {
   fetchBanksInfo: async (countryCode) => {
     return BANK_DATA.NG.map((o) => o.name);
   },
-  cloudinaryApiHandler: async (files, progressCallBack) => {
-    return [];
+  cloudinaryApiHandler: async (files, progressCallback) => {
+    const promises = files.map((file) =>
+      uploadToCloudinary(file, progressCallback).then((result) => {
+        let { original_filename, bytes, secure_url } = result.data;
+        let newFile = {
+          name: original_filename,
+          size: `${Math.round(bytes / 1000)}KB`,
+          url: secure_url,
+        };
+        return newFile;
+      })
+    );
+    return Promise.all(promises);
   },
   uploadApiHandler: async (files) => {
     return [];
@@ -239,9 +251,9 @@ export const clientAdapter: ServerAdapterType = {
     }
     throw "Failed to save tutor info";
   },
-  submitSelectedSubjects: async () => {},
-  updateTutorSubjectInfo: async () => {},
-  updateUserPassword: async () => {},
+  submitSelectedSubjects: async () => { },
+  updateTutorSubjectInfo: async () => { },
+  updateUserPassword: async () => { },
   validateCredentials: () => {
     let data = decodeToken();
     if (data) {
