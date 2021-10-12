@@ -6,6 +6,7 @@ let SUBJECTS_API =
 let SHEET_API = "https://sheet.tuteria.com";
 let PRICING_SHEET_API =
   "https://docs.google.com/spreadsheets/d/1BBI6HUCpHkHk_AgxBEGACpL90dV_D4mySG3-c0ewGVY/edit?usp=sharing";
+let TUTERIA_SHEET_DATA_API = "https://docs.google.com/spreadsheets/d/1JGOyiJawAegbdKQ1d1FrSzK0wh56kb0CFjG-_LjDTT4/edit?usp=sharing"
 
 async function getInfoArrayFromSheet(sheet, segments) {
   const body = {
@@ -63,6 +64,11 @@ async function getSheetAPI(params: any, path = "read-single") {
   let result = await response.json();
   return result.data;
 }
+
+async function getDataFromTuteriaSheet(){
+  // let response = await 
+}
+
 type TuteriaTestType = {
   shortName: string;
   skill: string;
@@ -92,7 +98,13 @@ export async function getTuteriaSubjectData() {
     const { category, subcategory, slug, pass_mark } = subjects.find(
       ({ tuteria_name }) => tuteria_name === subject
     );
-    return { name: subject, category, subcategory: [subcategory], slug, pass_mark };
+    return {
+      name: subject,
+      category,
+      subcategory: subcategory.trim().split(","),
+      slug,
+      pass_mark,
+    };
   });
   let result = formattedTuteriaSubjects.map((item, i) => {
     let foundSubjects = subjects
