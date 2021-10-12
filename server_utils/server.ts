@@ -25,7 +25,9 @@ import {
 } from "./sheetService";
 import { sendClientLoginCodes } from "./email";
 import { TuteriaSubjectType } from "./types";
-
+import { upload } from './cloudinary';
+import { UploadApiOptions } from 'cloudinary';
+import { File } from 'formidable';
 const bulkFetchQuizSubjectsFromSheet = async (
   subjects: string[],
   create = false
@@ -551,5 +553,11 @@ export const serverAdapter = {
   deleteSubject: async(data: { email: string, ids: number[] }) => {
     const response = await deleteTutorSubject(data);
     return response;
+  },
+  uploadMedia: async(files: File[], options: UploadApiOptions) => {
+    const data = await Promise.all(files.map(({ path }) => {
+      return upload(path, options);
+    }));
+    return data;
   }
 };

@@ -32,7 +32,7 @@ export const defaultView = (
 export const authCheck = (
   handler: (
     req: NextApiRequest,
-    userInfo: { personalInfo: { email: string } },
+    userInfo: { slug: string, personalInfo: { email: string } },
     method?: string
   ) => Promise<any>,
   options: {

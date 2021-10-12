@@ -157,8 +157,24 @@ export const clientAdapter: ServerAdapterType = {
     );
     return Promise.all(promises);
   },
-  uploadApiHandler: async (files) => {
-    return [];
+  uploadApiHandler: async (files, { folder, unique = false}) => {
+    const body = new FormData();
+    files.forEach((file) => body.append('media', file));
+    body.append('folder', folder);
+    body.append('unique', String(unique));
+    const response = await fetch('/api/tutors/upload-media', {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${storage.get(NEW_TUTOR_TOKEN, "")}`,
+      },
+      body
+    });
+
+    if (response.ok) {
+      const { data } = await response.json();
+      return data;
+    }
+    throw "Failed to upload media";
   },
   deleteSubject: async (id) => {
     const response = await postFetcher(

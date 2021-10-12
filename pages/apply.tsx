@@ -42,7 +42,7 @@ export default function ApplicationPage({
         allRegions,
         allCountries,
         cleanedData.supportedCountries,
-        cleanedData.tutor_data
+        { ...cleanedData.tutor_data, currentEditableForm: "verification-info" }
       );
       if (store.currentEditableForm === "subject-selection") {
         await store.subject.fetchTutorSubjects();
