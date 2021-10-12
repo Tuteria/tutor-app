@@ -341,6 +341,7 @@ export const saveUserSelectedSubjects = async (data: {
     price?: string;
     has_updated_price: boolean;
     certifications: any[];
+    sittings: any[];
   }>
 > => {
   let response = await fetch(`${HOST}/new-subject-flow/select-subjects`, {

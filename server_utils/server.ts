@@ -104,10 +104,14 @@ const fetchQuizSubjectsFromSheet = async (
     url: string;
     test_name: string;
     pass_mark: number;
+    test_sheet_id?: number;
   }>
 ): Promise<Array<any>> => {
   let quizzes = await getQuizzesFromSubjects(
-    subjects.map(({ test_name }) => test_name)
+    subjects.map(({ test_name, test_sheet_id }) => ({
+      test_name,
+      test_sheet_id,
+    }))
   );
   let quizzesData = subjects.map((subject, index) => ({
     skill: subject.name,
@@ -181,6 +185,7 @@ function formatSubjects(
     pk: any;
     price?: any;
     other_info?: any;
+    sittings: any[]
   }[],
   allowedQuizzes: Array<{ name: string }> = []
 ) {
@@ -213,6 +218,7 @@ function formatSubjects(
       trackRecords: item.other_info?.trackRecords || "",
       teachingRequirements: item.other_info?.teachingRequirements || [],
       preliminaryQuestions: item.other_info?.preliminaryQuestions || [],
+      canTakeTest: item.sittings.length === 0 && (item.status === 3 || item.status === 5)
       // test_detail: test_detail.find(
       //   ({ name, testable }: any) => name === item.skill.name && testable
       // ) || null,
@@ -222,40 +228,7 @@ function formatSubjects(
   });
   return result;
 }
-function buildQuizInfo(
-  subjectInfo: TuteriaSubjectType,
-  quizDataFromSheet,
-  showAnswer = false
-) {
-  const DEFAULT_TOTAL_QUESTIONS = 30;
-  const QUIZ_DURATION = 30;
-  const QUIZ_TYPE = "Multiple choice";
-  const quizQuestions = quizDataFromSheet.map(({ questions }) =>
-    transformData(questions, showAnswer)
-  );
-  let questionSplit: number[];
-  let questions: any;
-  if (subjectInfo.subjects.length > 1) {
-    questionSplit = generateQuestionSplit(
-      subjectInfo.subjects.length,
-      DEFAULT_TOTAL_QUESTIONS
-    );
-    questions = quizQuestions
-      .map((questions, index) => questions.splice(0, questionSplit[index]))
-      .flat();
-  } else {
-    questions = quizQuestions[0];
-  }
-  let pass_mark = 70;
-  return {
-    title: subjectInfo.name,
-    slug: subjectInfo.slug,
-    pass_mark,
-    type: QUIZ_TYPE,
-    duration: QUIZ_DURATION,
-    questions,
-  };
-}
+
 export const serverAdapter = {
   apiTest: API_TEST,
   bulkFetchQuizSubjectsFromSheet,
@@ -307,15 +280,17 @@ export const serverAdapter = {
       url: string;
       test_name: string;
       pass_mark: number;
+      test_sheet_id: number;
     }>;
     total_questions: number;
     showAnswer: boolean;
   }) => {
     const DEFAULT_TOTAL_QUESTIONS = 30;
     const quizDataFromSheet: any = await fetchQuizSubjectsFromSheet(subjects);
-    const quizQuestions = quizDataFromSheet.map(({ questions }) =>
-      transformData(questions, showAnswer)
-    );
+    const quizQuestions = quizDataFromSheet.map(({ questions }) => {
+      return questions;
+      // return transformData(questions, showAnswer);
+    });
     let questionSplit: number[];
     let result: any;
     if (total_questions) {
@@ -349,6 +324,7 @@ export const serverAdapter = {
       url: string;
       test_name: string;
       pass_mark: number;
+      test_sheet_id?: number;
     }>;
     showAnswer: boolean;
   }) => {
@@ -412,7 +388,7 @@ export const serverAdapter = {
       passed: [],
       failed: [],
     };
-    
+
     grading.result.forEach(({ passed, score, subject }) => {
       if (passed) {
         groupedGrading.passed.push({ score, skill: subject });
@@ -503,7 +479,7 @@ export const serverAdapter = {
     // ) || { category: null, subcategory: null };
     // const skills = formatSubjects(response);
     // return skills;
-    return response
+    return response;
     // .filter((item) => item.category);
   },
   getTutorSubjects: async (email: string) => {
@@ -529,11 +505,12 @@ export const serverAdapter = {
     const formattedSubjects = subjects.map((subject) => ({
       ...subject,
       subjects: subject.subjects.map(
-        ({ shortName, url, test_name, pass_mark }) => ({
+        ({ shortName, url, test_name, pass_mark, testSheetID }) => ({
           name: shortName,
           url,
           test_name,
           pass_mark,
+          test_sheet_id: testSheetID,
         })
       ),
     }));

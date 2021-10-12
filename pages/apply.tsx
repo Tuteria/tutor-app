@@ -3,6 +3,7 @@ import { loadAdapter } from "@tuteria/shared-lib/src/adapter";
 import { LoadingState } from "@tuteria/shared-lib/src/components/data-display/LoadingState";
 import storage from "@tuteria/shared-lib/src/local-storage";
 import { initializeStore } from "@tuteria/shared-lib/src/stores";
+import { STEPS } from "@tuteria/shared-lib/src/stores/rootStore";
 import React, { useEffect, useState } from "react";
 import TutorPageComponent from "../components/TutorPageComponent";
 import { clientAdapter } from "../server_utils/client";
@@ -42,7 +43,7 @@ export default function ApplicationPage({
         allRegions,
         allCountries,
         cleanedData.supportedCountries,
-        { ...cleanedData.tutor_data, currentEditableForm: "verification-info" }
+        {...cleanedData.tutor_data, currentEditableForm:STEPS.SUBJECT_SELECTION}
       );
       if (store.currentEditableForm === "subject-selection") {
         await store.subject.fetchTutorSubjects();

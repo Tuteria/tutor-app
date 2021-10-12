@@ -61,12 +61,47 @@ const Quiz: React.FC<{
     }
   }, []);
 
+  const handleBeforeUnload = (event) => {
+    const e = event || window.event;
+    e.preventDefault();
+    if (e) {
+      e.returnValue = "";
+    }
+    return "";
+  };
+
+  const handleUnload = async (event) => {
+    await onQuizSubmit();
+  };
+  
+  const handleBackButtonClick = async () => {
+    const reply = confirm("You pressed a Back button! Are you sure?!");
+    if (reply == true) {
+      await onQuizSubmit();
+      history.back();
+    } else {
+      history.pushState(null, null, window.location.pathname);
+    }
+    history.pushState(null, null, window.location.pathname);
+  };
+
+  React.useEffect(() => {
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("unload", handleUnload);
+    window.addEventListener("popstate", handleBackButtonClick);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      // window.removeEventListener("unload", handleUnload);
+      window.removeEventListener("hashchange", handleBackButtonClick);
+    };
+  }, []);
+
   async function onQuizSubmit() {
     let gradedResult = gradeQuiz(
       fetchedQuizzes,
       quizStore.serverAnswerFormat,
       quizStore.quiz.questions.length,
-      quizStore.subjectsToTake 
+      quizStore.subjectsToTake
     );
     let result = await quizStore.handleSubmission(gradedResult);
     quizStore.setQuizResults(gradedResult);
