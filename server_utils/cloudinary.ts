@@ -19,3 +19,12 @@ export function upload(filePath: string, options: UploadApiOptions) {
     })
   })
 }
+
+export function destroy(publicId: string, options: UploadApiOptions) {
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader.destroy(publicId, { resource_type: 'auto', ...options}, (err, result) => {
+      if (err) { reject(err) }
+      else { resolve(result) }
+    });
+  })
+}
