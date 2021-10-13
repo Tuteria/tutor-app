@@ -45,11 +45,13 @@ export default function ApplicationPage({
         cleanedData.supportedCountries,
         {...cleanedData.tutor_data, currentEditableForm:STEPS.SUBJECT_SELECTION}
       );
-      if (store.currentEditableForm === "subject-selection") {
-        await store.subject.fetchTutorSubjects();
-      }
-      if (store.currentEditableForm === "payment-info") {
-        await store.fetchBanksInfo();
+      if (!store.completed) {
+        if (store.currentEditableForm === "subject-selection") {
+          await store.subject.fetchTutorSubjects();
+        }
+        else if (store.currentEditableForm === "payment-info") {
+          await store.fetchBanksInfo();
+        }
       }
       setIsLoading(false);
     } catch (error) {

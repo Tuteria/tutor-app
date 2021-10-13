@@ -20,10 +20,11 @@ export default authCheck(
     });
     tempFiles = tempFiles.concat(files.media);
     const options: UploadApiOptions = { folder: fields.folder as string };
-    if (JSON.parse(fields.unique as string)) {
-      options.public_id = userInfo.slug;
+    if (fields.publicId) {
+      options.public_id = fields.publicId as string;
     }
-    const data = await serverAdapter.uploadMedia(tempFiles, options);
+    const transform = fields.transform ? fields.transform.includes('true'.toLowerCase()) : false;
+    const data = await serverAdapter.uploadMedia(tempFiles, options, transform);
     return data;
   },
   {

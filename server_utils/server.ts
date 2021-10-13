@@ -531,9 +531,9 @@ export const serverAdapter = {
     const response = await deleteTutorSubject(data);
     return response;
   },
-  uploadMedia: async(files: File[], options: UploadApiOptions) => {
+  uploadMedia: async(files: File[], options: UploadApiOptions, transform: boolean) => {
     const data = await Promise.all(files.map(({ path }) => {
-      return upload(path, options);
+      return upload(path, options, transform);
     }));
     return data;
   }

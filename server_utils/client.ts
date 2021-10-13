@@ -161,7 +161,6 @@ export const clientAdapter: ServerAdapterType = {
     const body = new FormData();
     files.forEach((file) => body.append('media', file));
     body.append('folder', folder);
-    body.append('unique', String(unique));
     const response = await fetch('/api/tutors/upload-media', {
       method: 'POST',
       headers: {
@@ -175,6 +174,32 @@ export const clientAdapter: ServerAdapterType = {
       return data;
     }
     throw "Failed to upload media";
+  },
+  async uploadAndVerifyProfile(file) {
+    const { slug }: any = decodeToken();
+    const formData = new FormData();
+    formData.append('media', file);
+    formData.append('folder', 'profile_pics');
+    formData.append('publicId', `${slug}-profile`);
+    formData.append('transform', 'true');
+    const response = await fetch('/api/tutors/upload-media', {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${storage.get(NEW_TUTOR_TOKEN, "")}`,
+      },
+      body: formData
+    });
+
+    if (response.ok) {
+      const { data } = await response.json();
+      const [image] = data;
+      return {
+        profile_id: image.public_id,
+        url: image.url,
+        quality: image.quality,
+      }
+    }
+    throw "Failed to upload profile pic";
   },
   deleteSubject: async (id) => {
     const response = await postFetcher(
