@@ -138,6 +138,7 @@ async function buildQuizInfo(
     fetchedQuizzes,
   ];
 }
+
 export const clientAdapter: ServerAdapterType = {
   fetchBanksInfo: async (countryCode) => {
     return BANK_DATA.NG.map((o) => o.name);
@@ -229,7 +230,6 @@ export const clientAdapter: ServerAdapterType = {
     throw "Failed to save tutor info";
   },
   submitSelectedSubjects: async () => {},
-  updateTutorSubjectInfo: async () => {},
   updateUserPassword: async () => {},
   validateCredentials: () => {
     let data = decodeToken();
@@ -321,5 +321,39 @@ export const clientAdapter: ServerAdapterType = {
       return data.skills;
     }
     throw "Failed to save tutor subjects";
+  },
+  updateTutorSubjectInfo: async (subject) => {
+    let mapping = {
+      pending: 1,
+      active: 2,
+      suspended: 3,
+      denied: 4,
+      "in-progress": 5,
+    };
+    const payload = {
+      pk: subject.id,
+      skill: { name: subject.name },
+      status: mapping[subject.status],
+      heading: subject.title,
+      description: subject.description,
+      certifications: subject.certifications,
+      price: subject.price,
+      other_info: {
+        teachingStyle: subject.teachingStyle,
+        teachingRequirements: subject.teachingRequirements,
+        preliminaryQuestions: subject.preliminaryQuestions,
+        trackRecords: subject.trackRecords,
+      },
+    };
+    const response = await postFetcher(
+      "/api/tutors/save-subject-info",
+      payload,
+      true
+    );
+    if (response.ok) {
+      const { data } = await response.json();
+      return data;
+    }
+    throw "Failed to save subject details";
   },
 };

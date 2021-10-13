@@ -13,6 +13,7 @@ import {
   userRetakeTest,
   fetchAllCountries,
   API_TEST,
+  saveTutorSubjectInfo,
 } from "./hostService";
 import {
   getTuteriaSubjectList,
@@ -182,7 +183,7 @@ function formatSubjects(
     pk: any;
     price?: any;
     other_info?: any;
-    sittings: any[]
+    sittings: any[];
   }[],
   allowedQuizzes: Array<{ name: string }> = []
 ) {
@@ -215,7 +216,8 @@ function formatSubjects(
       trackRecords: item.other_info?.trackRecords || "",
       teachingRequirements: item.other_info?.teachingRequirements || [],
       preliminaryQuestions: item.other_info?.preliminaryQuestions || [],
-      canTakeTest: item.sittings.length === 0 && (item.status === 3 || item.status === 5)
+      canTakeTest:
+        item.sittings.length === 0 && (item.status === 3 || item.status === 5),
       // test_detail: test_detail.find(
       //   ({ name, testable }: any) => name === item.skill.name && testable
       // ) || null,
@@ -523,5 +525,9 @@ export const serverAdapter = {
   getRegions: async () => {
     let { regions } = await getLocationInfoFromSheet();
     return regions;
+  },
+  saveTutorSubjectDetails: async (subject: any) => {
+    const result = await saveTutorSubjectInfo(subject)
+    return result
   },
 };

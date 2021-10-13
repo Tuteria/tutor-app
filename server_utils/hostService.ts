@@ -387,3 +387,26 @@ export async function fetchAllCountries() {
   let allCountries = countryData.default;
   return allCountries;
 }
+
+export async function saveTutorSubjectInfo(subject: {
+  pk: number;
+  skill: {name: string};
+  heading: string;
+  description: string;
+  price: number;
+  teachingRequirements: string[];
+  certifications: { award_name: string; award_institution: string };
+}) {
+  let response = await fetch(`${HOST}/new-flow/save-tutor-subjects`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(subject),
+  });
+  if (response.status < 400) {
+    let data = await response.json();
+    return data.data;
+  }
+  throw new Error("Error saving subject details");
+}

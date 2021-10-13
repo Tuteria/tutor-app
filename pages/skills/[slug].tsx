@@ -6,7 +6,6 @@ import { useRouter } from "next/router";
 import React from "react";
 import { clientAdapter } from "../../server_utils/client";
 
-const adapter = loadAdapter(clientAdapter);
 const store = initializeStore(clientAdapter);
 
 const SubjectDetail = () => {
