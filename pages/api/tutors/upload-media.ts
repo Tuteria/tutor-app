@@ -1,14 +1,15 @@
-import formidable from "formidable";
-import path from 'path';
+import fs from 'fs';
+import formidable, { Files, File, Fields } from "formidable";
 import { authCheck } from "../../../middlewares";
 import { serverAdapter } from "../../../server_utils/server";
+import { UploadApiOptions } from 'cloudinary';
 
-// to use this middleware, you just need to return the result of the response
-// if there is an error, ensure that it is thrown with the error message to be displayed
+let tempFiles: File[] = [];
+
 export default authCheck(
   async (req, userInfo) => {
-    const form = formidable({ multiples: true, uploadDir: './public' });
-    const { fields, files } = await new Promise((resolve, reject) => {  
+    const form = formidable({ multiples: true, uploadDir: './public', keepExtensions: true });
+    const { fields, files }: { files: Files, fields: Fields } = await new Promise((resolve, reject) => {
       form.parse(req, (err, fields, files) => {
         if (err) {
           reject(err);
@@ -17,20 +18,20 @@ export default authCheck(
         }
       });
     });
-    const options: any = { folder: fields.folder };
-    if (JSON.parse(fields.unique)) {
+    tempFiles = tempFiles.concat(files.media);
+    const options: UploadApiOptions = { folder: fields.folder as string };
+    if (JSON.parse(fields.unique as string)) {
       options.public_id = userInfo.slug;
     }
-    let data: any;
-    if (Array.isArray(files.media)) {
-      data = await Promise.all(files.media.map(({ path }) => serverAdapter.uploadMedia(path, options)));
-    } else {
-      data = await serverAdapter.uploadMedia([files.media], options);
-    }
+    const data = await serverAdapter.uploadMedia(tempFiles, options);
     return data;
   },
-  // this is only used when testing the apis.
-  { method: "POST" }
+  {
+    method: "POST",
+    afterResponse: async () => {
+      Promise.all(tempFiles.map(({ path }) => fs.promises.unlink(path)));
+    }
+  }
 );
 
 export const config = {

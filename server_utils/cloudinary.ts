@@ -10,7 +10,7 @@ cloudinary.config({
 
 export function upload(filePath: string, options: UploadApiOptions) {
   return new Promise((resolve, reject) => {
-    cloudinary.uploader.upload(filePath, { resource_type: 'auto', ...options }, (err, response) => {
+    cloudinary.uploader.upload(filePath, { resource_type: 'auto', quality_analysis: true, ...options }, (err, response) => {
       if (err) {
         reject(err);
       } else {
