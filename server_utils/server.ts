@@ -209,7 +209,12 @@ function formatSubjects(
       name: item.skill.name,
       title: item.heading || "",
       description: item.description,
-      certifications: item.certifications,
+      certifications: item.certifications.map(
+        ({ award_name, award_institution }) => ({
+          name: award_name,
+          institution: award_institution,
+        })
+      ),
       tuteriaStatus: item.status,
       status,
       teachingStyle: item.other_info?.teachingStyle || "",
@@ -527,7 +532,7 @@ export const serverAdapter = {
     return regions;
   },
   saveTutorSubjectDetails: async (subject: any) => {
-    const result = await saveTutorSubjectInfo(subject)
-    return result
+    const result = await saveTutorSubjectInfo(subject);
+    return result;
   },
 };

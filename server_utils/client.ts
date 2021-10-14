@@ -8,6 +8,7 @@ import BANK_DATA from "@tuteria/shared-lib/src/data/banks.json";
 const NEW_TUTOR_TOKEN = "NEW_TUTOR_TOKEN";
 const TUTOR_QUIZZES = "TUTOR-QUIZZES";
 const TUTERIA_SUBJECTS_KEY = "TUTERIA_SUBJECTS";
+const TUTOR_SUBJECTS = "TUTOR_SUBJECTS"
 
 function decodeToken(existingTokenFromUrl = "", key = NEW_TUTOR_TOKEN) {
   let urlAccessToken = existingTokenFromUrl;
@@ -187,6 +188,13 @@ export const clientAdapter: ServerAdapterType = {
       throw "Error fetching tutor subjects";
     }
     if (subjectInfo) {
+      if (subjectInfo?.pk) {
+        storage.set(TUTOR_SUBJECTS, tutorSubjects)
+        const foundTutorSubject = tutorSubjects.find(
+          (subject) => subject.id === subjectInfo.pk
+        );
+        return { tutorSubjects: [foundTutorSubject] };
+      }
       const rr = {
         tutorSubjects: tutorSubjects
           .filter(
@@ -210,6 +218,10 @@ export const clientAdapter: ServerAdapterType = {
 
   loadExistingTutorInfo: () => {
     return decodeToken();
+  },
+  loadExistingSubject(subject_id) {
+    const tutorSubjects = storage.get(TUTOR_SUBJECTS);
+    return tutorSubjects.find(({id}) => id === subject_id)
   },
   saveTutorInfo: async (payload) => {
     const token = storage.get(NEW_TUTOR_TOKEN, "");
@@ -322,32 +334,10 @@ export const clientAdapter: ServerAdapterType = {
     }
     throw "Failed to save tutor subjects";
   },
-  updateTutorSubjectInfo: async (subject) => {
-    let mapping = {
-      pending: 1,
-      active: 2,
-      suspended: 3,
-      denied: 4,
-      "in-progress": 5,
-    };
-    const payload = {
-      pk: subject.id,
-      skill: { name: subject.name },
-      status: mapping[subject.status],
-      heading: subject.title,
-      description: subject.description,
-      certifications: subject.certifications,
-      price: subject.price,
-      other_info: {
-        teachingStyle: subject.teachingStyle,
-        teachingRequirements: subject.teachingRequirements,
-        preliminaryQuestions: subject.preliminaryQuestions,
-        trackRecords: subject.trackRecords,
-      },
-    };
+  updateTutorSubjectInfo: async (subject, subject_id) => {
     const response = await postFetcher(
       "/api/tutors/save-subject-info",
-      payload,
+      {pk: subject_id, ...subject},
       true
     );
     if (response.ok) {
