@@ -26,7 +26,7 @@ export default function ApplicationPage({
   const [isLoading, setIsLoading] = useState(true);
   const toast = useToast();
   const { navigate } = usePrefetchHook({
-    routes: ["/login"],
+    routes: ["/login", "/complete"],
   });
 
   async function initialize() {
@@ -39,21 +39,20 @@ export default function ApplicationPage({
         cleanedData.supportedCountries
       );
       storage.set(adapter.tuteriaSubjectsKey, tuteriaSubjects);
-      store.initializeTutorData(
+      await store.initializeTutorData(
         allRegions,
         allCountries,
         cleanedData.supportedCountries,
-        {...cleanedData.tutor_data, currentEditableForm:STEPS.SUBJECT_SELECTION}
+        {
+          ...cleanedData.tutor_data,
+          currentEditableForm: STEPS.VERIFICATION,
+        }
       );
       if (!store.completed) {
-        if (store.currentEditableForm === "subject-selection") {
-          await store.subject.fetchTutorSubjects();
-        }
-        else if (store.currentEditableForm === "payment-info") {
-          await store.fetchBanksInfo();
-        }
+        setIsLoading(false);
+      } else {
+        navigate("/complete");
       }
-      setIsLoading(false);
     } catch (error) {
       console.log(error);
       if (error === "Invalid Credentials") {
