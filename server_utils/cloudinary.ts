@@ -22,13 +22,14 @@ function transformImage(publicId: string) {
 
 export function upload(filePath: string, options: UploadApiOptions, transform: boolean) {
   return new Promise((resolve, reject) => {
-    cloudinary.uploader.upload(filePath, { resource_type: 'auto', quality_analysis: true, ...options }, (err, { public_id, secure_url, quality_analysis }) => {
+    cloudinary.uploader.upload(filePath, { resource_type: 'auto', quality_analysis: true, ...options }, (err, { bytes, public_id, secure_url, quality_analysis }) => {
       if (err) {
         reject(err);
       } else {
         const quality = quality_analysis?.focus >= 0.5;
         const response = {
           public_id,
+          bytes,
           url: secure_url,
           quality,
         }

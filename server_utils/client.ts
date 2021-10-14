@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { ServerAdapterType } from "@tuteria/shared-lib/src/adapter";
 import storage from "@tuteria/shared-lib/src/local-storage";
 import session from "@tuteria/shared-lib/src/storage"
@@ -5,7 +6,6 @@ import jwt_decode from "jwt-decode";
 import { TuteriaSubjectType } from "./types";
 
 import BANK_DATA from "@tuteria/shared-lib/src/data/banks.json";
-import { uploadToCloudinary } from "@tuteria/shared-lib/src/utils";
 
 const NEW_TUTOR_TOKEN = "NEW_TUTOR_TOKEN";
 const TUTOR_QUIZZES = "TUTOR-QUIZZES";
@@ -155,18 +155,26 @@ export const clientAdapter: ServerAdapterType = {
     return BANK_DATA.NG.map((o) => o.name);
   },
   cloudinaryApiHandler: async (files, progressCallback) => {
-    const promises = files.map((file) =>
-      uploadToCloudinary(file, progressCallback).then((result) => {
-        let { original_filename, bytes, secure_url } = result.data;
-        let newFile = {
-          name: original_filename,
-          size: `${Math.round(bytes / 1000)}KB`,
-          url: secure_url,
-        };
-        return newFile;
-      })
-    );
-    return Promise.all(promises);
+    const formData = new FormData();
+    files.forEach((file) => formData.append('media', file));
+    formData.append('folder', 'identity');
+    const { data: response } = await axios.post('/api/tutors/upload-media', formData, {
+      headers: {
+        Authorization: `Bearer ${session.get(NEW_TUTOR_TOKEN, "")}`,
+        "X-Requested-With": "XMLHttpRequest"
+      },
+      onDownloadProgress(progressEvent) {
+        const percentCompleted = Math.floor(
+          (progressEvent.loaded * 100) / progressEvent.total
+        );
+        progressCallback(percentCompleted);
+      }
+    });
+    response.data.forEach((item) => {
+      item.name = item.public_id;
+      item.secure_url = item.url;
+    });
+    return response.data;
   },
   uploadApiHandler: async (files, { folder, unique = false }) => {
     const body = new FormData();

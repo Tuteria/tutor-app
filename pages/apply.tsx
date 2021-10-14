@@ -43,7 +43,7 @@ export default function ApplicationPage({
         allRegions,
         allCountries,
         cleanedData.supportedCountries,
-        {...cleanedData.tutor_data, currentEditableForm:STEPS.SUBJECT_SELECTION}
+        cleanedData.tutor_data
       );
       if (!store.completed) {
         if (store.currentEditableForm === "subject-selection") {
