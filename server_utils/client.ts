@@ -221,7 +221,7 @@ export const clientAdapter: ServerAdapterType = {
   },
   loadExistingSubject(subject_id) {
     const tutorSubjects = storage.get(TUTOR_SUBJECTS);
-    return tutorSubjects.find(({id}) => id === subject_id)
+    return tutorSubjects.find(({id}) => id === subject_id) || {}
   },
   saveTutorInfo: async (payload) => {
     const token = storage.get(NEW_TUTOR_TOKEN, "");
