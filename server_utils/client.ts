@@ -51,6 +51,16 @@ async function postFetcher(url, data = {}, auth = false) {
   });
   return response;
 }
+
+async function multipartFetch(url: string, body: FormData) {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${storage.get(NEW_TUTOR_TOKEN, "")}` },
+    body,
+  });
+  return response;
+}
+
 async function getFetcher(url, auth = false) {
   let headers: any = {
     "Content-Type": "application/json",
@@ -157,18 +167,11 @@ export const clientAdapter: ServerAdapterType = {
     );
     return Promise.all(promises);
   },
-  uploadApiHandler: async (files, { folder, unique = false}) => {
+  uploadApiHandler: async (files, { folder, unique = false }) => {
     const body = new FormData();
     files.forEach((file) => body.append('media', file));
     body.append('folder', folder);
-    const response = await fetch('/api/tutors/upload-media', {
-      method: 'POST',
-      headers: {
-        authorization: `Bearer ${storage.get(NEW_TUTOR_TOKEN, "")}`,
-      },
-      body
-    });
-
+    const response = await multipartFetch('/api/tutors/upload-media', body);
     if (response.ok) {
       const { data } = await response.json();
       return data;
@@ -182,14 +185,7 @@ export const clientAdapter: ServerAdapterType = {
     formData.append('folder', 'profile_pics');
     formData.append('publicId', `${slug}-profile`);
     formData.append('transform', 'true');
-    const response = await fetch('/api/tutors/upload-media', {
-      method: 'POST',
-      headers: {
-        authorization: `Bearer ${storage.get(NEW_TUTOR_TOKEN, "")}`,
-      },
-      body: formData
-    });
-
+    const response = await multipartFetch('/api/tutors/upload-media', formData);
     if (response.ok) {
       const { data } = await response.json();
       const [image] = data;
@@ -386,4 +382,18 @@ export const clientAdapter: ServerAdapterType = {
     }
     throw "Failed to save tutor subjects";
   },
+
+  async saveSubjectImages(files) {
+    const body = new FormData();
+    body.append('folder', 'exhibitions');
+    files.forEach(({ file }) => body.append('media', file));
+    const response = await multipartFetch('/api/tutors/upload-media', body);
+    if (response.ok) {
+      const { data } = await response.json();
+      data.forEach((item, index) => {
+        item.caption = files[index].caption;
+      });
+      return data;
+    }
+  }
 };
