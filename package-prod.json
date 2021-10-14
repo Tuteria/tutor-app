@@ -21,6 +21,8 @@
     "@emotion/styled": "^11",
     "@types/react": "^17.0.16",
     "babel-plugin-emotion": "^10.0.27",
+    "cloudinary": "^1.27.1",
+    "formidable": "^1.2.2",
     "framer-motion": "^4",
     "mobx": "^6.3.2",
     "mobx-react-lite": "^3.2.0",
@@ -39,6 +41,7 @@
   "devDependencies": {
     "@babel/plugin-transform-flow-strip-types": "^7.14.5",
     "@svgr/webpack": "^5.2.0",
+    "@types/formidable": "^1.2.4",
     "babel-plugin-styled-components": "^1.10.7",
     "cross-env": "^7.0.2",
     "eslint": "7.30.0",

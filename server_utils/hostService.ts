@@ -410,3 +410,16 @@ export async function saveTutorSubjectInfo(subject: {
   }
   throw new Error("Error saving subject details");
 }
+export async function deleteTutorSubject(data: { email: string; ids: number[] }) {
+  const response = await fetch(`${HOST}/new-subject-flow/delete-subject`, {
+    headers: { 'content-type': 'application/json' },
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+
+  if (response.ok) {
+    const { data } = await response.json();
+    return data;
+  }
+  throw new Error("Failed to delete tutor subject");
+}

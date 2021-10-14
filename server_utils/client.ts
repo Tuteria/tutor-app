@@ -4,6 +4,7 @@ import jwt_decode from "jwt-decode";
 import { TuteriaSubjectType } from "./types";
 
 import BANK_DATA from "@tuteria/shared-lib/src/data/banks.json";
+import { uploadToCloudinary } from "@tuteria/shared-lib/src/utils";
 
 const NEW_TUTOR_TOKEN = "NEW_TUTOR_TOKEN";
 const TUTOR_QUIZZES = "TUTOR-QUIZZES";
@@ -51,6 +52,16 @@ async function postFetcher(url, data = {}, auth = false) {
   });
   return response;
 }
+
+async function multipartFetch(url: string, body: FormData) {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${storage.get(NEW_TUTOR_TOKEN, "")}` },
+    body,
+  });
+  return response;
+}
+
 async function getFetcher(url, auth = false) {
   let headers: any = {
     "Content-Type": "application/json",
@@ -144,13 +155,62 @@ export const clientAdapter: ServerAdapterType = {
   fetchBanksInfo: async (countryCode) => {
     return BANK_DATA.NG.map((o) => o.name);
   },
-  cloudinaryApiHandler: async (files, progressCallBack) => {
-    return [];
+  cloudinaryApiHandler: async (files, progressCallback) => {
+    const promises = files.map((file) =>
+      uploadToCloudinary(file, progressCallback).then((result) => {
+        let { original_filename, bytes, secure_url } = result.data;
+        let newFile = {
+          name: original_filename,
+          size: `${Math.round(bytes / 1000)}KB`,
+          url: secure_url,
+        };
+        return newFile;
+      })
+    );
+    return Promise.all(promises);
   },
-  uploadApiHandler: async (files) => {
-    return [];
+  uploadApiHandler: async (files, { folder, unique = false }) => {
+    const body = new FormData();
+    files.forEach((file) => body.append('media', file));
+    body.append('folder', folder);
+    const response = await multipartFetch('/api/tutors/upload-media', body);
+    if (response.ok) {
+      const { data } = await response.json();
+      return data;
+    }
+    throw "Failed to upload media";
   },
-  deleteSubject: async () => {},
+  async uploadAndVerifyProfile(file) {
+    const { slug }: any = decodeToken();
+    const formData = new FormData();
+    formData.append('media', file);
+    formData.append('folder', 'profile_pics');
+    formData.append('publicId', `${slug}-profile`);
+    formData.append('transform', 'true');
+    const response = await multipartFetch('/api/tutors/upload-media', formData);
+    if (response.ok) {
+      const { data } = await response.json();
+      const [image] = data;
+      return {
+        profile_id: image.public_id,
+        url: image.url,
+        quality: image.quality,
+      }
+    }
+    throw "Failed to upload profile pic";
+  },
+  deleteSubject: async (id) => {
+    const response = await postFetcher(
+      "/api/tutors/delete-tutor-subject",
+      { id },
+      true
+    );
+    if (response.ok) {
+      const { data } = await response.json();
+      return data;
+    }
+    throw "Failed to delete tutor subjects";
+  },
   async buildQuizData(subjectInfo, quizzes) {
     let allowedToTakeInfo = buildQuizInfo(subjectInfo, quizzes);
     return allowedToTakeInfo;
@@ -346,4 +406,18 @@ export const clientAdapter: ServerAdapterType = {
     }
     throw "Failed to save subject details";
   },
+
+  async saveSubjectImages(files) {
+    const body = new FormData();
+    body.append('folder', 'exhibitions');
+    files.forEach(({ file }) => body.append('media', file));
+    const response = await multipartFetch('/api/tutors/upload-media', body);
+    if (response.ok) {
+      const { data } = await response.json();
+      data.forEach((item, index) => {
+        item.caption = files[index].caption;
+      });
+      return data;
+    }
+  }
 };
