@@ -14,6 +14,8 @@ import {
   fetchAllCountries,
   API_TEST,
   deleteTutorSubject,
+  saveTutorSubjectInfo,
+  getBanksSupported,
 } from "./hostService";
 import {
   getTuteriaSubjectList,
@@ -25,9 +27,9 @@ import {
 } from "./sheetService";
 import { sendClientLoginCodes } from "./email";
 import { TuteriaSubjectType } from "./types";
-import { upload } from './cloudinary';
-import { UploadApiOptions } from 'cloudinary';
-import { File } from 'formidable';
+import { upload } from "./cloudinary";
+import { UploadApiOptions } from "cloudinary";
+import { File } from "formidable";
 const bulkFetchQuizSubjectsFromSheet = async (
   subjects: string[],
   create = false
@@ -185,7 +187,7 @@ function formatSubjects(
     pk: any;
     price?: any;
     other_info?: any;
-    sittings: any[]
+    sittings: any[];
   }[],
   allowedQuizzes: Array<{ name: string }> = []
 ) {
@@ -211,14 +213,20 @@ function formatSubjects(
       name: item.skill.name,
       title: item.heading || "",
       description: item.description,
-      certifications: item.certifications,
+      certifications: item.certifications.map(
+        ({ award_name, award_institution }) => ({
+          name: award_name,
+          institution: award_institution,
+        })
+      ),
       tuteriaStatus: item.status,
       status,
       teachingStyle: item.other_info?.teachingStyle || "",
       trackRecords: item.other_info?.trackRecords || "",
       teachingRequirements: item.other_info?.teachingRequirements || [],
       preliminaryQuestions: item.other_info?.preliminaryQuestions || [],
-      canTakeTest: item.sittings.length === 0 && (item.status === 3 || item.status === 5)
+      canTakeTest:
+        item.sittings.length === 0 && (item.status === 3 || item.status === 5),
       // test_detail: test_detail.find(
       //   ({ name, testable }: any) => name === item.skill.name && testable
       // ) || null,
@@ -527,14 +535,27 @@ export const serverAdapter = {
     let { regions } = await getLocationInfoFromSheet();
     return regions;
   },
-  deleteSubject: async(data: { email: string, ids: number[] }) => {
+  deleteSubject: async (data: { email: string; ids: number[] }) => {
     const response = await deleteTutorSubject(data);
     return response;
   },
-  uploadMedia: async(files: File[], options: UploadApiOptions, transform: boolean) => {
-    const data = await Promise.all(files.map(({ path }) => {
-      return upload(path, options, transform);
-    }));
+  uploadMedia: async (
+    files: File[],
+    options: UploadApiOptions,
+    transform: boolean
+  ) => {
+    const data = await Promise.all(
+      files.map(({ path }) => {
+        return upload(path, options, transform);
+      })
+    );
     return data;
-  }
+  },
+  saveTutorSubjectDetails: async (subject: any) => {
+    const result = await saveTutorSubjectInfo(subject);
+    return result;
+  },
+  getBanksSupported: async (countrySupported: string) => {
+    return await getBanksSupported(countrySupported);
+  },
 };
