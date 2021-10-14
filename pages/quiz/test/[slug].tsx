@@ -1,15 +1,13 @@
 import React from "react";
-import QuizPage from "@tuteria/shared-lib/src/tutor-revamp/quizzes/QuizPage";
+import QuizPage from "@tuteria/shared-lib/src/tutor-revamp/quizzes/Quiz";
 import QuizStore from "@tuteria/shared-lib/src/tutor-revamp/quizzes/quizStore";
 import { clientAdapter } from "../../../server_utils/client";
 import { loadAdapter } from "@tuteria/shared-lib/src/adapter";
 import { serverAdapter } from "../../../server_utils/server";
 import { usePrefetchHook } from "../../../server_utils/util";
-import { LoadingState } from "@tuteria/shared-lib/src/components/data-display/LoadingState";
 import { gradeQuiz } from "@tuteria/shared-lib/src/tutor-revamp/quizzes/quiz-grader";
-import ResultsPage from "@tuteria/shared-lib/src/tutor-revamp/Results";
-import { Box } from "@chakra-ui/layout";
 import { TuteriaSubjectType } from "../../../server_utils/types";
+import { LoadingState } from "@tuteria/shared-lib/src/components/data-display/LoadingState";
 
 const quizStore = QuizStore.create({}, { adapter: loadAdapter(clientAdapter) });
 function splitArrayString(query) {
@@ -61,41 +59,6 @@ const Quiz: React.FC<{
     }
   }, []);
 
-  const handleBeforeUnload = (event) => {
-    const e = event || window.event;
-    e.preventDefault();
-    if (e) {
-      e.returnValue = "";
-    }
-    return "";
-  };
-
-  const handleUnload = async (event) => {
-    await onQuizSubmit();
-  };
-  
-  const handleBackButtonClick = async () => {
-    const reply = confirm("You pressed a Back button! Are you sure?!");
-    if (reply == true) {
-      await onQuizSubmit();
-      history.back();
-    } else {
-      history.pushState(null, null, window.location.pathname);
-    }
-    history.pushState(null, null, window.location.pathname);
-  };
-
-  React.useEffect(() => {
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    window.addEventListener("unload", handleUnload);
-    window.addEventListener("popstate", handleBackButtonClick);
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      // window.removeEventListener("unload", handleUnload);
-      window.removeEventListener("hashchange", handleBackButtonClick);
-    };
-  }, []);
-
   async function onQuizSubmit() {
     let gradedResult = gradeQuiz(
       fetchedQuizzes,
@@ -112,27 +75,19 @@ const Quiz: React.FC<{
   function redirect() {
     navigate("/apply");
   }
+
   if (!loaded) {
     return <LoadingState text="Loading quiz..." />;
   }
+
   return (
-    <Box>
-      {completed ? (
-        <ResultsPage
-          subject={subjectInfo.name}
-          totalQuestions={quizStore.quiz.questions.length}
-          quizResults={quizStore.quizResults}
-          navigate={redirect}
-        />
-      ) : (
-        <QuizPage
-          completed={completed}
-          onQuizSubmit={onQuizSubmit}
-          index={0}
-          store={quizStore}
-        />
-      )}
-    </Box>
+    <QuizPage
+      store={quizStore}
+      quizName={subjectInfo.name}
+      hasCompletedQuiz={completed}
+      onNavigate={redirect}
+      onSubmitQuiz={onQuizSubmit}
+    />
   );
 };
 

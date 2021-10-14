@@ -388,16 +388,47 @@ export async function fetchAllCountries() {
   return allCountries;
 }
 
-export async function deleteTutorSubject(data: { email: string; ids: number[] }) {
+export async function deleteTutorSubject(data: {
+  email: string;
+  ids: number[];
+}) {
   const response = await fetch(`${HOST}/new-subject-flow/delete-subject`, {
-    headers: { 'content-type': 'application/json' },
-    method: 'POST',
+    headers: { "content-type": "application/json" },
+    method: "POST",
     body: JSON.stringify(data),
-  })
+  });
 
   if (response.ok) {
     const { data } = await response.json();
     return data;
   }
   throw new Error("Failed to delete tutor subject");
+}
+export async function saveTutorSubjectInfo(subject: {
+  pk: number;
+  skill: { name: string };
+  heading: string;
+  description: string;
+  price: number;
+  teachingRequirements: string[];
+  certifications: { award_name: string; award_institution: string };
+}) {
+  let response = await fetch(`${HOST}/new-flow/save-tutor-subjects`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(subject),
+  });
+  if (response.status < 400) {
+    let data = await response.json();
+    return data.data;
+  }
+  throw new Error("Error saving subject details");
+}
+
+export async function getBanksSupported(supportedCountry: string) {
+  let countryData = await import("@tuteria/shared-lib/src/data/banks.json");
+  let bankdDetails = countryData.default[supportedCountry] || [];
+  return bankdDetails;
 }
