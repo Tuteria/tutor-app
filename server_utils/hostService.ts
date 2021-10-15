@@ -2,7 +2,8 @@ import allCountries from "@tuteria/shared-lib/src/data/countries.json";
 import allRegions from "@tuteria/shared-lib/src/data/regions.json";
 
 export let HOST = process.env.HOST_ENDPOINT || "http://backup.tuteria.com:8000";
-export let DEV = (process.env.IS_DEVELOPMENT || "development") == "development";
+export const IS_DEVELOPMENT = process.env.IS_DEVELOPMENT || "development";
+export let DEV = IS_DEVELOPMENT === "development";
 export const API_TEST = process.env.DEVELOPER_ACCESS === "true" || false;
 const NOTIFICATION_SERVICE =
   process.env.NOTIFICATION_SERVICE || "http://email-service.tuteria.com:5000";
@@ -250,13 +251,19 @@ async function postHelper(url, data, base = HOST) {
 }
 
 export async function sendEmailNotification(data) {
-  if (IS_TEST === "true") {
+  let datToSend = data;
+  if (IS_DEVELOPMENT === "development") {
     console.log(data);
+  } else if (IS_DEVELOPMENT === "staging") {
+    datToSend.to = [TEST_EMAIL];
+    if (datToSend.sms_options) {
+      datToSend.sms_options.receiver = TEST_NUMBER;
+    }
   } else {
     const response = await fetch(`${NOTIFICATION_SERVICE}/send_message/`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify(datToSend),
     });
     const result = await response.json();
     return result;
