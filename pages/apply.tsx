@@ -1,9 +1,7 @@
 import { useToast } from "@chakra-ui/toast";
 import { loadAdapter } from "@tuteria/shared-lib/src/adapter";
 import { LoadingState } from "@tuteria/shared-lib/src/components/data-display/LoadingState";
-import storage from "@tuteria/shared-lib/src/local-storage";
 import { initializeStore } from "@tuteria/shared-lib/src/stores";
-import { STEPS } from "@tuteria/shared-lib/src/stores/rootStore";
 import React, { useEffect, useState } from "react";
 import TutorPageComponent from "../components/TutorPageComponent";
 import { clientAdapter } from "../server_utils/client";
@@ -31,11 +29,9 @@ export default function ApplicationPage({
 
   async function initialize() {
     try {
-      const cleanedData = clientAdapter.validateCredentials();
       let result = await clientAdapter.initializeApplication(adapter, {
         regions: allRegions,
         countries: allCountries,
-        supportedCountries: cleanedData.supportedCountries,
         tuteriaSubjects,
       });
       await store.initializeTutorData(

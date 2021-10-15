@@ -1,7 +1,6 @@
 import axios from 'axios';
-import { ServerAdapterType } from "@tuteria/shared-lib/src/adapter";
+import { AdapterType, ServerAdapterType } from "@tuteria/shared-lib/src/adapter";
 import storage from "@tuteria/shared-lib/src/local-storage";
-import session from "@tuteria/shared-lib/src/storage"
 import jwt_decode from "jwt-decode";
 import { TuteriaSubjectType } from "./types";
 
@@ -13,14 +12,14 @@ const TUTOR_SUBJECTS = "TUTOR_SUBJECTS";
 function decodeToken(existingTokenFromUrl = "", key = NEW_TUTOR_TOKEN) {
   let urlAccessToken = existingTokenFromUrl;
   if (!urlAccessToken) {
-    //check the session storage for the token.
-    urlAccessToken = session.get(key, "");
+    //check the local storage for the token.
+    urlAccessToken = storage.get(key, "");
   }
   if (urlAccessToken) {
     //attempt to decode it. if successful, save it to local storage and update the store
     try {
       let result = jwt_decode(urlAccessToken);
-      session.set(key, urlAccessToken);
+      storage.set(key, urlAccessToken);
       return result;
     } catch (error) {
       console.log("failed");
@@ -40,7 +39,7 @@ async function postFetcher(url, data = {}, auth = false) {
     "Content-Type": "application/json",
   };
   if (auth) {
-    const tutorToken = session.get(NEW_TUTOR_TOKEN);
+    const tutorToken = storage.get(NEW_TUTOR_TOKEN);
 
     headers.Authorization = `Bearer ${tutorToken}`;
   }
@@ -66,7 +65,7 @@ async function getFetcher(url, auth = false) {
     "Content-Type": "application/json",
   };
   if (auth) {
-    const tutorToken = session.get(NEW_TUTOR_TOKEN);
+    const tutorToken = storage.get(NEW_TUTOR_TOKEN);
 
     headers.Authorization = `Bearer ${tutorToken}`;
   }
@@ -150,6 +149,21 @@ async function buildQuizInfo(
   ];
 }
 
+async function getTutorInfo() {
+  const response = await getFetcher('/api/tutors/get-tutor-info', true);
+  if (response.ok) {
+    const { data } = await response.json();
+    const { tutorData, tutorSubjects, supportedCountries } = data;
+    storage.set(NEW_TUTOR_TOKEN, data.accessToken);
+    delete data.accessToken;
+    return { tutorData, tutorSubjects, supportedCountries };
+  }
+  if (response.status === 403) {
+    throw "Invalid Credentials";
+  }
+  throw "Error getting tutor info";
+}
+
 export const clientAdapter: ServerAdapterType = {
   fetchBanksInfo: async (countrySupported) => {
     let response = await postFetcher(
@@ -171,7 +185,7 @@ export const clientAdapter: ServerAdapterType = {
     formData.append('folder', 'identity');
     const { data: response } = await axios.post('/api/tutors/upload-media', formData, {
       headers: {
-        Authorization: `Bearer ${session.get(NEW_TUTOR_TOKEN, "")}`,
+        Authorization: `Bearer ${storage.get(NEW_TUTOR_TOKEN, "")}`,
         "X-Requested-With": "XMLHttpRequest"
       },
       onDownloadProgress(progressEvent) {
@@ -302,7 +316,7 @@ export const clientAdapter: ServerAdapterType = {
     return tutorSubjects.find(({ id }) => id === subject_id);
   },
   saveTutorInfo: async (payload) => {
-    const token = session.get(NEW_TUTOR_TOKEN, "");
+    const token = storage.get(NEW_TUTOR_TOKEN, "");
     const response = await fetch(`/api/tutors/save-tutor-info`, {
       method: "POST",
       headers: {
@@ -313,7 +327,7 @@ export const clientAdapter: ServerAdapterType = {
     });
     if (response.ok) {
       const { data } = await response.json();
-      session.set(NEW_TUTOR_TOKEN, data.accessToken);
+      storage.set(NEW_TUTOR_TOKEN, data.accessToken);
       delete data.accessToken;
       return data;
     }
@@ -330,7 +344,7 @@ export const clientAdapter: ServerAdapterType = {
     }
   },
   beginTutorApplication: async (data: any) => {
-    const token = session.get(NEW_TUTOR_TOKEN, "");
+    const token = storage.get(NEW_TUTOR_TOKEN, "");
     const response = await fetch("/api/begin-application", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -343,7 +357,7 @@ export const clientAdapter: ServerAdapterType = {
     if (response.ok) {
       const { data } = await response.json();
       if ("accessToken" in data) {
-        session.set(NEW_TUTOR_TOKEN, data.accessToken);
+        storage.set(NEW_TUTOR_TOKEN, data.accessToken);
         delete data.accessToken;
       }
       return data;
@@ -359,14 +373,14 @@ export const clientAdapter: ServerAdapterType = {
     if (response.ok) {
       const { data } = await response.json();
       if (otp) {
-        session.set(NEW_TUTOR_TOKEN, data.access_token);
+        storage.set(NEW_TUTOR_TOKEN, data.access_token);
       }
       return data;
     }
     throw "Error submitting";
   },
   async generateQuiz(payload: TuteriaSubjectType) {
-    const tutorToken = session.get(NEW_TUTOR_TOKEN);
+    const tutorToken = storage.get(NEW_TUTOR_TOKEN);
     const response = await fetch("/api/quiz/generate", {
       headers: {
         "Content-Type": "application/json",
@@ -380,7 +394,7 @@ export const clientAdapter: ServerAdapterType = {
     return data;
   },
   async beginQuiz(payload: { subjects: string[] }) {
-    const tutorToken = session.get(NEW_TUTOR_TOKEN);
+    const tutorToken = storage.get(NEW_TUTOR_TOKEN);
     const response: any = await fetch("/api/quiz/begin", {
       headers: {
         "Content-Type": "application/json",
@@ -437,5 +451,17 @@ export const clientAdapter: ServerAdapterType = {
       return data;
     }
     throw "Failed to save subject details";
-  },
+  }, 
+  async initializeApplication(adapter: AdapterType, {  regions, countries, tuteriaSubjects }) {
+    const { supportedCountries, tutorData, tutorSubjects } = await getTutorInfo();
+    storage.set(adapter.regionKey, regions);
+    storage.set(adapter.countryKey, countries);
+    storage.set(adapter.tuteriaSubjectsKey, tuteriaSubjects);
+    storage.set(adapter.supportedCountriesKey, supportedCountries);
+    return { 
+      tutorInfo: tutorData,
+      subjectData: { tutorSubjects, tuteriaSubjects },
+      staticData: { regions, countries, supportedCountries } 
+    }
+  }
 };

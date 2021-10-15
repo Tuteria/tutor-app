@@ -76,7 +76,7 @@ export const authCheck = (
           res.status(400).json({ status: false, error });
         }
       } else {
-        res.status(400).json({ error: "Could not load token" });
+        res.status(403).json({ error: "Could not load token" });
       }
     } else {
       res.status(405).json({ msg: "Not Allowed Method" });
