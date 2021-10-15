@@ -24,7 +24,7 @@ export default function LoginPage({ email, next }) {
 
 export async function getServerSideProps({ query }) {
   const email = query.email || "";
-  const next = query.next || "/non-existent";
+  const next = query.next || "/apply";
 
   return { props: { email, next } };
 }
