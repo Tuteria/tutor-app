@@ -60,7 +60,7 @@ export default function ApplicationPage({
         }}
         store={store}
         onTakeTest={(subject) => {
-          let instance = tuteriaSubjects.find((o) => o.name === subject.name);
+          let instance = tuteriaSubjects.find((o) => o.name === subject);
           return `/quiz/select-skill/${instance.slug}`;
         }}
         onNextStep={() => {
