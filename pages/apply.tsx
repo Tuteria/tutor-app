@@ -43,10 +43,7 @@ export default function ApplicationPage({
         allRegions,
         allCountries,
         cleanedData.supportedCountries,
-        {
-          ...cleanedData.tutor_data,
-          currentEditableForm: STEPS.VERIFICATION,
-        }
+        cleanedData.tutor_data
       );
       if (!store.completed) {
         setIsLoading(false);

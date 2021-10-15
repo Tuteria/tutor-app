@@ -1,8 +1,9 @@
+import axios from 'axios';
 import { ServerAdapterType } from "@tuteria/shared-lib/src/adapter";
 import storage from "@tuteria/shared-lib/src/local-storage";
+import session from "@tuteria/shared-lib/src/storage"
 import jwt_decode from "jwt-decode";
 import { TuteriaSubjectType } from "./types";
-import { uploadToCloudinary } from "@tuteria/shared-lib/src/utils";
 
 const NEW_TUTOR_TOKEN = "NEW_TUTOR_TOKEN";
 const TUTOR_QUIZZES = "TUTOR-QUIZZES";
@@ -12,14 +13,14 @@ const TUTOR_SUBJECTS = "TUTOR_SUBJECTS";
 function decodeToken(existingTokenFromUrl = "", key = NEW_TUTOR_TOKEN) {
   let urlAccessToken = existingTokenFromUrl;
   if (!urlAccessToken) {
-    //check the local storage for the token.
-    urlAccessToken = storage.get(key, "");
+    //check the session storage for the token.
+    urlAccessToken = session.get(key, "");
   }
   if (urlAccessToken) {
     //attempt to decode it. if successful, save it to local storage and update the store
     try {
       let result = jwt_decode(urlAccessToken);
-      storage.set(key, urlAccessToken);
+      session.set(key, urlAccessToken);
       return result;
     } catch (error) {
       console.log("failed");
@@ -39,7 +40,7 @@ async function postFetcher(url, data = {}, auth = false) {
     "Content-Type": "application/json",
   };
   if (auth) {
-    const tutorToken = storage.get(NEW_TUTOR_TOKEN);
+    const tutorToken = session.get(NEW_TUTOR_TOKEN);
 
     headers.Authorization = `Bearer ${tutorToken}`;
   }
@@ -65,7 +66,7 @@ async function getFetcher(url, auth = false) {
     "Content-Type": "application/json",
   };
   if (auth) {
-    const tutorToken = storage.get(NEW_TUTOR_TOKEN);
+    const tutorToken = session.get(NEW_TUTOR_TOKEN);
 
     headers.Authorization = `Bearer ${tutorToken}`;
   }
@@ -165,18 +166,26 @@ export const clientAdapter: ServerAdapterType = {
     throw "Error grading quiz";
   },
   cloudinaryApiHandler: async (files, progressCallback) => {
-    const promises = files.map((file) =>
-      uploadToCloudinary(file, progressCallback).then((result) => {
-        let { original_filename, bytes, secure_url } = result.data;
-        let newFile = {
-          name: original_filename,
-          size: `${Math.round(bytes / 1000)}KB`,
-          url: secure_url,
-        };
-        return newFile;
-      })
-    );
-    return Promise.all(promises);
+    const formData = new FormData();
+    files.forEach((file) => formData.append('media', file));
+    formData.append('folder', 'identity');
+    const { data: response } = await axios.post('/api/tutors/upload-media', formData, {
+      headers: {
+        Authorization: `Bearer ${session.get(NEW_TUTOR_TOKEN, "")}`,
+        "X-Requested-With": "XMLHttpRequest"
+      },
+      onDownloadProgress(progressEvent) {
+        const percentCompleted = Math.floor(
+          (progressEvent.loaded * 100) / progressEvent.total
+        );
+        progressCallback(percentCompleted);
+      }
+    });
+    response.data.forEach((item) => {
+      item.name = item.public_id;
+      item.secure_url = item.url;
+    });
+    return response.data;
   },
   uploadApiHandler: async (files, { folder, unique = false }) => {
     const body = new FormData();
@@ -293,7 +302,7 @@ export const clientAdapter: ServerAdapterType = {
     return tutorSubjects.find(({ id }) => id === subject_id);
   },
   saveTutorInfo: async (payload) => {
-    const token = storage.get(NEW_TUTOR_TOKEN, "");
+    const token = session.get(NEW_TUTOR_TOKEN, "");
     const response = await fetch(`/api/tutors/save-tutor-info`, {
       method: "POST",
       headers: {
@@ -304,7 +313,7 @@ export const clientAdapter: ServerAdapterType = {
     });
     if (response.ok) {
       const { data } = await response.json();
-      storage.set(NEW_TUTOR_TOKEN, data.accessToken);
+      session.set(NEW_TUTOR_TOKEN, data.accessToken);
       delete data.accessToken;
       return data;
     }
@@ -321,7 +330,7 @@ export const clientAdapter: ServerAdapterType = {
     }
   },
   beginTutorApplication: async (data: any) => {
-    const token = storage.get(NEW_TUTOR_TOKEN, "");
+    const token = session.get(NEW_TUTOR_TOKEN, "");
     const response = await fetch("/api/begin-application", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -334,7 +343,7 @@ export const clientAdapter: ServerAdapterType = {
     if (response.ok) {
       const { data } = await response.json();
       if ("accessToken" in data) {
-        storage.set(NEW_TUTOR_TOKEN, data.accessToken);
+        session.set(NEW_TUTOR_TOKEN, data.accessToken);
         delete data.accessToken;
       }
       return data;
@@ -350,14 +359,14 @@ export const clientAdapter: ServerAdapterType = {
     if (response.ok) {
       const { data } = await response.json();
       if (otp) {
-        storage.set(NEW_TUTOR_TOKEN, data.access_token);
+        session.set(NEW_TUTOR_TOKEN, data.access_token);
       }
       return data;
     }
     throw "Error submitting";
   },
   async generateQuiz(payload: TuteriaSubjectType) {
-    const tutorToken = storage.get(NEW_TUTOR_TOKEN);
+    const tutorToken = session.get(NEW_TUTOR_TOKEN);
     const response = await fetch("/api/quiz/generate", {
       headers: {
         "Content-Type": "application/json",
@@ -371,7 +380,7 @@ export const clientAdapter: ServerAdapterType = {
     return data;
   },
   async beginQuiz(payload: { subjects: string[] }) {
-    const tutorToken = storage.get(NEW_TUTOR_TOKEN);
+    const tutorToken = session.get(NEW_TUTOR_TOKEN);
     const response: any = await fetch("/api/quiz/begin", {
       headers: {
         "Content-Type": "application/json",
