@@ -258,11 +258,11 @@ export const clientAdapter: ServerAdapterType = {
     }
     if (subjectInfo) {
       if (subjectInfo?.pk) {
-        storage.set(TUTOR_SUBJECTS, tutorSubjects);
-        const foundTutorSubject = tutorSubjects.find(
+        const filteredTutorSubject = tutorSubjects.filter(
           (subject) => subject.id === subjectInfo.pk
         );
-        return { tutorSubjects: [foundTutorSubject] };
+        storage.set(TUTOR_SUBJECTS, filteredTutorSubject);
+        return { tutorSubjects: filteredTutorSubject };
       }
       const rr = {
         tutorSubjects: tutorSubjects
@@ -291,6 +291,10 @@ export const clientAdapter: ServerAdapterType = {
   loadExistingSubject(subject_id) {
     const tutorSubjects = storage.get(TUTOR_SUBJECTS);
     return tutorSubjects.find(({ id }) => id === subject_id) || {};
+  },
+  modifyExistingSubject(values) {
+    const subjects = storage.get(TUTOR_SUBJECTS)
+    storage.set(TUTOR_SUBJECTS, [{...subjects[0], ...values}])
   },
   saveTutorInfo: async (payload) => {
     const token = storage.get(NEW_TUTOR_TOKEN, "");
