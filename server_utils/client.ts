@@ -269,6 +269,14 @@ export const clientAdapter: ServerAdapterType = {
     }
     throw "Error grading quiz";
   },
+  getTutorSubject(tutorSubjects, subjectInfo: TuteriaSubjectType) {
+    let instance = tutorSubjects.find((o) => o.name === subjectInfo.name);
+    if (instance) {
+      if (instance.canTakeTest) {
+        return { ...instance, quizzes: subjectInfo.subjects };
+      }
+    }
+  },
   async getTutorSubjects(subjectInfo?: TuteriaSubjectType) {
     let tutorSubjects = [];
     let tuteriaSubjects = [];

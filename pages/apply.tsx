@@ -1,4 +1,3 @@
-import { useToast } from "@chakra-ui/toast";
 import { loadAdapter } from "@tuteria/shared-lib/src/adapter";
 import { LoadingStateWrapper } from "@tuteria/shared-lib/src/components/data-display/LoadingState";
 import { initializeStore } from "@tuteria/shared-lib/src/stores";
@@ -22,8 +21,7 @@ export default function ApplicationPage({
   allRegions: any[];
   tuteriaSubjects: TuteriaSubjectType[];
 }) {
-  const toast = useToast();
-  const { navigate } = usePrefetchHook({
+  const { navigate, onError } = usePrefetchHook({
     routes: ["/login", "/complete"],
   });
 
@@ -50,18 +48,7 @@ export default function ApplicationPage({
       }
     } catch (error) {
       console.log(error);
-      if (error === "Invalid Credentials") {
-        const { pathname, search } = window.location;
-        navigate(`/login?next=${`${pathname}${search}`}`);
-      } else {
-        toast({
-          title: `An error occured.`,
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-          position: "top",
-        });
-      }
+      onError(error);
     }
   }
 
@@ -69,12 +56,12 @@ export default function ApplicationPage({
     <LoadingStateWrapper initialize={initialize}>
       <TutorPageComponent
         onEditSubject={(subject) => {
-          navigate(`/skills/${subject.id}`);
+          return `/skills/${subject.id}`;
         }}
         store={store}
         onTakeTest={(subject) => {
           let instance = tuteriaSubjects.find((o) => o.name === subject.name);
-          navigate(`/quiz/select-skill/${instance.slug}`);
+          return `/quiz/select-skill/${instance.slug}`;
         }}
         onNextStep={() => {
           navigate("/verify");

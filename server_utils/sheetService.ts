@@ -79,8 +79,8 @@ export async function getTestableSubjects(
       return {
         shortName: data.shortName,
         skill: data.Name,
-        url: string_to_slug(data.SubjectID.toLowerCase()) + "-quiz",
-        slug: data.SubjectID.toLowerCase(),
+        url: string_to_slug(data.TuteriaSubjectSlug.toLowerCase()) + "-quiz",
+        slug: data.TuteriaSubjectSlug.toLowerCase(),
         pass_mark: data.PassMark || 60,
         tuteria_name: data.TuteriaSubjectName,
         test_name: data.TestName,
