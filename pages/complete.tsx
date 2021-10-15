@@ -5,7 +5,7 @@ import { getUserInfo, serverAdapter } from "../server_utils/server";
 export default function CompletedPage({ tutorInfo }: any) {
   return (
     <CompletedApplicationPage
-      firstName={tutorInfo.personalInfo.first_name}
+      firstName={tutorInfo.personalInfo.firstName}
       isPremium={true}
       photo="https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&crop=faces&fit=crop&h=200&w=200"
     />
