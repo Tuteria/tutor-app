@@ -152,13 +152,12 @@ async function buildQuizInfo(
   ];
 }
 
-async function getTutorInfo() {
-  const response = await getFetcher("/api/tutors/get-tutor-info", true);
+async function getTutorInfo(includeSubjects: boolean) {
+  const response = await getFetcher(`/api/tutors/get-tutor-info?subjects=${includeSubjects}`, true);
   if (response.ok) {
     const { data } = await response.json();
     const { tutorData, tutorSubjects, supportedCountries, accessToken } = data;
-    storage.set(NEW_TUTOR_TOKEN, data.accessToken);
-    delete data.accessToken;
+    storage.set(NEW_TUTOR_TOKEN, accessToken);
     return { tutorData, tutorSubjects, supportedCountries, accessToken };
   }
   if (response.status === 403) {
@@ -269,6 +268,14 @@ export const clientAdapter: ServerAdapterType = {
     }
     throw "Error grading quiz";
   },
+  getTutorSubject(tutorSubjects, subjectInfo: TuteriaSubjectType) {
+    let instance = tutorSubjects.find((o) => o.name === subjectInfo.name);
+    if (instance) {
+      if (instance.canTakeTest) {
+        return { ...instance, quizzes: subjectInfo.subjects };
+      }
+    }
+  },
   async getTutorSubjects(subjectInfo?: TuteriaSubjectType) {
     let tutorSubjects = [];
     let tuteriaSubjects = [];
@@ -339,8 +346,7 @@ export const clientAdapter: ServerAdapterType = {
     if (response.ok) {
       const { data } = await response.json();
       storage.set(NEW_TUTOR_TOKEN, data.accessToken);
-      delete data.accessToken;
-      return data;
+      return data.accessToken;
     }
     throw "Failed to save tutor info";
   },
@@ -465,12 +471,8 @@ export const clientAdapter: ServerAdapterType = {
       return data;
     }
   },
-  async initializeApplication(
-    adapter: AdapterType,
-    { regions, countries, tuteriaSubjects }
-  ) {
-    const { supportedCountries, tutorData, tutorSubjects, accessToken } =
-      await getTutorInfo();
+  async initializeApplication(adapter: AdapterType, {  regions, countries, tuteriaSubjects }) {
+    const { accessToken, supportedCountries, tutorData, tutorSubjects } = await getTutorInfo(tuteriaSubjects.length > 0);
     storage.set(adapter.regionKey, regions);
     storage.set(adapter.countryKey, countries);
     storage.set(adapter.tuteriaSubjectsKey, tuteriaSubjects);

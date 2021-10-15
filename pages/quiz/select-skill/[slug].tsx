@@ -1,4 +1,4 @@
-import { useToast } from "@chakra-ui/toast";
+import { loadAdapter } from "@tuteria/shared-lib/src/adapter";
 import { LoadingStateWrapper } from "@tuteria/shared-lib/src/components/data-display/LoadingState";
 import QuizSelectionView from "@tuteria/shared-lib/src/tutor-revamp/QuizSelectionView";
 import React from "react";
@@ -7,12 +7,14 @@ import { serverAdapter } from "../../../server_utils/server";
 import { TuteriaSubjectType } from "../../../server_utils/types";
 import { usePrefetchHook } from "../../../server_utils/util";
 
+const adapter = loadAdapter(clientAdapter);
 const SelectSubjectTestPage: React.FC<{ subjectInfo: TuteriaSubjectType }> = ({
   subjectInfo,
 }) => {
-  const { navigate } = usePrefetchHook({ routes: ["/quiz/test"] });
+  const { navigate, onError, toast } = usePrefetchHook({
+    routes: ["/quiz/test"],
+  });
   const [canTakeQuiz, setTakeQuiz] = React.useState(true);
-  const toast = useToast();
   const [testableSubjects, setTestableSubjects] = React.useState(
     subjectInfo.subjects.map((o) => o.name)
   );
@@ -34,29 +36,33 @@ const SelectSubjectTestPage: React.FC<{ subjectInfo: TuteriaSubjectType }> = ({
     }
   }
   async function initialize(setLoading) {
-    clientAdapter
-      .getTutorSubjects(subjectInfo)
-      .then(({ tutorSubjects }) => {
-        if (tutorSubjects.length > 0) {
-          setTakeQuiz(true);
-          setTestableSubjects(tutorSubjects[0].quizzes.map((o) => o.name));
-        } else {
-          setTakeQuiz(false);
-          toast({
-            title: `Not permitted to take ${subjectInfo.name} quiz`,
-            status: "error",
-            duration: 5000,
-            isClosable: true,
-            position: "top",
-          });
-        }
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.log(error);
-        throw error;
-        // setLoading(false);
+    try {
+      let response = await clientAdapter.initializeApplication(adapter, {
+        regions: [],
+        countries: [],
+        tuteriaSubjects: subjectInfo.subjects,
       });
+      let foundSubject = clientAdapter.getTutorSubject(
+        response.subjectData.tutorSubjects,
+        subjectInfo
+      );
+      if (foundSubject) {
+        setTakeQuiz(true);
+        setTestableSubjects(foundSubject.quizzes.map((o) => o.name));
+        setLoading(false);
+      } else {
+        setTakeQuiz(false);
+        toast({
+          title: `Not permitted to take ${subjectInfo.name} quiz`,
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+          position: "top",
+        });
+      }
+    } catch (error) {
+      onError(error);
+    }
   }
   return (
     <LoadingStateWrapper initialize={initialize} text="Fetching Subjects">
