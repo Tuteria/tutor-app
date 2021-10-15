@@ -1,8 +1,11 @@
-import { ServerAdapterType } from "@tuteria/shared-lib/src/adapter";
+import axios from "axios";
+import {
+  AdapterType,
+  ServerAdapterType,
+} from "@tuteria/shared-lib/src/adapter";
 import storage from "@tuteria/shared-lib/src/local-storage";
 import jwt_decode from "jwt-decode";
 import { TuteriaSubjectType } from "./types";
-import { uploadToCloudinary } from "@tuteria/shared-lib/src/utils";
 
 const NEW_TUTOR_TOKEN = "NEW_TUTOR_TOKEN";
 const TUTOR_QUIZZES = "TUTOR-QUIZZES";
@@ -149,6 +152,21 @@ async function buildQuizInfo(
   ];
 }
 
+async function getTutorInfo() {
+  const response = await getFetcher("/api/tutors/get-tutor-info", true);
+  if (response.ok) {
+    const { data } = await response.json();
+    const { tutorData, tutorSubjects, supportedCountries, accessToken } = data;
+    storage.set(NEW_TUTOR_TOKEN, data.accessToken);
+    delete data.accessToken;
+    return { tutorData, tutorSubjects, supportedCountries, accessToken };
+  }
+  if (response.status === 403) {
+    throw "Invalid Credentials";
+  }
+  throw "Error getting tutor info";
+}
+
 export const clientAdapter: ServerAdapterType = {
   fetchBanksInfo: async (countrySupported) => {
     let response = await postFetcher(
@@ -165,18 +183,30 @@ export const clientAdapter: ServerAdapterType = {
     throw "Error grading quiz";
   },
   cloudinaryApiHandler: async (files, progressCallback) => {
-    const promises = files.map((file) =>
-      uploadToCloudinary(file, progressCallback).then((result) => {
-        let { original_filename, bytes, secure_url } = result.data;
-        let newFile = {
-          name: original_filename,
-          size: `${Math.round(bytes / 1000)}KB`,
-          url: secure_url,
-        };
-        return newFile;
-      })
+    const formData = new FormData();
+    files.forEach((file) => formData.append("media", file));
+    formData.append("folder", "identity");
+    const { data: response } = await axios.post(
+      "/api/tutors/upload-media",
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${storage.get(NEW_TUTOR_TOKEN, "")}`,
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        onDownloadProgress(progressEvent) {
+          const percentCompleted = Math.floor(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          progressCallback(percentCompleted);
+        },
+      }
     );
-    return Promise.all(promises);
+    response.data.forEach((item) => {
+      item.name = item.public_id;
+      item.secure_url = item.url;
+    });
+    return response.data;
   },
   uploadApiHandler: async (files, { folder, unique = false }) => {
     const body = new FormData();
@@ -432,5 +462,22 @@ export const clientAdapter: ServerAdapterType = {
       });
       return data;
     }
+  },
+  async initializeApplication(
+    adapter: AdapterType,
+    { regions, countries, tuteriaSubjects }
+  ) {
+    const { supportedCountries, tutorData, tutorSubjects, accessToken } =
+      await getTutorInfo();
+    storage.set(adapter.regionKey, regions);
+    storage.set(adapter.countryKey, countries);
+    storage.set(adapter.tuteriaSubjectsKey, tuteriaSubjects);
+    storage.set(adapter.supportedCountriesKey, supportedCountries);
+    return {
+      tutorInfo: tutorData,
+      accessToken,
+      subjectData: { tutorSubjects, tuteriaSubjects },
+      staticData: { regions, countries, supportedCountries },
+    };
   },
 };

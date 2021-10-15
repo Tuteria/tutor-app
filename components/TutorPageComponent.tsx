@@ -1,5 +1,7 @@
 import { Button, Stack } from "@chakra-ui/react";
-import FormWrapper, { useTutorApplicationFlow } from "@tuteria/shared-lib/src/components/FormWrapper";
+import FormWrapper, {
+  useTutorApplicationFlow,
+} from "@tuteria/shared-lib/src/components/FormWrapper";
 import { IRootStore } from "@tuteria/shared-lib/src/stores";
 import { STEPS } from "@tuteria/shared-lib/src/stores/rootStore";
 import TutorPageWrapper from "@tuteria/shared-lib/src/tutor-revamp";
@@ -54,15 +56,8 @@ const TutorPageComponent: React.FC<{
   store: IRootStore;
   onTakeTest: any;
   onEditSubject: (subject: any) => any;
-  onSumbitApplication?: () => any;
-  applicationLoading?: boolean;
-}> = ({
-  store,
-  onTakeTest,
-  onEditSubject,
-  onSumbitApplication,
-  applicationLoading,
-}) => {
+  onNextStep: () => void;
+}> = ({ store, onTakeTest, onEditSubject, onNextStep }) => {
   const { getFormWrapperProps, formIndex, steps, activeStep, completedForm } =
     useTutorApplicationFlow(store);
 
@@ -100,10 +95,14 @@ const TutorPageComponent: React.FC<{
       </FormWrapper>
       <Stack>
         <Button
-          onClick={onSumbitApplication}
+          onClick={() => {
+            store.submitApplication().then(() => {
+              onNextStep();
+            });
+          }}
           colorScheme="blue"
           size="lg"
-          isLoading={applicationLoading}
+          isLoading={store.applicationLoading}
           isDisabled={!completedForm}
         >
           Submit Application

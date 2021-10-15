@@ -1,5 +1,5 @@
 import { useToast } from "@chakra-ui/toast";
-import { LoadingState } from "@tuteria/shared-lib/src/components/data-display/LoadingState";
+import { LoadingStateWrapper } from "@tuteria/shared-lib/src/components/data-display/LoadingState";
 import QuizSelectionView from "@tuteria/shared-lib/src/tutor-revamp/QuizSelectionView";
 import React from "react";
 import { clientAdapter } from "../../../server_utils/client";
@@ -12,7 +12,6 @@ const SelectSubjectTestPage: React.FC<{ subjectInfo: TuteriaSubjectType }> = ({
 }) => {
   const { navigate } = usePrefetchHook({ routes: ["/quiz/test"] });
   const [canTakeQuiz, setTakeQuiz] = React.useState(true);
-  const [loading, setLoading] = React.useState(false);
   const toast = useToast();
   const [testableSubjects, setTestableSubjects] = React.useState(
     subjectInfo.subjects.map((o) => o.name)
@@ -34,9 +33,7 @@ const SelectSubjectTestPage: React.FC<{ subjectInfo: TuteriaSubjectType }> = ({
       throw error;
     }
   }
-
-  React.useEffect(() => {
-    setLoading(true);
+  async function initialize(setLoading) {
     clientAdapter
       .getTutorSubjects(subjectInfo)
       .then(({ tutorSubjects }) => {
@@ -60,17 +57,17 @@ const SelectSubjectTestPage: React.FC<{ subjectInfo: TuteriaSubjectType }> = ({
         throw error;
         // setLoading(false);
       });
-  }, []);
-
-  if (loading) return <LoadingState text="Fetching Subjects" />;
+  }
   return (
-    <QuizSelectionView
-      canTakeQuiz={canTakeQuiz}
-      toSubjectPage={() => navigate("/")}
-      testSubject={subjectInfo.name}
-      testableSubjects={testableSubjects}
-      generateQuiz={onNextClick}
-    />
+    <LoadingStateWrapper initialize={initialize} text="Fetching Subjects">
+      <QuizSelectionView
+        canTakeQuiz={canTakeQuiz}
+        toSubjectPage={() => navigate("/")}
+        testSubject={subjectInfo.name}
+        testableSubjects={testableSubjects}
+        generateQuiz={onNextClick}
+      />
+    </LoadingStateWrapper>
   );
 };
 
