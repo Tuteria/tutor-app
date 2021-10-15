@@ -438,6 +438,7 @@ export const clientAdapter: ServerAdapterType = {
     throw "Failed to save tutor subjects";
   },
   updateTutorSubjectInfo: async (subject, subject_id) => {
+    debugger
     const response = await postFetcher(
       "/api/tutors/save-subject-info",
       { pk: subject_id, ...subject },
@@ -451,6 +452,7 @@ export const clientAdapter: ServerAdapterType = {
   },
 
   async saveSubjectImages(files) {
+    debugger
     const body = new FormData();
     body.append("folder", "exhibitions");
     files.forEach(({ file }) => body.append("media", file));
