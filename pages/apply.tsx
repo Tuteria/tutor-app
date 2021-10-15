@@ -31,7 +31,7 @@ export default function ApplicationPage({
 
   async function initialize() {
     try {
-      const cleanedData = clientAdapter.validateCredentials();
+      const cleanedData = await clientAdapter.getTutorInfo();
       storage.set(adapter.regionKey, allRegions);
       storage.set(adapter.countryKey, allCountries);
       storage.set(
@@ -39,11 +39,11 @@ export default function ApplicationPage({
         cleanedData.supportedCountries
       );
       storage.set(adapter.tuteriaSubjectsKey, tuteriaSubjects);
-      await store.initializeTutorData(
+      store.initializeTutorData(
         allRegions,
         allCountries,
         cleanedData.supportedCountries,
-        cleanedData.tutor_data
+        cleanedData.tutorData
       );
       if (!store.completed) {
         setIsLoading(false);

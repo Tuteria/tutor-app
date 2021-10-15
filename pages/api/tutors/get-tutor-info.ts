@@ -4,7 +4,12 @@ import { serverAdapter } from "../../../server_utils/server";
 // if there is an error, ensure that it is thrown with the error message to be displayed
 export default authCheck(
   async (req, userInfo) => {
-    return await serverAdapter.getTutorInfo(userInfo.personalInfo.email);
+    const [tutorData, tutorSubjects] = await Promise.all([
+      serverAdapter.getTutorInfo(userInfo.personalInfo.email),
+      serverAdapter.getTutorSubjects(userInfo.personalInfo.email),
+    ]);
+    const accessToken = serverAdapter.upgradeAccessToken(tutorData);
+    return { accessToken, tutorData, tutorSubjects: tutorSubjects.skills }
   },
   // this is only used when testing the apis.
   {
