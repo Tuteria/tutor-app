@@ -32,18 +32,16 @@ export default function ApplicationPage({
   async function initialize() {
     try {
       const cleanedData = clientAdapter.validateCredentials();
-      storage.set(adapter.regionKey, allRegions);
-      storage.set(adapter.countryKey, allCountries);
-      storage.set(
-        adapter.supportedCountriesKey,
-        cleanedData.supportedCountries
-      );
-      storage.set(adapter.tuteriaSubjectsKey, tuteriaSubjects);
+      let result = await clientAdapter.initializeApplication(adapter, {
+        regions: allRegions,
+        countries: allCountries,
+        supportedCountries: cleanedData.supportedCountries,
+        tuteriaSubjects,
+      });
       await store.initializeTutorData(
-        allRegions,
-        allCountries,
-        cleanedData.supportedCountries,
-        cleanedData.tutor_data
+        result.staticData,
+        result.tutorInfo,
+        result.subjectData
       );
       if (!store.completed) {
         setIsLoading(false);
