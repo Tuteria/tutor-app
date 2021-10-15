@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ServerAdapterType } from "@tuteria/shared-lib/src/adapter";
+import { AdapterType, ServerAdapterType } from "@tuteria/shared-lib/src/adapter";
 import storage from "@tuteria/shared-lib/src/local-storage";
 import jwt_decode from "jwt-decode";
 import { TuteriaSubjectType } from "./types";
@@ -147,6 +147,21 @@ async function buildQuizInfo(
     },
     fetchedQuizzes,
   ];
+}
+
+async function getTutorInfo() {
+  const response = await getFetcher('/api/tutors/get-tutor-info', true);
+  if (response.ok) {
+    const { data } = await response.json();
+    const { tutorData, tutorSubjects, supportedCountries } = data;
+    storage.set(NEW_TUTOR_TOKEN, data.accessToken);
+    delete data.accessToken;
+    return { tutorData, tutorSubjects, supportedCountries };
+  }
+  if (response.status === 403) {
+    throw "Invalid Credentials";
+  }
+  throw "Error getting tutor info";
 }
 
 export const clientAdapter: ServerAdapterType = {
@@ -436,17 +451,17 @@ export const clientAdapter: ServerAdapterType = {
       return data;
     }
     throw "Failed to save subject details";
-  },
-
-  async getTutorInfo() {
-    const response = await getFetcher('/api/tutors/get-tutor-info', true);
-    if (response.ok) {
-      const { data } = await response.json();
-      const { tutorData, tutorSubjects } = data;
-      storage.set(NEW_TUTOR_TOKEN, data.accessToken);
-      delete data.accessToken;
-      return { tutorData, tutorSubjects, supportedCountries: ["Nigeria"] };
+  }, 
+  async initializeApplication(adapter: AdapterType, {  regions, countries, tuteriaSubjects }) {
+    const { supportedCountries, tutorData, tutorSubjects } = await getTutorInfo();
+    storage.set(adapter.regionKey, regions);
+    storage.set(adapter.countryKey, countries);
+    storage.set(adapter.tuteriaSubjectsKey, tuteriaSubjects);
+    storage.set(adapter.supportedCountriesKey, supportedCountries);
+    return { 
+      tutorInfo: tutorData,
+      subjectData: { tutorSubjects, tuteriaSubjects },
+      staticData: { regions, countries, supportedCountries } 
     }
-    throw "Invalid Credentials";
   }
 };

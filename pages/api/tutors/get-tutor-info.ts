@@ -9,7 +9,7 @@ export default authCheck(
       serverAdapter.getTutorSubjects(userInfo.personalInfo.email),
     ]);
     const accessToken = serverAdapter.upgradeAccessToken(tutorData);
-    return { accessToken, tutorData, tutorSubjects: tutorSubjects.skills }
+    return { accessToken, tutorData, tutorSubjects: tutorSubjects.skills, supportedCountries: ["Nigeria"] }
   },
   // this is only used when testing the apis.
   {
