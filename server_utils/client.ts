@@ -1,5 +1,8 @@
-import axios from 'axios';
-import { AdapterType, ServerAdapterType } from "@tuteria/shared-lib/src/adapter";
+import axios from "axios";
+import {
+  AdapterType,
+  ServerAdapterType,
+} from "@tuteria/shared-lib/src/adapter";
 import storage from "@tuteria/shared-lib/src/local-storage";
 import jwt_decode from "jwt-decode";
 import { TuteriaSubjectType } from "./types";
@@ -153,10 +156,9 @@ async function getTutorInfo(includeSubjects: boolean) {
   const response = await getFetcher(`/api/tutors/get-tutor-info?subjects=${includeSubjects}`, true);
   if (response.ok) {
     const { data } = await response.json();
-    const { tutorData, tutorSubjects, supportedCountries } = data;
-    storage.set(NEW_TUTOR_TOKEN, data.accessToken);
-    delete data.accessToken;
-    return { tutorData, tutorSubjects, supportedCountries };
+    const { tutorData, tutorSubjects, supportedCountries, accessToken } = data;
+    storage.set(NEW_TUTOR_TOKEN, accessToken);
+    return { tutorData, tutorSubjects, supportedCountries, accessToken };
   }
   if (response.status === 403) {
     throw "Invalid Credentials";
@@ -181,20 +183,24 @@ export const clientAdapter: ServerAdapterType = {
   },
   cloudinaryApiHandler: async (files, progressCallback) => {
     const formData = new FormData();
-    files.forEach((file) => formData.append('media', file));
-    formData.append('folder', 'identity');
-    const { data: response } = await axios.post('/api/tutors/upload-media', formData, {
-      headers: {
-        Authorization: `Bearer ${storage.get(NEW_TUTOR_TOKEN, "")}`,
-        "X-Requested-With": "XMLHttpRequest"
-      },
-      onDownloadProgress(progressEvent) {
-        const percentCompleted = Math.floor(
-          (progressEvent.loaded * 100) / progressEvent.total
-        );
-        progressCallback(percentCompleted);
+    files.forEach((file) => formData.append("media", file));
+    formData.append("folder", "identity");
+    const { data: response } = await axios.post(
+      "/api/tutors/upload-media",
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${storage.get(NEW_TUTOR_TOKEN, "")}`,
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        onDownloadProgress(progressEvent) {
+          const percentCompleted = Math.floor(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          progressCallback(percentCompleted);
+        },
       }
-    });
+    );
     response.data.forEach((item) => {
       item.name = item.public_id;
       item.secure_url = item.url;
@@ -452,15 +458,16 @@ export const clientAdapter: ServerAdapterType = {
     throw "Failed to save subject details";
   }, 
   async initializeApplication(adapter: AdapterType, {  regions, countries, tuteriaSubjects }) {
-    const { supportedCountries, tutorData, tutorSubjects } = await getTutorInfo(tuteriaSubjects.length > 0);
+    const { accessToken, supportedCountries, tutorData, tutorSubjects } = await getTutorInfo(tuteriaSubjects.length > 0);
     storage.set(adapter.regionKey, regions);
     storage.set(adapter.countryKey, countries);
     storage.set(adapter.tuteriaSubjectsKey, tuteriaSubjects);
     storage.set(adapter.supportedCountriesKey, supportedCountries);
-    return { 
+    return {
       tutorInfo: tutorData,
+      accessToken,
       subjectData: { tutorSubjects, tuteriaSubjects },
-      staticData: { regions, countries, supportedCountries } 
-    }
-  }
+      staticData: { regions, countries, supportedCountries },
+    };
+  },
 };
