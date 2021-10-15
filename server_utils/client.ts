@@ -2,14 +2,12 @@ import { ServerAdapterType } from "@tuteria/shared-lib/src/adapter";
 import storage from "@tuteria/shared-lib/src/local-storage";
 import jwt_decode from "jwt-decode";
 import { TuteriaSubjectType } from "./types";
-
-import BANK_DATA from "@tuteria/shared-lib/src/data/banks.json";
 import { uploadToCloudinary } from "@tuteria/shared-lib/src/utils";
 
 const NEW_TUTOR_TOKEN = "NEW_TUTOR_TOKEN";
 const TUTOR_QUIZZES = "TUTOR-QUIZZES";
 const TUTERIA_SUBJECTS_KEY = "TUTERIA_SUBJECTS";
-const TUTOR_SUBJECTS = "TUTOR_SUBJECTS"
+const TUTOR_SUBJECTS = "TUTOR_SUBJECTS";
 
 function decodeToken(existingTokenFromUrl = "", key = NEW_TUTOR_TOKEN) {
   let urlAccessToken = existingTokenFromUrl;
@@ -55,7 +53,7 @@ async function postFetcher(url, data = {}, auth = false) {
 
 async function multipartFetch(url: string, body: FormData) {
   const response = await fetch(url, {
-    method: 'POST',
+    method: "POST",
     headers: { Authorization: `Bearer ${storage.get(NEW_TUTOR_TOKEN, "")}` },
     body,
   });
@@ -152,8 +150,19 @@ async function buildQuizInfo(
 }
 
 export const clientAdapter: ServerAdapterType = {
-  fetchBanksInfo: async (countryCode) => {
-    return BANK_DATA.NG.map((o) => o.name);
+  fetchBanksInfo: async (countrySupported) => {
+    let response = await postFetcher(
+      "/api/get-bank-details",
+      {
+        country: countrySupported,
+      },
+      true
+    );
+    if (response.ok) {
+      let result = await response.json();
+      return result.data;
+    }
+    throw "Error grading quiz";
   },
   cloudinaryApiHandler: async (files, progressCallback) => {
     const promises = files.map((file) =>
@@ -171,9 +180,9 @@ export const clientAdapter: ServerAdapterType = {
   },
   uploadApiHandler: async (files, { folder, unique = false }) => {
     const body = new FormData();
-    files.forEach((file) => body.append('media', file));
-    body.append('folder', folder);
-    const response = await multipartFetch('/api/tutors/upload-media', body);
+    files.forEach((file) => body.append("media", file));
+    body.append("folder", folder);
+    const response = await multipartFetch("/api/tutors/upload-media", body);
     if (response.ok) {
       const { data } = await response.json();
       return data;
@@ -183,11 +192,11 @@ export const clientAdapter: ServerAdapterType = {
   async uploadAndVerifyProfile(file) {
     const { slug }: any = decodeToken();
     const formData = new FormData();
-    formData.append('media', file);
-    formData.append('folder', 'profile_pics');
-    formData.append('publicId', `${slug}-profile`);
-    formData.append('transform', 'true');
-    const response = await multipartFetch('/api/tutors/upload-media', formData);
+    formData.append("media", file);
+    formData.append("folder", "profile_pics");
+    formData.append("publicId", `${slug}-profile`);
+    formData.append("transform", "true");
+    const response = await multipartFetch("/api/tutors/upload-media", formData);
     if (response.ok) {
       const { data } = await response.json();
       const [image] = data;
@@ -195,7 +204,7 @@ export const clientAdapter: ServerAdapterType = {
         profile_id: image.public_id,
         url: image.url,
         quality: image.quality,
-      }
+      };
     }
     throw "Failed to upload profile pic";
   },
@@ -249,7 +258,7 @@ export const clientAdapter: ServerAdapterType = {
     }
     if (subjectInfo) {
       if (subjectInfo?.pk) {
-        storage.set(TUTOR_SUBJECTS, tutorSubjects)
+        storage.set(TUTOR_SUBJECTS, tutorSubjects);
         const foundTutorSubject = tutorSubjects.find(
           (subject) => subject.id === subjectInfo.pk
         );
@@ -281,7 +290,7 @@ export const clientAdapter: ServerAdapterType = {
   },
   loadExistingSubject(subject_id) {
     const tutorSubjects = storage.get(TUTOR_SUBJECTS);
-    return tutorSubjects.find(({id}) => id === subject_id) || {}
+    return tutorSubjects.find(({ id }) => id === subject_id) || {};
   },
   saveTutorInfo: async (payload) => {
     const token = storage.get(NEW_TUTOR_TOKEN, "");
@@ -397,7 +406,7 @@ export const clientAdapter: ServerAdapterType = {
   updateTutorSubjectInfo: async (subject, subject_id) => {
     const response = await postFetcher(
       "/api/tutors/save-subject-info",
-      {pk: subject_id, ...subject},
+      { pk: subject_id, ...subject },
       true
     );
     if (response.ok) {
@@ -409,9 +418,9 @@ export const clientAdapter: ServerAdapterType = {
 
   async saveSubjectImages(files) {
     const body = new FormData();
-    body.append('folder', 'exhibitions');
-    files.forEach(({ file }) => body.append('media', file));
-    const response = await multipartFetch('/api/tutors/upload-media', body);
+    body.append("folder", "exhibitions");
+    files.forEach(({ file }) => body.append("media", file));
+    const response = await multipartFetch("/api/tutors/upload-media", body);
     if (response.ok) {
       const { data } = await response.json();
       data.forEach((item, index) => {
@@ -419,5 +428,5 @@ export const clientAdapter: ServerAdapterType = {
       });
       return data;
     }
-  }
+  },
 };

@@ -388,9 +388,25 @@ export async function fetchAllCountries() {
   return allCountries;
 }
 
+export async function deleteTutorSubject(data: {
+  email: string;
+  ids: number[];
+}) {
+  const response = await fetch(`${HOST}/new-subject-flow/delete-subject`, {
+    headers: { "content-type": "application/json" },
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+
+  if (response.ok) {
+    const { data } = await response.json();
+    return data;
+  }
+  throw new Error("Failed to delete tutor subject");
+}
 export async function saveTutorSubjectInfo(subject: {
   pk: number;
-  skill: {name: string};
+  skill: { name: string };
   heading: string;
   description: string;
   price: number;
@@ -410,16 +426,9 @@ export async function saveTutorSubjectInfo(subject: {
   }
   throw new Error("Error saving subject details");
 }
-export async function deleteTutorSubject(data: { email: string; ids: number[] }) {
-  const response = await fetch(`${HOST}/new-subject-flow/delete-subject`, {
-    headers: { 'content-type': 'application/json' },
-    method: 'POST',
-    body: JSON.stringify(data),
-  })
 
-  if (response.ok) {
-    const { data } = await response.json();
-    return data;
-  }
-  throw new Error("Failed to delete tutor subject");
+export async function getBanksSupported(supportedCountry: string) {
+  let countryData = await import("@tuteria/shared-lib/src/data/banks.json");
+  let bankdDetails = countryData.default[supportedCountry] || [];
+  return bankdDetails;
 }

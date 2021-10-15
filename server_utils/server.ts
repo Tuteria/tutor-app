@@ -15,6 +15,7 @@ import {
   API_TEST,
   saveTutorSubjectInfo,
   deleteTutorSubject,
+  getBanksSupported,
 } from "./hostService";
 import {
   getTuteriaSubjectList,
@@ -26,9 +27,9 @@ import {
 } from "./sheetService";
 import { sendClientLoginCodes } from "./email";
 import { TuteriaSubjectType } from "./types";
-import { upload } from './cloudinary';
-import { UploadApiOptions } from 'cloudinary';
-import { File } from 'formidable';
+import { upload } from "./cloudinary";
+import { UploadApiOptions } from "cloudinary";
+import { File } from "formidable";
 const bulkFetchQuizSubjectsFromSheet = async (
   subjects: string[],
   create = false
@@ -534,18 +535,27 @@ export const serverAdapter = {
     let { regions } = await getLocationInfoFromSheet();
     return regions;
   },
+  deleteSubject: async (data: { email: string; ids: number[] }) => {
+    const response = await deleteTutorSubject(data);
+    return response;
+  },
+  uploadMedia: async (
+    files: File[],
+    options: UploadApiOptions,
+    transform: boolean
+  ) => {
+    const data = await Promise.all(
+      files.map(({ path }) => {
+        return upload(path, options, transform);
+      })
+    );
+    return data;
+  },
   saveTutorSubjectDetails: async (subject: any) => {
     const result = await saveTutorSubjectInfo(subject);
     return result;
   },
-  deleteSubject: async(data: { email: string, ids: number[] }) => {
-    const response = await deleteTutorSubject(data);
-    return response;
+  getBanksSupported: async (countrySupported: string) => {
+    return await getBanksSupported(countrySupported);
   },
-  uploadMedia: async(files: File[], options: UploadApiOptions, transform: boolean) => {
-    const data = await Promise.all(files.map(({ path }) => {
-      return upload(path, options, transform);
-    }));
-    return data;
-  }
 };
