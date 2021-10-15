@@ -31,19 +31,17 @@ export default function ApplicationPage({
 
   async function initialize() {
     try {
-      const cleanedData = await clientAdapter.getTutorInfo();
-      storage.set(adapter.regionKey, allRegions);
-      storage.set(adapter.countryKey, allCountries);
-      storage.set(
-        adapter.supportedCountriesKey,
-        cleanedData.supportedCountries
-      );
-      storage.set(adapter.tuteriaSubjectsKey, tuteriaSubjects);
-      store.initializeTutorData(
-        allRegions,
-        allCountries,
-        cleanedData.supportedCountries,
-        cleanedData.tutorData
+      const cleanedData = clientAdapter.validateCredentials();
+      let result = await clientAdapter.initializeApplication(adapter, {
+        regions: allRegions,
+        countries: allCountries,
+        supportedCountries: cleanedData.supportedCountries,
+        tuteriaSubjects,
+      });
+      await store.initializeTutorData(
+        result.staticData,
+        result.tutorInfo,
+        result.subjectData
       );
       if (!store.completed) {
         setIsLoading(false);
