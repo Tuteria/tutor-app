@@ -1,35 +1,68 @@
 import { loadAdapter } from "@tuteria/shared-lib/src/adapter";
 import { LoadingStateWrapper } from "@tuteria/shared-lib/src/components/data-display/LoadingState";
-import { TutorSubject } from "@tuteria/shared-lib/src/stores";
+import {
+  buildProfileInfo,
+  RootStore,
+  TutorSubject,
+} from "@tuteria/shared-lib/src/stores";
+import { SUBJECT_EDIT_STEPS } from "@tuteria/shared-lib/src/stores/subject";
 import SubjectEditView from "@tuteria/shared-lib/src/tutor-revamp/SubjectEditView";
-import { useRouter } from "next/router";
+import TutorProfile from "@tuteria/shared-lib/src/tutor-revamp/TutorPreview";
 import React from "react";
 import { clientAdapter } from "../../server_utils/client";
+import { usePrefetchHook } from "../../server_utils/util";
 
-const store = TutorSubject.create({}, { adapter: loadAdapter(clientAdapter) });
+const adapter = loadAdapter(clientAdapter);
+const subjectStore = TutorSubject.create({}, { adapter });
+const store = RootStore.create({}, { adapter });
 
 const SubjectDetail = () => {
+  const { router, onError } = usePrefetchHook({ routes: [] });
   let {
     query: { slug },
-  } = useRouter();
+  } = router;
 
   async function initialize(setLoading) {
     if (slug) {
-      clientAdapter
-        .getTutorSubjects({ pk: parseInt(slug as string) })
-        .then(({ tutorSubjects }) => {
+      try {
+        let { foundSubject, response: result } =
+          await clientAdapter.initializeSubject(
+            adapter,
+            { id: parseInt(slug as string) },
+            "id"
+          );
+
+        if (foundSubject) {
+          await store.initializeTutorData(
+            result.staticData,
+            result.tutorInfo,
+            result.subjectData
+          );
+          subjectStore.initialize(foundSubject);
           setLoading(false);
-          store.initialize(tutorSubjects[0]);
-        });
+        }
+      } catch (error) {
+        console.log(error);
+        onError(error);
+      }
+    } else {
+      setLoading(true);
     }
   }
 
   return (
     <LoadingStateWrapper
-      initialize={initialize}
+      key={slug}
       text="Fetching subject details..."
+      initialize={initialize}
     >
-      <SubjectEditView store={store} />
+      <SubjectEditView store={subjectStore}>
+        {(currentForm) => {
+          if (currentForm === SUBJECT_EDIT_STEPS.PREVIEW) {
+            return <TutorProfile {...buildProfileInfo(store, subjectStore)} />;
+          }
+        }}
+      </SubjectEditView>
     </LoadingStateWrapper>
   );
 };

@@ -187,6 +187,7 @@ function formatSubjects(
     pk: any;
     price?: any;
     other_info?: any;
+    exhibitions: any[];
     sittings: any[];
   }[],
   allowedQuizzes: Array<{ name: string }> = []
@@ -227,6 +228,13 @@ function formatSubjects(
       preliminaryQuestions: item.other_info?.preliminaryQuestions || [],
       canTakeTest:
         item.sittings.length === 0 && (item.status === 3 || item.status === 5),
+      exhibitions: (item.exhibitions || []).map((o) => {
+        return {
+          url: o.url || "",
+          id: o.image,
+          caption: o.caption,
+        };
+      }),
       // test_detail: test_detail.find(
       //   ({ name, testable }: any) => name === item.skill.name && testable
       // ) || null,

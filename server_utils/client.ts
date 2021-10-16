@@ -10,7 +10,7 @@ import { TuteriaSubjectType } from "./types";
 const NEW_TUTOR_TOKEN = "NEW_TUTOR_TOKEN";
 const TUTOR_QUIZZES = "TUTOR-QUIZZES";
 const TUTERIA_SUBJECTS_KEY = "TUTERIA_SUBJECTS";
-const TUTOR_SUBJECTS = "TUTOR_SUBJECTS";
+const CURRENT_SKILL = "TUTERIA_SKILL";
 
 function decodeToken(existingTokenFromUrl = "", key = NEW_TUTOR_TOKEN) {
   let urlAccessToken = existingTokenFromUrl;
@@ -153,7 +153,10 @@ async function buildQuizInfo(
 }
 
 async function getTutorInfo(includeSubjects: boolean) {
-  const response = await getFetcher(`/api/tutors/get-tutor-info?subjects=${includeSubjects}`, true);
+  const response = await getFetcher(
+    `/api/tutors/get-tutor-info?subjects=${includeSubjects}`,
+    true
+  );
   if (response.ok) {
     const { data } = await response.json();
     const { tutorData, tutorSubjects, supportedCountries, accessToken } = data;
@@ -165,7 +168,43 @@ async function getTutorInfo(includeSubjects: boolean) {
   }
   throw "Error getting tutor info";
 }
-
+async function initializeApplication(
+  adapter: AdapterType,
+  { regions, countries, tuteriaSubjects }
+) {
+  const { accessToken, supportedCountries, tutorData, tutorSubjects } =
+    await getTutorInfo(tuteriaSubjects.length > 0);
+  storage.set(adapter.regionKey, regions);
+  storage.set(adapter.countryKey, countries);
+  storage.set(adapter.tuteriaSubjectsKey, tuteriaSubjects);
+  storage.set(adapter.supportedCountriesKey, supportedCountries);
+  return {
+    tutorInfo: tutorData,
+    accessToken,
+    subjectData: { tutorSubjects, tuteriaSubjects },
+    staticData: { regions, countries, supportedCountries },
+  };
+}
+function getTutorSubject(
+  tutorSubjects: any[],
+  subjectInfo: TuteriaSubjectType,
+  key = "name",
+  action: "edit" | "take_test" = "take_test"
+) {
+  let instance = tutorSubjects.find((o) => o[key] === subjectInfo[key]);
+  if (instance) {
+    if (action === "take_test") {
+      if (instance.canTakeTest) {
+        return { ...instance, quizzes: subjectInfo.subjects };
+      }
+    }
+    if (action === "edit") {
+      if (instance.status !== "denied") {
+        return { ...instance };
+      }
+    }
+  }
+}
 export const clientAdapter: ServerAdapterType = {
   fetchBanksInfo: async (countrySupported) => {
     let response = await postFetcher(
@@ -268,14 +307,7 @@ export const clientAdapter: ServerAdapterType = {
     }
     throw "Error grading quiz";
   },
-  getTutorSubject(tutorSubjects, subjectInfo: TuteriaSubjectType) {
-    let instance = tutorSubjects.find((o) => o.name === subjectInfo.name);
-    if (instance) {
-      if (instance.canTakeTest) {
-        return { ...instance, quizzes: subjectInfo.subjects };
-      }
-    }
-  },
+  getTutorSubject,
   async getTutorSubjects(subjectInfo?: TuteriaSubjectType) {
     let tutorSubjects = [];
     let tuteriaSubjects = [];
@@ -326,8 +358,11 @@ export const clientAdapter: ServerAdapterType = {
     return decodeToken();
   },
   loadExistingSubject(subject_id) {
-    const tutorSubjects = storage.get(TUTOR_SUBJECTS);
-    return tutorSubjects.find(({ id }) => id === subject_id);
+    const tutorSubjects = storage.get(`${CURRENT_SKILL}_${subject_id}`, {});
+    if (Object.keys(tutorSubjects).length > 0) {
+      return tutorSubjects;
+    }
+    throw new Error("Missing editing subject");
   },
   saveTutorInfo: async (payload) => {
     const token = storage.get(NEW_TUTOR_TOKEN, "");
@@ -450,7 +485,11 @@ export const clientAdapter: ServerAdapterType = {
       data.forEach((item, index) => {
         item.caption = files[index].caption;
       });
-      return data;
+      return data.map((o) => ({
+        id: o.public_id,
+        url: o.url,
+        caption: o.caption,
+      }));
     }
   },
   updateTutorSubjectInfo: async (subject, subject_id) => {
@@ -464,18 +503,28 @@ export const clientAdapter: ServerAdapterType = {
       return data;
     }
     throw "Failed to save subject details";
-  }, 
-  async initializeApplication(adapter: AdapterType, {  regions, countries, tuteriaSubjects }) {
-    const { accessToken, supportedCountries, tutorData, tutorSubjects } = await getTutorInfo(tuteriaSubjects.length > 0);
-    storage.set(adapter.regionKey, regions);
-    storage.set(adapter.countryKey, countries);
-    storage.set(adapter.tuteriaSubjectsKey, tuteriaSubjects);
-    storage.set(adapter.supportedCountriesKey, supportedCountries);
-    return {
-      tutorInfo: tutorData,
-      accessToken,
-      subjectData: { tutorSubjects, tuteriaSubjects },
-      staticData: { regions, countries, supportedCountries },
-    };
+  },
+  initializeApplication,
+  async initializeSubject(
+    adapter: AdapterType,
+    subjectInfo: TuteriaSubjectType,
+    key = "name"
+  ) {
+    let response = await initializeApplication(adapter, {
+      regions: [],
+      countries: [],
+      tuteriaSubjects: [1],
+    });
+    let foundSubject = getTutorSubject(
+      response.subjectData.tutorSubjects,
+      subjectInfo,
+      key,
+      "edit"
+    );
+    if (foundSubject) {
+      storage.set(`${CURRENT_SKILL}_${foundSubject.id}`, foundSubject);
+    }
+    response.subjectData.tuteriaSubjects = [];
+    return { foundSubject, response };
   },
 };
