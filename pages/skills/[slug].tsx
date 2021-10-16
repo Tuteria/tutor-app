@@ -52,7 +52,7 @@ const SubjectDetail = () => {
 
   return (
     <LoadingStateWrapper
-      key={slug}
+      key={slug as any}
       text="Fetching subject details..."
       initialize={initialize}
     >

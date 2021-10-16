@@ -205,7 +205,7 @@ function getTutorSubject(
     }
   }
 }
-export const clientAdapter: ServerAdapterType = {
+export const clientAdapter: any = {
   fetchBanksInfo: async (countrySupported) => {
     let response = await postFetcher(
       "/api/get-bank-details",
@@ -308,51 +308,51 @@ export const clientAdapter: ServerAdapterType = {
     throw "Error grading quiz";
   },
   getTutorSubject,
-  async getTutorSubjects(subjectInfo?: TuteriaSubjectType) {
-    let tutorSubjects = [];
-    let tuteriaSubjects = [];
-    let quizzesAllowed = [];
-    try {
-      let response = await getFetcher("/api/tutors/get-tutor-subjects", true);
-      if (response.ok) {
-        let {
-          data: { skills, allowedQuizzes },
-        } = await response.json();
-        tutorSubjects = skills;
-        quizzesAllowed = allowedQuizzes;
-      }
-    } catch (error) {
-      console.log(error);
-      throw "Error fetching tutor subjects";
-    }
-    if (subjectInfo) {
-      if (subjectInfo?.pk) {
-        storage.set(TUTOR_SUBJECTS, tutorSubjects);
-        const foundTutorSubject = tutorSubjects.find(
-          (subject) => subject.id === subjectInfo.pk
-        );
-        return { tutorSubjects: [foundTutorSubject] };
-      }
-      const rr = {
-        tutorSubjects: tutorSubjects
-          .filter(
-            (o) => o.name.toLowerCase() === subjectInfo.name.toLowerCase()
-          )
-          .map((_tSubject) => {
-            // let quizzes = subjectInfo.subjects.filter((x) =>
-            //   quizzesAllowed
-            //     .map((o) => o.name.toLowerCase())
-            //     .includes(x.name.toLowerCase())
-            // );
-            const quizzes = subjectInfo.subjects;
-            return { ..._tSubject, quizzes };
-          }),
-        tuteriaSubjects,
-      };
-      return rr;
-    }
-    return { tutorSubjects, tuteriaSubjects };
-  },
+  // async getTutorSubjects(subjectInfo?: TuteriaSubjectType) {
+  //   let tutorSubjects = [];
+  //   let tuteriaSubjects = [];
+  //   let quizzesAllowed = [];
+  //   try {
+  //     let response = await getFetcher("/api/tutors/get-tutor-subjects", true);
+  //     if (response.ok) {
+  //       let {
+  //         data: { skills, allowedQuizzes },
+  //       } = await response.json();
+  //       tutorSubjects = skills;
+  //       quizzesAllowed = allowedQuizzes;
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //     throw "Error fetching tutor subjects";
+  //   }
+  //   if (subjectInfo) {
+  //     if (subjectInfo?.pk) {
+  //       storage.set(TUTOR_SUBJECTS, tutorSubjects);
+  //       const foundTutorSubject = tutorSubjects.find(
+  //         (subject) => subject.id === subjectInfo.pk
+  //       );
+  //       return { tutorSubjects: [foundTutorSubject] };
+  //     }
+  //     const rr = {
+  //       tutorSubjects: tutorSubjects
+  //         .filter(
+  //           (o) => o.name.toLowerCase() === subjectInfo.name.toLowerCase()
+  //         )
+  //         .map((_tSubject) => {
+  //           // let quizzes = subjectInfo.subjects.filter((x) =>
+  //           //   quizzesAllowed
+  //           //     .map((o) => o.name.toLowerCase())
+  //           //     .includes(x.name.toLowerCase())
+  //           // );
+  //           const quizzes = subjectInfo.subjects;
+  //           return { ..._tSubject, quizzes };
+  //         }),
+  //       tuteriaSubjects,
+  //     };
+  //     return rr;
+  //   }
+  //   return { tutorSubjects, tuteriaSubjects };
+  // },
 
   loadExistingTutorInfo: () => {
     return decodeToken();
@@ -427,20 +427,20 @@ export const clientAdapter: ServerAdapterType = {
     }
     throw "Error submitting";
   },
-  async generateQuiz(payload: TuteriaSubjectType) {
-    const tutorToken = storage.get(NEW_TUTOR_TOKEN);
-    const response = await fetch("/api/quiz/generate", {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + tutorToken,
-      },
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
-    const { data } = await response.json();
-    storage.set(TUTOR_QUIZZES, data);
-    return data;
-  },
+  // async generateQuiz(payload: TuteriaSubjectType) {
+  //   const tutorToken = storage.get(NEW_TUTOR_TOKEN);
+  //   const response = await fetch("/api/quiz/generate", {
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //       Authorization: "Bearer " + tutorToken,
+  //     },
+  //     method: "POST",
+  //     body: JSON.stringify(payload),
+  //   });
+  //   const { data } = await response.json();
+  //   storage.set(TUTOR_QUIZZES, data);
+  //   return data;
+  // },
   async beginQuiz(payload: { subjects: string[] }) {
     const tutorToken = storage.get(NEW_TUTOR_TOKEN);
     const response: any = await fetch("/api/quiz/begin", {

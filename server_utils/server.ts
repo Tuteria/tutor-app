@@ -16,6 +16,7 @@ import {
   deleteTutorSubject,
   saveTutorSubjectInfo,
   getBanksSupported,
+  TuteriaSubjectServerResponse,
 } from "./hostService";
 import {
   getTuteriaSubjectList,
@@ -178,18 +179,7 @@ export function getUserInfo(
 }
 
 function formatSubjects(
-  subjects: {
-    status: number;
-    skill: { name: string };
-    description?: string;
-    heading?: string;
-    certifications: any[];
-    pk: any;
-    price?: any;
-    other_info?: any;
-    exhibitions: any[];
-    sittings: any[];
-  }[],
+  subjects: TuteriaSubjectServerResponse,
   allowedQuizzes: Array<{ name: string }> = []
 ) {
   const result = subjects.map((item) => {

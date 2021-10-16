@@ -191,7 +191,7 @@ export const updateTestStatus = async (data: {
   throw new Error("Error updating test status from backend.");
 };
 
-type TuteriaSubjectServerResponse = Array<{
+export type TuteriaSubjectServerResponse = Array<{
   pk: number;
   skill: { name: string };
   status: number;
@@ -201,6 +201,13 @@ type TuteriaSubjectServerResponse = Array<{
   has_updated_price: boolean;
   certifications: any[];
   sittings: any[];
+  exhibitions: Array<{ image: string; url: string; caption: string }>;
+  other_info?: {
+    teachingStyle: string;
+    trackRecords: string;
+    teachingRequirements: string;
+    preliminaryQuestions: string;
+  };
 }>;
 
 export const saveUserSelectedSubjects = async (data: {

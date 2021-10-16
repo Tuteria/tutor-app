@@ -61,9 +61,7 @@ export default function TutorVerificationPage() {
       initialize={initialize}
     >
       <VerificationPage
-        sendVerification={() => {}}
-        isEmailVerified={store.emailVerified}
-        store={store.educationWorkHistory}
+        store={store}
         onNextStep={async () => {
           let token = await store.submitApplication(true);
           navigate(`/complete?access_token=${token}`);
