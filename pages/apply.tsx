@@ -56,7 +56,7 @@ export default function ApplicationPage({
     <LoadingStateWrapper initialize={initialize}>
       <TutorPageComponent
         onEditSubject={(subject) => {
-          return `/skills/${subject.id}`;
+          return `/skills/${subject}`;
         }}
         store={store}
         onTakeTest={(subject) => {
