@@ -223,6 +223,7 @@ function formatSubjects(
           url: o.url || "",
           id: o.image,
           caption: o.caption,
+          isNew: false
         };
       }),
       // test_detail: test_detail.find(

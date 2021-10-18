@@ -475,15 +475,16 @@ export const clientAdapter: any = {
     throw "Failed to save tutor subjects";
   },
   async saveSubjectImages(files) {
-    debugger
     const body = new FormData();
     body.append("folder", "exhibitions");
-    files.forEach(({ file }) => body.append("media", file));
+    // files.forEach(({ file }) => body.append("media", file));
+    const filteredFiles = files.filter(({file}) => file);
+    filteredFiles.forEach(({ file }) => body.append("media", file));
     const response = await multipartFetch("/api/tutors/upload-media", body);
     if (response.ok) {
       const { data } = await response.json();
       data.forEach((item, index) => {
-        item.caption = files[index].caption;
+        item.caption = filteredFiles[index].caption;
       });
       return data.map((o) => ({
         id: o.public_id,
@@ -493,6 +494,7 @@ export const clientAdapter: any = {
     }
   },
   updateTutorSubjectInfo: async (subject, subject_id) => {
+    // debugger
     const response = await postFetcher(
       "/api/tutors/save-subject-info",
       { pk: subject_id, ...subject },
