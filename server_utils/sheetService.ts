@@ -262,3 +262,13 @@ export async function getLocationInfoFromSheet() {
     })),
   };
 }
+
+export async function getSupportedCountries() {
+  let countries = await import("@tuteria/shared-lib/src/data/supportedCountries.json");
+  return countries.default
+}
+
+export async function getEducationData() {
+  let educationData = await import("@tuteria/shared-lib/src/data/educationData.json");
+  return educationData.default
+}

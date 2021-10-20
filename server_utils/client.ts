@@ -170,10 +170,11 @@ async function getTutorInfo(includeSubjects: boolean) {
 }
 async function initializeApplication(
   adapter: AdapterType,
-  { regions, countries, tuteriaSubjects }
+  { regions, countries, supportedCountries, educationData, tuteriaSubjects }
 ) {
-  const { accessToken, supportedCountries, tutorData, tutorSubjects } =
-    await getTutorInfo(tuteriaSubjects.length > 0);
+  const { accessToken, tutorData, tutorSubjects } = await getTutorInfo(
+    tuteriaSubjects.length > 0
+  );
   storage.set(adapter.regionKey, regions);
   storage.set(adapter.countryKey, countries);
   storage.set(adapter.tuteriaSubjectsKey, tuteriaSubjects);
@@ -182,7 +183,16 @@ async function initializeApplication(
     tutorInfo: tutorData,
     accessToken,
     subjectData: { tutorSubjects, tuteriaSubjects },
-    staticData: { regions, countries, supportedCountries },
+    staticData: {
+      regions,
+      countries,
+      supportedCountries,
+      educationData: {
+        degree_data: educationData.degree_data,
+        grade_data: educationData.grade_data,
+        specialities: educationData.specialities,
+      },
+    },
   };
 }
 function getTutorSubject(
@@ -218,7 +228,7 @@ export const clientAdapter: any = {
       let result = await response.json();
       return result.data;
     }
-    throw "Error grading quiz";
+    throw "Error fetching bank info";
   },
   cloudinaryApiHandler: async (files, progressCallback) => {
     const formData = new FormData();
@@ -478,7 +488,7 @@ export const clientAdapter: any = {
     const body = new FormData();
     body.append("folder", "exhibitions");
     // files.forEach(({ file }) => body.append("media", file));
-    const filteredFiles = files.filter(({file}) => file);
+    const filteredFiles = files.filter(({ file }) => file);
     filteredFiles.forEach(({ file }) => body.append("media", file));
     const response = await multipartFetch("/api/tutors/upload-media", body);
     if (response.ok) {

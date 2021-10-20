@@ -25,6 +25,8 @@ import {
   getTuteriaSubjectData,
   getQuizzesFromSubjects,
   getLocationInfoFromSheet,
+  getSupportedCountries,
+  getEducationData,
 } from "./sheetService";
 import { sendClientLoginCodes } from "./email";
 import { TuteriaSubjectType } from "./types";
@@ -557,4 +559,10 @@ export const serverAdapter = {
   getBanksSupported: async (countrySupported: string) => {
     return await getBanksSupported(countrySupported);
   },
+  getSupportedCountries: async () => {
+    return await getSupportedCountries()
+  },
+  getEducationData: async () => {
+    return await getEducationData()
+  }
 };

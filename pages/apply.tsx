@@ -15,10 +15,14 @@ const store = initializeStore(clientAdapter);
 export default function ApplicationPage({
   allCountries,
   allRegions,
+  supportedCountries,
+  educationData,
   tuteriaSubjects = [],
 }: {
   allCountries: any[];
   allRegions: any[];
+  supportedCountries: any[];
+  educationData: any[];
   tuteriaSubjects: TuteriaSubjectType[];
 }) {
   const { navigate, onError } = usePrefetchHook({
@@ -30,13 +34,11 @@ export default function ApplicationPage({
       let result = await clientAdapter.initializeApplication(adapter, {
         regions: allRegions,
         countries: allCountries,
+        supportedCountries,
+        educationData,
         tuteriaSubjects,
       });
-      await store.initializeTutorData(
-        result.staticData,
-        result.tutorInfo,
-        result.subjectData
-      );
+      store.initializeTutorData(result);
       if (store.currentStep === APPLICATION_STEPS.APPLY) {
         setIsLoading(false);
       } else {
@@ -46,6 +48,7 @@ export default function ApplicationPage({
         };
         navigate(paths[store.currentStep]);
       }
+      await store.fetchBanksInfo();
     } catch (error) {
       console.log(error);
       onError(error);
@@ -72,12 +75,26 @@ export default function ApplicationPage({
 }
 
 export async function getStaticProps() {
-  const [allRegions, allCountries, tuteriaSubjects] = await Promise.all([
+  const [
+    allRegions,
+    allCountries,
+    supportedCountries,
+    educationData,
+    tuteriaSubjects,
+  ] = await Promise.all([
     serverAdapter.getRegions(),
     serverAdapter.getCountries(),
+    serverAdapter.getSupportedCountries(),
+    serverAdapter.getEducationData(),
     serverAdapter.getTuteriaSubjects(),
   ]);
   return {
-    props: { allRegions, allCountries, tuteriaSubjects },
+    props: {
+      allRegions,
+      allCountries,
+      supportedCountries,
+      educationData,
+      tuteriaSubjects,
+    },
   };
 }
