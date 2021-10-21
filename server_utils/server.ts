@@ -10,7 +10,6 @@ import {
   deleteTutorSubject,
   fetchAllCountries,
   fetchAllowedQuizesForUser,
-  getBanksSupported,
   getQuizData,
   saveTutorInfoService,
   saveTutorSubjectInfo,
@@ -22,15 +21,15 @@ import {
   userRetakeTest,
 } from "./hostService";
 import {
+  getEducationData,
   getLocationInfoFromSheet,
   getQuizzesFromSubjects,
   getSheetTestData,
+  getSupportedCountries,
   getTestableSubjects,
   getTuteriaSubjectData,
   getTuteriaSubjectList,
-  getSupportedCountries,
-  getEducationData,
-} from "./sheetService";
+} from "@tuteria/tuteria-data/src";
 import { TuteriaSubjectType } from "./types";
 const bulkFetchQuizSubjectsFromSheet = async (
   subjects: string[],
@@ -237,11 +236,54 @@ function formatSubjects(
   return result;
 }
 
+async function getTuteriaSubjects(
+  subject?: string
+): Promise<Array<TuteriaSubjectType> | TuteriaSubjectType | any> {
+  const subjects = await getTuteriaSubjectData();
+  const formattedSubjects = subjects.map((subject) => ({
+    ...subject,
+    subjects: subject.subjects.map(
+      ({ shortName, url, test_name, pass_mark, testSheetID }) => ({
+        name: shortName,
+        url,
+        test_name,
+        pass_mark,
+        test_sheet_id: testSheetID,
+      })
+    ),
+  }));
+  if (!subject) return formattedSubjects;
+  const foundSubject = formattedSubjects.find((item) => item.slug === subject);
+  if (foundSubject) return foundSubject;
+  throw new Error("Subject not found");
+}
 export const serverAdapter = {
   apiTest: API_TEST,
   bulkFetchQuizSubjectsFromSheet,
   getUserInfo,
   getQuizzesForTuteriaSubject: fetchQuizSubjectsFromSheet,
+  async initializeApplication() {
+    const [
+      result,
+      allCountries,
+      supportedCountries,
+      educationData,
+      tuteriaSubjects,
+    ] = await Promise.all([
+      getLocationInfoFromSheet(),
+      fetchAllCountries(),
+      getSupportedCountries(),
+      getEducationData(),
+      getTuteriaSubjects(),
+    ]);
+    return {
+      allRegions: result.regions,
+      allCountries,
+      supportedCountries,
+      educationData,
+      tuteriaSubjects,
+    };
+  },
   async saveTutorInfo(data: any, encode = false) {
     let result = await saveTutorInfoService(data);
     if (encode) {
@@ -514,35 +556,7 @@ export const serverAdapter = {
     return { skills, allowedQuizzes };
     // .filter((item) => item.category);
   },
-  async getTuteriaSubjects(
-    subject?: string
-  ): Promise<Array<TuteriaSubjectType> | TuteriaSubjectType | any> {
-    const subjects = await getTuteriaSubjectData();
-    const formattedSubjects = subjects.map((subject) => ({
-      ...subject,
-      subjects: subject.subjects.map(
-        ({ shortName, url, test_name, pass_mark, testSheetID }) => ({
-          name: shortName,
-          url,
-          test_name,
-          pass_mark,
-          test_sheet_id: testSheetID,
-        })
-      ),
-    }));
-    if (!subject) return formattedSubjects;
-    const foundSubject = formattedSubjects.find(
-      (item) => item.slug === subject
-    );
-    if (foundSubject) return foundSubject;
-    throw new Error("Subject not found");
-  },
 
-  getCountries: fetchAllCountries,
-  getRegions: async () => {
-    let { regions } = await getLocationInfoFromSheet();
-    return regions;
-  },
   deleteSubject: async (data: { email: string; ids: number[] }) => {
     const response = await deleteTutorSubject(data);
     return response;
@@ -558,14 +572,5 @@ export const serverAdapter = {
   saveTutorSubjectDetails: async (subject: any) => {
     const result = await saveTutorSubjectInfo(subject);
     return result;
-  },
-  getBanksSupported: async (countrySupported: string) => {
-    return await getBanksSupported(countrySupported);
-  },
-  getSupportedCountries: async () => {
-    return await getSupportedCountries();
-  },
-  getEducationData: async () => {
-    return await getEducationData();
   },
 };
