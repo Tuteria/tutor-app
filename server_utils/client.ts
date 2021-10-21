@@ -104,20 +104,16 @@ async function buildQuizInfo(
   const QUIZ_TYPE = "Multiple choice";
   const subjects = subjectInfo.subjects.map((o) => o.name);
   let fetchedQuizzes;
-  if (quizDataFromSheet.length > 0) {
-    fetchedQuizzes = quizDataFromSheet;
-  } else {
-    const response = await postFetcher(
-      "/api/quiz/tuteria-subjects-quizzes",
-      {
-        subjects: subjectInfo.subjects,
-      },
-      true
-    );
-    if (response.ok) {
-      const { data } = await response.json();
-      fetchedQuizzes = data;
-    }
+  const response = await postFetcher(
+    "/api/quiz/tuteria-subjects-quizzes",
+    {
+      subjects: subjectInfo.subjects,
+    },
+    true
+  );
+  if (response.ok) {
+    const { data } = await response.json();
+    fetchedQuizzes = data;
   }
   const filteredQuizzes = fetchedQuizzes.filter((x) =>
     subjects.includes(x.name)
@@ -215,6 +211,10 @@ function getTutorSubject(
     }
   }
 }
+
+const modifyExistingSubject = (subject_id, subject) => {
+  storage.set(`${CURRENT_SKILL}_${subject_id}`, subject);
+};
 export const clientAdapter: any = {
   fetchBanksInfo: async (countrySupported) => {
     let response = await postFetcher(
@@ -367,6 +367,9 @@ export const clientAdapter: any = {
   loadExistingTutorInfo: () => {
     return decodeToken();
   },
+  saveSubject(subject_id, subject) {
+    storage.set(`${CURRENT_SKILL}_${subject_id}`, subject);
+  },
   loadExistingSubject(subject_id) {
     const tutorSubjects = storage.get(`${CURRENT_SKILL}_${subject_id}`, {});
     if (Object.keys(tutorSubjects).length > 0) {
@@ -504,7 +507,6 @@ export const clientAdapter: any = {
     }
   },
   updateTutorSubjectInfo: async (subject, subject_id) => {
-    // debugger
     const response = await postFetcher(
       "/api/tutors/save-subject-info",
       { pk: subject_id, ...subject },
@@ -512,6 +514,25 @@ export const clientAdapter: any = {
     );
     if (response.ok) {
       const { data } = await response.json();
+      const formattedData = {
+        id: subject_id,
+        title: subject.heading,
+        description: subject.description,
+        certifications: (subject.certifications || []).map((cert) => ({
+          name: cert.award_name,
+          institution: cert.award_institution,
+        })),
+        teachingStyle: subject.other_info.teachingStyle,
+        trackRecords: subject.other_info.trackRecords,
+        teachingRequirements: subject.other_info.teachingRequirements,
+        preliminaryQuestions: subject.other_info.preliminaryQuestions,
+        // exhibitions: subject.exhibitions.map((j) => ({
+        //   image: j.id,
+        //   caption: j.caption,
+        // })),
+        exhibitions: [],
+      };
+      modifyExistingSubject(subject_id, formattedData);
       return data;
     }
     throw "Failed to save subject details";
