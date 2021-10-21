@@ -39,10 +39,12 @@ module.exports = withImages(
       // Ignore all node modules except those here.
       config.watchOptions.ignored = [
         ...config.watchOptions.ignored,
-        /node_modules([\\]+|\/)+(?!@tuteria[\\/]shared-lib)/,
-        /node_modules([\\]+|\/)+(?!@tuteria[\\/]tuteria-data)/,
-        /\@tuteria[\\/]shared-lib([\\]+|\/)node_modules/,
-        /\@tuteria[\\/]tuteria-data([\\]+|\/)node_modules/,
+        /node_modules\/(?!@tuteria\/.+)/,
+        /\@tuteria\/.+\/node_modules/,
+        // /node_modules([\\]+|\/)+(?!@tuteria[\\/]shared-lib)/,
+        // /node_modules([\\]+|\/)+(?!@tuteria[\\/]tuteria-data)/,
+        // /\@tuteria[\\/]shared-lib([\\]+|\/)node_modules/,
+        // /\@tuteria[\\/]tuteria-data([\\]+|\/)node_modules/,
       ];
       return config;
     },

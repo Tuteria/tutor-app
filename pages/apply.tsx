@@ -1,7 +1,10 @@
 import { loadAdapter } from "@tuteria/shared-lib/src/adapter";
 import { LoadingStateWrapper } from "@tuteria/shared-lib/src/components/data-display/LoadingState";
 import { initializeStore } from "@tuteria/shared-lib/src/stores";
-import { APPLICATION_STEPS } from "@tuteria/shared-lib/src/stores/rootStore";
+import {
+  APPLICATION_STEPS,
+  STEPS,
+} from "@tuteria/shared-lib/src/stores/rootStore";
 import React from "react";
 import TutorPageComponent from "../components/TutorPageComponent";
 import { clientAdapter } from "../server_utils/client";
@@ -39,7 +42,17 @@ export default function ApplicationPage({
         educationData,
         tuteriaSubjects,
       });
-      store.initializeTutorData(result);
+      store.initializeTutorData({
+        ...result,
+        tutorInfo: {
+          ...result.tutorInfo,
+          // appData: {
+          //   ...(result.tutorInfo?.appData || {}),
+          //   currentStep: APPLICATION_STEPS.APPLY,
+          // },
+          // currentEditableForm: STEPS.PERSONAL_INFO,
+        },
+      });
       if (store.currentStep === APPLICATION_STEPS.APPLY) {
         setIsLoading(false);
       } else {
