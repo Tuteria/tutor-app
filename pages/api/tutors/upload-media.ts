@@ -1,8 +1,7 @@
+import formidable, { Fields, File, Files } from "formidable";
 import fs from 'fs';
-import formidable, { Files, File, Fields } from "formidable";
 import { authCheck } from "../../../middlewares";
 import { serverAdapter } from "../../../server_utils/server";
-import { UploadApiOptions } from 'cloudinary';
 
 let tempFiles: File[] = [];
 
@@ -19,7 +18,7 @@ export default authCheck(
       });
     });
     tempFiles = tempFiles.concat(files.media);
-    const options: UploadApiOptions = { folder: fields.folder as string };
+    const options: any = { folder: fields.folder as string };
     if (fields.publicId) {
       options.public_id = fields.publicId as string;
     }

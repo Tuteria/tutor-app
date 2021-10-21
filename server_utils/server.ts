@@ -1,36 +1,35 @@
+import { File } from "formidable";
 import jwt from "jsonwebtoken";
+import { upload } from "./cloudinary";
+import { sendClientLoginCodes } from "./email";
 import {
+  API_TEST,
+  authenticateLoginDetails,
   beginQuiz,
   bulkCreateQuizOnBackend,
+  deleteTutorSubject,
+  fetchAllCountries,
   fetchAllowedQuizesForUser,
+  getBanksSupported,
   getQuizData,
-  authenticateLoginDetails,
   saveTutorInfoService,
+  saveTutorSubjectInfo,
   saveTutorSubjectService,
-  sendEmailNotification,
   saveUserSelectedSubjects,
+  sendEmailNotification,
+  TuteriaSubjectServerResponse,
   updateTestStatus,
   userRetakeTest,
-  fetchAllCountries,
-  API_TEST,
-  deleteTutorSubject,
-  saveTutorSubjectInfo,
-  getBanksSupported,
-  TuteriaSubjectServerResponse,
 } from "./hostService";
 import {
-  getTuteriaSubjectList,
+  getLocationInfoFromSheet,
+  getQuizzesFromSubjects,
   getSheetTestData,
   getTestableSubjects,
   getTuteriaSubjectData,
-  getQuizzesFromSubjects,
-  getLocationInfoFromSheet,
+  getTuteriaSubjectList,
 } from "./sheetService";
-import { sendClientLoginCodes } from "./email";
 import { TuteriaSubjectType } from "./types";
-import { upload } from "./cloudinary";
-import { UploadApiOptions } from "cloudinary";
-import { File } from "formidable";
 const bulkFetchQuizSubjectsFromSheet = async (
   subjects: string[],
   create = false
@@ -537,14 +536,10 @@ export const serverAdapter = {
     const response = await deleteTutorSubject(data);
     return response;
   },
-  uploadMedia: async (
-    files: File[],
-    options: UploadApiOptions,
-    transform: boolean
-  ) => {
+  uploadMedia: async (files: File[], options: any, transform: boolean) => {
     const data = await Promise.all(
-      files.map(({ path }) => {
-        return upload(path, options, transform);
+      files.map((file) => {
+        return upload(file, options, transform);
       })
     );
     return data;
