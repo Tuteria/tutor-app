@@ -79,21 +79,6 @@ async function getFetcher(url, auth = false) {
   return response;
 }
 
-async function buildQuizInfo(
-  subjectInfo: TuteriaSubjectType,
-) {
-  const response = await postFetcher(
-    "/api/quiz/generate",
-    subjectInfo,
-    true
-  );
-  if (response.ok) {
-    const { data } = await response.json();
-    return  data;
-  }
-  throw "Error building quiz"
-}
-
 async function getTutorInfo(includeSubjects: boolean) {
   const response = await getFetcher(
     `/api/tutors/get-tutor-info?subjects=${includeSubjects}`,
@@ -244,9 +229,13 @@ export const clientAdapter: any = {
     }
     throw "Failed to delete tutor subjects";
   },
-  async buildQuizData(subjectInfo, quizzes) {
-    let allowedToTakeInfo = buildQuizInfo(subjectInfo);
-    return allowedToTakeInfo;
+  async buildQuizData(subjectInfo: TuteriaSubjectType) {
+    const response = await postFetcher("/api/quiz/generate", subjectInfo, true);
+    if (response.ok) {
+      const { data } = await response.json();
+      return data;
+    }
+    throw "Error building quiz";
   },
   async submitQuizResults(payload) {
     let response = await postFetcher(

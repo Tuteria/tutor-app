@@ -319,14 +319,14 @@ export const serverAdapter = {
     } else {
       questions = questionsFromFetchedQuizzes[0].slice(0, questionSplit[0]);
     }
-    return {
+    return [{
       title: name,
       slug: slug,
       pass_mark: pass_mark,
       type: QUIZ_TYPE,
       duration: QUIZ_DURATION,
       questions,
-    };
+    }, fetchedQuizzes];
   },
   generateQuizes: async ({
     name,
