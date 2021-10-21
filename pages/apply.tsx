@@ -75,26 +75,10 @@ export default function ApplicationPage({
 }
 
 export async function getStaticProps() {
-  const [
-    allRegions,
-    allCountries,
-    supportedCountries,
-    educationData,
-    tuteriaSubjects,
-  ] = await Promise.all([
-    serverAdapter.getRegions(),
-    serverAdapter.getCountries(),
-    serverAdapter.getSupportedCountries(),
-    serverAdapter.getEducationData(),
-    serverAdapter.getTuteriaSubjects(),
-  ]);
+  const result = await serverAdapter.initializeApplication();
   return {
     props: {
-      allRegions,
-      allCountries,
-      supportedCountries,
-      educationData,
-      tuteriaSubjects,
+      ...result,
     },
   };
 }
