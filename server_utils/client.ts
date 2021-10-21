@@ -78,18 +78,6 @@ async function getFetcher(url, auth = false) {
   });
   return response;
 }
-const generateQuestionSplit = (
-  numOfSubjects: number,
-  total_questions: number
-): number[] => {
-  const numOfQuestions = new Array(numOfSubjects);
-  numOfQuestions.fill(0);
-  for (let i = 0; i < total_questions; i++) {
-    let pointer = i % numOfSubjects;
-    numOfQuestions[pointer] = numOfQuestions[pointer] + 1;
-  }
-  return numOfQuestions;
-};
 
 async function buildQuizInfo(
   subjectInfo: TuteriaSubjectType,
@@ -257,7 +245,7 @@ export const clientAdapter: any = {
     throw "Failed to delete tutor subjects";
   },
   async buildQuizData(subjectInfo, quizzes) {
-    let allowedToTakeInfo = buildQuizInfo(subjectInfo, quizzes);
+    let allowedToTakeInfo = buildQuizInfo(subjectInfo);
     return allowedToTakeInfo;
   },
   async submitQuizResults(payload) {

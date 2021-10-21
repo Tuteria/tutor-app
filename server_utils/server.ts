@@ -301,7 +301,7 @@ export const serverAdapter = {
     const QUIZ_TYPE = "Multiple choice";
     const fetchedQuizzes: any = await fetchQuizSubjectsFromSheet(subjects);
     const questionsFromFetchedQuizzes = fetchedQuizzes.map(
-      (o) => o.questions
+      (quiz) => quiz.questions
     );
     let questionSplit: number[] = generateQuestionSplit(
       fetchedQuizzes.length,
