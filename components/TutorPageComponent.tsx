@@ -54,8 +54,8 @@ const TeachingProfile = Dynamic(
 
 const TutorPageComponent: React.FC<{
   store: IRootStore;
-  onTakeTest: (subject: string) => string;
-  onEditSubject: (subject: any) => string;
+  onTakeTest?: (subject: string) => string;
+  onEditSubject?: (subject: any) => string;
   onNextStep: () => void;
 }> = ({ store, onTakeTest, onEditSubject, onNextStep }) => {
   const { getFormWrapperProps, formIndex, steps, activeStep, completedForm } =

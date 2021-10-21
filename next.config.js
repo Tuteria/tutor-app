@@ -7,6 +7,7 @@ let transpileModules = [
   "tuteria-frontend-components",
   "@tuteria/shared-lib",
   "@gbozee/tuteria-design-system",
+  "@tuteria/tuteria-data",
 ];
 // module.exports = withPWA(
 module.exports = withImages(
@@ -39,7 +40,9 @@ module.exports = withImages(
       config.watchOptions.ignored = [
         ...config.watchOptions.ignored,
         /node_modules([\\]+|\/)+(?!@tuteria[\\/]shared-lib)/,
+        /node_modules([\\]+|\/)+(?!@tuteria[\\/]tuteria-data)/,
         /\@tuteria[\\/]shared-lib([\\]+|\/)node_modules/,
+        /\@tuteria[\\/]tuteria-data([\\]+|\/)node_modules/,
       ];
       return config;
     },

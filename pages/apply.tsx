@@ -28,6 +28,7 @@ export default function ApplicationPage({
   const { navigate, onError } = usePrefetchHook({
     routes: ["/login", "/complete"],
   });
+  const [loaded, setLoaded] = React.useState("initialize");
 
   async function initialize(setIsLoading) {
     try {
@@ -48,7 +49,7 @@ export default function ApplicationPage({
         };
         navigate(paths[store.currentStep]);
       }
-      await store.fetchBanksInfo();
+      setLoaded("done");
     } catch (error) {
       console.log(error);
       onError(error);
@@ -58,14 +59,8 @@ export default function ApplicationPage({
   return (
     <LoadingStateWrapper initialize={initialize}>
       <TutorPageComponent
-        onEditSubject={(subject) => {
-          return `/skills/${subject}`;
-        }}
+        key={loaded}
         store={store}
-        onTakeTest={(subject) => {
-          let instance = tuteriaSubjects.find((o) => o.name === subject);
-          return `/quiz/select-skill/${instance.slug}`;
-        }}
         onNextStep={() => {
           navigate("/verify");
         }}

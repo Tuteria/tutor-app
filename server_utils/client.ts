@@ -187,6 +187,8 @@ async function initializeApplication(
         degree_data: educationData.degree_data,
         grade_data: educationData.grade_data,
         specialities: educationData.specialities,
+        sources: educationData.sources || [],
+        languages: educationData.languages || []
       },
     },
   };
