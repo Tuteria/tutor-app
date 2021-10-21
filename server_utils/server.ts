@@ -341,7 +341,9 @@ export const serverAdapter = {
     const QUIZ_DURATION = 30;
     const QUIZ_TYPE = "Multiple choice";
     const fetchedQuizzes: any = await fetchQuizSubjectsFromSheet(subjects);
-    const questionsFromFetchedQuizzes = fetchedQuizzes.map((o) => o.questions);
+    const questionsFromFetchedQuizzes = fetchedQuizzes.map(
+      (quiz) => quiz.questions
+    );
     let questionSplit: number[] = generateQuestionSplit(
       fetchedQuizzes.length,
       DEFAULT_TOTAL_QUESTIONS
@@ -358,14 +360,14 @@ export const serverAdapter = {
     } else {
       questions = questionsFromFetchedQuizzes[0].slice(0, questionSplit[0]);
     }
-    return {
+    return [{
       title: name,
       slug: slug,
       pass_mark: pass_mark,
       type: QUIZ_TYPE,
       duration: QUIZ_DURATION,
       questions,
-    };
+    }, fetchedQuizzes];
   },
   generateQuizes: async ({
     name,

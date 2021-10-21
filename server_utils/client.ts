@@ -78,75 +78,6 @@ async function getFetcher(url, auth = false) {
   });
   return response;
 }
-const generateQuestionSplit = (
-  numOfSubjects: number,
-  total_questions: number
-): number[] => {
-  const numOfQuestions = new Array(numOfSubjects);
-  numOfQuestions.fill(0);
-  for (let i = 0; i < total_questions; i++) {
-    let pointer = i % numOfSubjects;
-    numOfQuestions[pointer] = numOfQuestions[pointer] + 1;
-  }
-  return numOfQuestions;
-};
-
-const DEFAULT_TOTAL_QUESTIONS = 30;
-async function buildQuizInfo(
-  subjectInfo: TuteriaSubjectType,
-  quizDataFromSheet: Array<{
-    name: string;
-    passmark: number;
-    questions: any[];
-  }>
-) {
-  const QUIZ_DURATION = 30;
-  const QUIZ_TYPE = "Multiple choice";
-  const subjects = subjectInfo.subjects.map((o) => o.name);
-  let fetchedQuizzes;
-  const response = await postFetcher(
-    "/api/quiz/tuteria-subjects-quizzes",
-    {
-      subjects: subjectInfo.subjects,
-    },
-    true
-  );
-  if (response.ok) {
-    const { data } = await response.json();
-    fetchedQuizzes = data;
-  }
-  const filteredQuizzes = fetchedQuizzes.filter((x) =>
-    subjects.includes(x.name)
-  );
-  const questionsFromFilteredQuizzes = filteredQuizzes.map((o) => o.questions);
-  let questionSplit: number[] = generateQuestionSplit(
-    filteredQuizzes.length,
-    DEFAULT_TOTAL_QUESTIONS
-  );
-  let questions: any;
-  if (filteredQuizzes.length > 1) {
-    questionSplit = generateQuestionSplit(
-      filteredQuizzes.length,
-      DEFAULT_TOTAL_QUESTIONS
-    );
-    questions = questionsFromFilteredQuizzes
-      .map((questions, index) => questions.slice(0, questionSplit[index]))
-      .flat();
-  } else {
-    questions = questionsFromFilteredQuizzes[0].slice(0, questionSplit[0]);
-  }
-  return [
-    {
-      title: subjectInfo.name,
-      slug: subjectInfo.slug,
-      pass_mark: subjectInfo.pass_mark,
-      type: QUIZ_TYPE,
-      duration: QUIZ_DURATION,
-      questions,
-    },
-    fetchedQuizzes,
-  ];
-}
 
 async function getTutorInfo(includeSubjects: boolean) {
   const response = await getFetcher(
@@ -300,9 +231,13 @@ export const clientAdapter: any = {
     }
     throw "Failed to delete tutor subjects";
   },
-  async buildQuizData(subjectInfo, quizzes) {
-    let allowedToTakeInfo = buildQuizInfo(subjectInfo, quizzes);
-    return allowedToTakeInfo;
+  async buildQuizData(subjectInfo: TuteriaSubjectType) {
+    const response = await postFetcher("/api/quiz/generate", subjectInfo, true);
+    if (response.ok) {
+      const { data } = await response.json();
+      return data;
+    }
+    throw "Error building quiz";
   },
   async submitQuizResults(payload) {
     let response = await postFetcher(
