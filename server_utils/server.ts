@@ -28,6 +28,8 @@ import {
   getTestableSubjects,
   getTuteriaSubjectData,
   getTuteriaSubjectList,
+  getSupportedCountries,
+  getEducationData,
 } from "./sheetService";
 import { TuteriaSubjectType } from "./types";
 const bulkFetchQuizSubjectsFromSheet = async (
@@ -222,6 +224,7 @@ function formatSubjects(
           url: o.url || "",
           id: o.image,
           caption: o.caption,
+          isNew: false,
         };
       }),
       // test_detail: test_detail.find(
@@ -274,12 +277,15 @@ export const serverAdapter = {
     return result;
   },
   generateQuizzes: async ({
+    slug,
     name,
+    pass_mark,
     subjects,
     total_questions,
-    showAnswer = false,
   }: {
+    slug: string;
     name: string;
+    pass_mark: number;
     subjects: Array<{
       name: string;
       url: string;
@@ -288,31 +294,36 @@ export const serverAdapter = {
       test_sheet_id: number;
     }>;
     total_questions: number;
-    showAnswer: boolean;
   }) => {
     const DEFAULT_TOTAL_QUESTIONS = 30;
-    const quizDataFromSheet: any = await fetchQuizSubjectsFromSheet(subjects);
-    const quizQuestions = quizDataFromSheet.map(({ questions }) => {
-      return questions;
-      // return transformData(questions, showAnswer);
-    });
-    let questionSplit: number[];
-    let result: any;
-    if (total_questions) {
-      questionSplit = generateQuestionSplit(subjects.length, total_questions);
-      result = quizQuestions.map((questions, index) => questions).flat();
-    } else {
+    const QUIZ_DURATION = 30;
+    const QUIZ_TYPE = "Multiple choice";
+    const fetchedQuizzes: any = await fetchQuizSubjectsFromSheet(subjects);
+    const questionsFromFetchedQuizzes = fetchedQuizzes.map((o) => o.questions);
+    let questionSplit: number[] = generateQuestionSplit(
+      fetchedQuizzes.length,
+      DEFAULT_TOTAL_QUESTIONS
+    );
+    let questions: any;
+    if (fetchedQuizzes.length > 1) {
       questionSplit = generateQuestionSplit(
-        subjects.length,
+        fetchedQuizzes.length,
         DEFAULT_TOTAL_QUESTIONS
       );
-      result = subjects.map((subject, index) => ({
-        subject: subject.name,
-        passmark: quizDataFromSheet[index].passmark,
-        questions: showAnswer ? quizQuestions[index] : quizQuestions[index],
-      }));
+      questions = questionsFromFetchedQuizzes
+        .map((questions, index) => questions.slice(0, questionSplit[index]))
+        .flat();
+    } else {
+      questions = questionsFromFetchedQuizzes[0].slice(0, questionSplit[0]);
     }
-    return result;
+    return {
+      title: name,
+      slug: slug,
+      pass_mark: pass_mark,
+      type: QUIZ_TYPE,
+      duration: QUIZ_DURATION,
+      questions,
+    };
   },
   generateQuizes: async ({
     name,
@@ -550,5 +561,11 @@ export const serverAdapter = {
   },
   getBanksSupported: async (countrySupported: string) => {
     return await getBanksSupported(countrySupported);
+  },
+  getSupportedCountries: async () => {
+    return await getSupportedCountries();
+  },
+  getEducationData: async () => {
+    return await getEducationData();
   },
 };
