@@ -6,12 +6,19 @@ import { APPLICATION_STEPS } from "@tuteria/shared-lib/src/stores/rootStore";
 import VerificationPage from "@tuteria/shared-lib/src/tutor-revamp/VerificationPage";
 import React from "react";
 import { clientAdapter } from "../server_utils/client";
+import { serverAdapter } from "../server_utils/server";
 import { usePrefetchHook } from "../server_utils/util";
 
 const adapter = loadAdapter(clientAdapter);
 const store = initializeStore(clientAdapter);
 
-export default function TutorVerificationPage() {
+export default function TutorVerificationPage({
+  allCountries,
+  allRegions,
+  supportedCountries,
+  educationData,
+  tuteriaSubjects = [],
+}) {
   const toast = useToast();
   const { navigate } = usePrefetchHook({
     routes: ["/login", "/complete", "/apply"],
@@ -20,15 +27,13 @@ export default function TutorVerificationPage() {
   async function initialize(setIsLoading) {
     try {
       let result = await clientAdapter.initializeApplication(adapter, {
-        regions: [],
-        countries: [],
-        tuteriaSubjects: [],
+        regions: allRegions,
+        countries: allCountries,
+        supportedCountries,
+        educationData,
+        tuteriaSubjects,
       });
-      await store.initializeTutorData(
-        result.staticData,
-        { ...result.tutorInfo, currentStep: APPLICATION_STEPS.VERIFY },
-        result.subjectData
-      );
+      await store.initializeTutorData(result);
       if (store.currentStep === APPLICATION_STEPS.VERIFY) {
         setIsLoading(false);
       } else {
@@ -36,7 +41,12 @@ export default function TutorVerificationPage() {
           [APPLICATION_STEPS.APPLY]: `/apply`,
           [APPLICATION_STEPS.COMPLETE]: `/complete?access_token=${result.accessToken}`,
         };
-        navigate(paths[store.currentStep]);
+        let _path = paths[store.currentStep];
+        if (_path) {
+          navigate(paths[store.currentStep]);
+        } else {
+          navigate("/apply");
+        }
       }
     } catch (error) {
       console.log(error);
@@ -70,14 +80,11 @@ export default function TutorVerificationPage() {
     </LoadingStateWrapper>
   );
 }
-
-// export async function getStaticProps() {
-//   const [allRegions, allCountries, tuteriaSubjects] = await Promise.all([
-//     serverAdapter.getRegions(),
-//     serverAdapter.getCountries(),
-//     serverAdapter.getTuteriaSubjects(),
-//   ]);
-//   return {
-//     props: { allRegions, allCountries, tuteriaSubjects },
-//   };
-// }
+export async function getStaticProps() {
+  const result = await serverAdapter.initializeApplication();
+  return {
+    props: {
+      ...result,
+    },
+  };
+}

@@ -1,6 +1,7 @@
 import XFormDAta from "form-data";
 import fs from "fs";
 import fetch from "node-fetch";
+// const MEDIA_SERVICE = process.env.MEDIA_SERVICE || "http://localhost:8000";
 const MEDIA_SERVICE = process.env.MEDIA_SERVICE || "https://sheet.tuteria.com";
 const MEDIA_FORMAT = process.env.MEDIA_FORMAT || "test";
 
@@ -79,7 +80,9 @@ export async function uploadCloudinaryResource(
 ) {
   let formData = new XFormDAta();
   Object.keys(options).forEach((key) => {
-    formData.append(key, options[key]);
+    if (options[key]) {
+      formData.append(key, options[key]);
+    }
   });
   formData.append(kind, fs.createReadStream(fileObj.path));
   formData.append("kind", kind);
