@@ -394,7 +394,6 @@ export const clientAdapter: any = {
     files.forEach(({ file }) => body.append("media", file));
     const response = await multipartFetch("/api/tutors/upload-media", body);
     if (response.ok) {
-      debugger
       const { data } = await response.json();
       data.forEach((item, index) => {
         item.caption = files[index].caption;
@@ -407,8 +406,6 @@ export const clientAdapter: any = {
     }
   },
   updateTutorSubjectInfo: async (subject, subject_id) => {
-    // debugger
-    // return {}
     const response = await postFetcher(
       "/api/tutors/save-subject-info",
       { pk: subject_id, ...subject },
