@@ -31,6 +31,54 @@ import {
   getTuteriaSubjectList,
 } from "@tuteria/tuteria-data/src";
 import { TuteriaSubjectType } from "./types";
+
+const DEFAULT_TOTAL_QUESTIONS = 30;
+function buildQuizInfo(
+  subjectInfo: TuteriaSubjectType,
+  quizDataFromSheet: Array<{
+    name: string;
+    passmark: number;
+    questions: any[];
+  }>,
+  total_questions = DEFAULT_TOTAL_QUESTIONS
+) {
+  const QUIZ_DURATION = 30;
+  const QUIZ_TYPE = "Multiple choice";
+  const subjects = subjectInfo.subjects.map((o) => o.name);
+  let fetchedQuizzes = quizDataFromSheet;
+  const filteredQuizzes = fetchedQuizzes.filter((x) =>
+    subjects.includes(x.name)
+  );
+  const questionsFromFilteredQuizzes = filteredQuizzes.map((o) => o.questions);
+  let questionSplit: number[] = generateQuestionSplit(
+    filteredQuizzes.length,
+    total_questions
+  );
+  let questions: any;
+  if (filteredQuizzes.length > 1) {
+    questionSplit = generateQuestionSplit(
+      filteredQuizzes.length,
+      total_questions
+    );
+    questions = questionsFromFilteredQuizzes
+      .map((questions, index) => questions.slice(0, questionSplit[index]))
+      .flat();
+  } else {
+    questions = questionsFromFilteredQuizzes[0].slice(0, questionSplit[0]);
+  }
+  return [
+    {
+      title: subjectInfo.name,
+      slug: subjectInfo.slug,
+      pass_mark: subjectInfo.pass_mark,
+      type: QUIZ_TYPE,
+      duration: QUIZ_DURATION,
+      questions,
+    },
+    fetchedQuizzes,
+  ];
+}
+
 const bulkFetchQuizSubjectsFromSheet = async (
   subjects: string[],
   create = false
@@ -337,37 +385,12 @@ export const serverAdapter = {
     }>;
     total_questions: number;
   }) => {
-    const DEFAULT_TOTAL_QUESTIONS = 30;
-    const QUIZ_DURATION = 30;
-    const QUIZ_TYPE = "Multiple choice";
     const fetchedQuizzes: any = await fetchQuizSubjectsFromSheet(subjects);
-    const questionsFromFetchedQuizzes = fetchedQuizzes.map(
-      (quiz) => quiz.questions
+    return buildQuizInfo(
+      { slug, name, pass_mark, subjects },
+      fetchedQuizzes,
+      total_questions
     );
-    let questionSplit: number[] = generateQuestionSplit(
-      fetchedQuizzes.length,
-      DEFAULT_TOTAL_QUESTIONS
-    );
-    let questions: any;
-    if (fetchedQuizzes.length > 1) {
-      questionSplit = generateQuestionSplit(
-        fetchedQuizzes.length,
-        DEFAULT_TOTAL_QUESTIONS
-      );
-      questions = questionsFromFetchedQuizzes
-        .map((questions, index) => questions.slice(0, questionSplit[index]))
-        .flat();
-    } else {
-      questions = questionsFromFetchedQuizzes[0].slice(0, questionSplit[0]);
-    }
-    return [{
-      title: name,
-      slug: slug,
-      pass_mark: pass_mark,
-      type: QUIZ_TYPE,
-      duration: QUIZ_DURATION,
-      questions,
-    }, fetchedQuizzes];
   },
   generateQuizes: async ({
     name,

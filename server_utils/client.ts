@@ -119,7 +119,7 @@ async function initializeApplication(
         grade_data: educationData.grade_data,
         specialities: educationData.specialities,
         sources: educationData.sources || [],
-        languages: educationData.languages || []
+        languages: educationData.languages || [],
       },
     },
   };
@@ -235,22 +235,20 @@ export const clientAdapter: any = {
     const response = await postFetcher("/api/quiz/generate", subjectInfo, true);
     if (response.ok) {
       const { data } = await response.json();
+      let [quizToTake, quizzesList] = data;
+      return quizToTake;
       return data;
     }
     throw "Error building quiz";
   },
   async submitQuizResults(payload) {
-    let response = await postFetcher(
-      "/api/exam/complete",
-      {
-        name: payload.name,
-        grading: payload.grading,
-      },
-      true
-    );
+    // we do not care about the server response. we just need to send the payload back if the
+    // server response was successful.
+    let response = await postFetcher("/api/exam/complete", payload, true);
     if (response.ok) {
       let result = await response.json();
-      return result.data;
+      return { payload };
+      // return result.data;
     }
     throw "Error grading quiz";
   },

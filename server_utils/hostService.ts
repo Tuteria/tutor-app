@@ -214,7 +214,6 @@ export const saveUserSelectedSubjects = async (data: {
   email: string;
   subjects: string[];
 }): Promise<TuteriaSubjectServerResponse> => {
-  debugger
   let response = await fetch(`${HOST}/new-subject-flow/select-subjects`, {
     headers: {
       "Content-Type": "application/json",
