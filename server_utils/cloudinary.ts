@@ -2,7 +2,8 @@ import XFormDAta from "form-data";
 import fs from "fs";
 import fetch from "node-fetch";
 // const MEDIA_SERVICE = process.env.MEDIA_SERVICE || "http://localhost:8000";
-const MEDIA_SERVICE = process.env.MEDIA_SERVICE || "https://sheet.tuteria.com";
+const MEDIA_SERVICE = process.env.MEDIA_SERVICE || "http://staging-prod.tuteria.com:8020";
+// const MEDIA_SERVICE = process.env.MEDIA_SERVICE || "https://sheet.tuteria.com";
 const MEDIA_FORMAT = process.env.MEDIA_FORMAT || "test";
 
 async function transformImage(publicId: string) {
@@ -19,9 +20,11 @@ async function transformImage(publicId: string) {
 }
 
 export async function upload(filePath: any, options: any, transform: boolean) {
+  let new_options = { ...options, file_name: options.public_id };
+  delete new_options.public_id;
   let result = await uploadCloudinaryResource(
     filePath,
-    { ...options, file_name: options.public_id },
+    new_options,
     options.kind as any
   );
   if (result.full_response) {
@@ -86,14 +89,19 @@ export async function uploadCloudinaryResource(
   });
   formData.append(kind, fs.createReadStream(fileObj.path));
   formData.append("kind", kind);
+  console.log(options);
   let response = await fetch(`${MEDIA_SERVICE}/media/${MEDIA_FORMAT}/upload`, {
     method: "POST",
     body: formData,
     headers: formData.getHeaders(),
   });
-  let result = await response.json();
-  if (response.status < 400) {
-    return result.data;
+  if (response.ok) {
+    let result = await response.json();
+    if (response.status < 400) {
+      return result.data;
+    }
+    return result;
   }
-  return result;
+  console.log(response);
+  throw "Error from server";
 }

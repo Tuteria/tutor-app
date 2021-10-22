@@ -33,7 +33,16 @@ export default function TutorVerificationPage({
         educationData,
         tuteriaSubjects,
       });
-      await store.initializeTutorData(result);
+      await store.initializeTutorData({
+        ...result,
+        // tutorInfo: {
+        //   ...result.tutorInfo,
+        //   others: {
+        //     ...result.tutorInfo.others,
+        //     videoSummary: {},
+        //   },
+        // },
+      });
       if (store.currentStep === APPLICATION_STEPS.VERIFY) {
         setIsLoading(false);
       } else {
