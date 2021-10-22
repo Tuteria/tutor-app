@@ -147,10 +147,12 @@ function getTutorSubject(
   }
 }
 
-const modifyExistingSubject = (subject_id, subject) => {
+const saveSubject = (subject_id, subject) => {
   storage.set(`${CURRENT_SKILL}_${subject_id}`, subject);
 };
+
 export const clientAdapter: any = {
+  saveSubject,
   fetchBanksInfo: async (countrySupported) => {
     let response = await postFetcher(
       "/api/get-bank-details",
@@ -279,9 +281,6 @@ export const clientAdapter: any = {
   loadExistingTutorInfo: () => {
     return storage.get(NEW_TUTOR_INFO);
   },
-  saveSubject(subject_id, subject) {
-    storage.set(`${CURRENT_SKILL}_${subject_id}`, subject);
-  },
   loadExistingSubject(subject_id) {
     const tutorSubjects = storage.get(`${CURRENT_SKILL}_${subject_id}`, {});
     if (Object.keys(tutorSubjects).length > 0) {
@@ -392,14 +391,12 @@ export const clientAdapter: any = {
   async saveSubjectImages(files) {
     const body = new FormData();
     body.append("folder", "exhibitions");
-    // files.forEach(({ file }) => body.append("media", file));
-    const filteredFiles = files.filter(({ file }) => file);
-    filteredFiles.forEach(({ file }) => body.append("media", file));
+    files.forEach(({ file }) => body.append("media", file));
     const response = await multipartFetch("/api/tutors/upload-media", body);
     if (response.ok) {
       const { data } = await response.json();
       data.forEach((item, index) => {
-        item.caption = filteredFiles[index].caption;
+        item.caption = files[index].caption;
       });
       return data.map((o) => ({
         id: o.public_id,
@@ -428,13 +425,12 @@ export const clientAdapter: any = {
         trackRecords: subject.other_info.trackRecords,
         teachingRequirements: subject.other_info.teachingRequirements,
         preliminaryQuestions: subject.other_info.preliminaryQuestions,
-        // exhibitions: subject.exhibitions.map((j) => ({
-        //   image: j.id,
-        //   caption: j.caption,
-        // })),
-        exhibitions: [],
+        exhibitions: subject.exhibitions.map((exhibition) => ({
+          id: exhibition.image,
+          caption: exhibition.caption,
+        })),
       };
-      modifyExistingSubject(subject_id, formattedData);
+      saveSubject(subject_id, formattedData);
       return data;
     }
     throw "Failed to save subject details";

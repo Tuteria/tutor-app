@@ -46,11 +46,11 @@ export default function ApplicationPage({
         ...result,
         tutorInfo: {
           ...result.tutorInfo,
-          // appData: {
-          //   ...(result.tutorInfo?.appData || {}),
-          //   currentStep: APPLICATION_STEPS.APPLY,
-          // },
-          // currentEditableForm: STEPS.PERSONAL_INFO,
+          appData: {
+            ...(result.tutorInfo?.appData || {}),
+            currentEditableForm: STEPS.SUBJECT_SELECTION,
+            currentStep: APPLICATION_STEPS.APPLY,
+          },
         },
       });
       if (store.currentStep === APPLICATION_STEPS.APPLY) {
