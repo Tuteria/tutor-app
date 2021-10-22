@@ -48,7 +48,7 @@ export default function ApplicationPage({
           ...result.tutorInfo,
           appData: {
             ...(result.tutorInfo?.appData || {}),
-            currentEditableForm: STEPS.SUBJECT_SELECTION,
+            // currentEditableForm: STEPS.SUBJECT_SELECTION,
             currentStep: APPLICATION_STEPS.APPLY,
           },
         },
