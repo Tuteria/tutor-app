@@ -236,7 +236,7 @@ export const clientAdapter: any = {
     if (response.ok) {
       const { data } = await response.json();
       let [quizToTake, quizzesList] = data;
-      return quizToTake;
+      return [quizToTake, quizzesList];
       return data;
     }
     throw "Error building quiz";
