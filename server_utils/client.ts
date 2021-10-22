@@ -1,9 +1,6 @@
-import axios from "axios";
-import {
-  AdapterType,
-  ServerAdapterType,
-} from "@tuteria/shared-lib/src/adapter";
+import { AdapterType } from "@tuteria/shared-lib/src/adapter";
 import storage from "@tuteria/shared-lib/src/local-storage";
+import axios from "axios";
 import jwt_decode from "jwt-decode";
 import { TuteriaSubjectType } from "./types";
 
@@ -436,26 +433,4 @@ export const clientAdapter: any = {
     throw "Failed to save subject details";
   },
   initializeApplication,
-  async initializeSubject(
-    adapter: AdapterType,
-    subjectInfo: TuteriaSubjectType,
-    key = "name"
-  ) {
-    let response = await initializeApplication(adapter, {
-      regions: [],
-      countries: [],
-      tuteriaSubjects: [1],
-    });
-    let foundSubject = getTutorSubject(
-      response.subjectData.tutorSubjects,
-      subjectInfo,
-      key,
-      "edit"
-    );
-    if (foundSubject) {
-      storage.set(`${CURRENT_SKILL}_${foundSubject.id}`, foundSubject);
-    }
-    response.subjectData.tuteriaSubjects = [];
-    return { foundSubject, response };
-  },
 };

@@ -124,14 +124,17 @@ export async function sendEmailNotification(data) {
     if (datToSend.sms_options) {
       datToSend.sms_options.receiver = TEST_NUMBER;
     }
-  } else {
+  }
+  if(IS_DEVELOPMENT !== "development"){
     const response = await fetch(`${NOTIFICATION_SERVICE}/send_message/`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(datToSend),
     });
+    console.log(datToSend)
     const result = await response.json();
     return result;
+
   }
 }
 

@@ -607,4 +607,5 @@ export const serverAdapter = {
     const result = await saveTutorSubjectInfo(subject);
     return result;
   },
+  getTuteriaSubjects
 };
