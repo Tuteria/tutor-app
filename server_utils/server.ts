@@ -489,9 +489,18 @@ export const serverAdapter = {
   },
 
   upgradeAccessToken(userInfo) {
-    return jwt.sign(userInfo, process.env.SECRET_KEY, {
-      expiresIn: 60 * 60 * 24,
-    });
+    let { email, firstName, lastName, nationality } = userInfo.personalInfo;
+    return jwt.sign(
+      // userInfo,
+      {
+        slug: userInfo.slug,
+        personalInfo: { email, firstName, lastName, nationality },
+      },
+      process.env.SECRET_KEY,
+      {
+        expiresIn: 60 * 60 * 24,
+      }
+    );
   },
 
   async authenticateUserCode(email: string, code: string) {

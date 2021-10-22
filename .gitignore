@@ -37,4 +37,4 @@ yarn-error.log*
 sw.js
 sw.js.map
 workbox*
-/public/upload_*.png
+/public/upload_*

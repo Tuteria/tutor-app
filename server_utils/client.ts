@@ -8,6 +8,7 @@ import jwt_decode from "jwt-decode";
 import { TuteriaSubjectType } from "./types";
 
 const NEW_TUTOR_TOKEN = "NEW_TUTOR_TOKEN";
+const NEW_TUTOR_INFO = "NEW_TUTOR_INFO";
 const TUTOR_QUIZZES = "TUTOR-QUIZZES";
 const TUTERIA_SUBJECTS_KEY = "TUTERIA_SUBJECTS";
 const CURRENT_SKILL = "TUTERIA_SKILL";
@@ -88,6 +89,7 @@ async function getTutorInfo(includeSubjects: boolean) {
     const { data } = await response.json();
     const { tutorData, tutorSubjects, supportedCountries, accessToken } = data;
     storage.set(NEW_TUTOR_TOKEN, accessToken);
+    storage.set(NEW_TUTOR_INFO, tutorData);
     return { tutorData, tutorSubjects, supportedCountries, accessToken };
   }
   if (response.status === 403) {
@@ -193,12 +195,32 @@ export const clientAdapter: any = {
     const body = new FormData();
     files.forEach((file) => body.append("media", file));
     body.append("folder", folder);
+    debugger;
     const response = await multipartFetch("/api/tutors/upload-media", body);
     if (response.ok) {
       const { data } = await response.json();
       return data;
     }
     throw "Failed to upload media";
+  },
+  async submitVideoRecording(blob) {
+    const { slug }: any = decodeToken();
+    const formData = new FormData();
+    formData.append("media", new File([blob], `${slug}-video`));
+    formData.append("folder", "video-submission");
+    formData.append("publicId", `${slug}-video`);
+    formData.append("kind", "video");
+    const response = await multipartFetch("/api/tutors/upload-media", formData);
+    if (response.ok) {
+      const { data } = await response.json();
+      const [video] = data;
+      return {
+        id: video.public_id,
+        url: video.url,
+        quality: video.quality,
+      };
+    }
+    throw "Failed to upload profile pic";
   },
   async uploadAndVerifyProfile(file) {
     const { slug }: any = decodeToken();
@@ -253,54 +275,9 @@ export const clientAdapter: any = {
     throw "Error grading quiz";
   },
   getTutorSubject,
-  // async getTutorSubjects(subjectInfo?: TuteriaSubjectType) {
-  //   let tutorSubjects = [];
-  //   let tuteriaSubjects = [];
-  //   let quizzesAllowed = [];
-  //   try {
-  //     let response = await getFetcher("/api/tutors/get-tutor-subjects", true);
-  //     if (response.ok) {
-  //       let {
-  //         data: { skills, allowedQuizzes },
-  //       } = await response.json();
-  //       tutorSubjects = skills;
-  //       quizzesAllowed = allowedQuizzes;
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //     throw "Error fetching tutor subjects";
-  //   }
-  //   if (subjectInfo) {
-  //     if (subjectInfo?.pk) {
-  //       storage.set(TUTOR_SUBJECTS, tutorSubjects);
-  //       const foundTutorSubject = tutorSubjects.find(
-  //         (subject) => subject.id === subjectInfo.pk
-  //       );
-  //       return { tutorSubjects: [foundTutorSubject] };
-  //     }
-  //     const rr = {
-  //       tutorSubjects: tutorSubjects
-  //         .filter(
-  //           (o) => o.name.toLowerCase() === subjectInfo.name.toLowerCase()
-  //         )
-  //         .map((_tSubject) => {
-  //           // let quizzes = subjectInfo.subjects.filter((x) =>
-  //           //   quizzesAllowed
-  //           //     .map((o) => o.name.toLowerCase())
-  //           //     .includes(x.name.toLowerCase())
-  //           // );
-  //           const quizzes = subjectInfo.subjects;
-  //           return { ..._tSubject, quizzes };
-  //         }),
-  //       tuteriaSubjects,
-  //     };
-  //     return rr;
-  //   }
-  //   return { tutorSubjects, tuteriaSubjects };
-  // },
 
   loadExistingTutorInfo: () => {
-    return decodeToken();
+    return storage.get(NEW_TUTOR_INFO);
   },
   saveSubject(subject_id, subject) {
     storage.set(`${CURRENT_SKILL}_${subject_id}`, subject);
@@ -324,8 +301,11 @@ export const clientAdapter: any = {
     });
     if (response.ok) {
       const { data } = await response.json();
-      storage.set(NEW_TUTOR_TOKEN, data.accessToken);
-      return data.accessToken;
+      let accessToken = data.accessToken;
+      storage.set(NEW_TUTOR_TOKEN, accessToken);
+      delete data.accessToken;
+      storage.set(NEW_TUTOR_INFO, data);
+      return accessToken;
     }
     throw "Failed to save tutor info";
   },
@@ -375,20 +355,7 @@ export const clientAdapter: any = {
     }
     throw "Error submitting";
   },
-  // async generateQuiz(payload: TuteriaSubjectType) {
-  //   const tutorToken = storage.get(NEW_TUTOR_TOKEN);
-  //   const response = await fetch("/api/quiz/generate", {
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //       Authorization: "Bearer " + tutorToken,
-  //     },
-  //     method: "POST",
-  //     body: JSON.stringify(payload),
-  //   });
-  //   const { data } = await response.json();
-  //   storage.set(TUTOR_QUIZZES, data);
-  //   return data;
-  // },
+
   async beginQuiz(payload: { subjects: string[] }) {
     const tutorToken = storage.get(NEW_TUTOR_TOKEN);
     const response: any = await fetch("/api/quiz/begin", {
