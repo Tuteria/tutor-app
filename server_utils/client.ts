@@ -415,6 +415,7 @@ export const clientAdapter: any = {
     throw "Failed to delete image";
   },
   updateTutorSubjectInfo: async (subject, subject_id) => {
+    // debugger
     const response = await postFetcher(
       "/api/tutors/save-subject-info",
       { pk: subject_id, ...subject },

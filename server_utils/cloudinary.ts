@@ -61,7 +61,7 @@ export async function upload(filePath: any, options: any, transform: boolean) {
 //   });
 // }
 
-export async function destroy(id: string, kind="image") {
+export async function destroy({id, kind="image"}) {
   let response = await fetch(`${MEDIA_SERVICE}/media/${MEDIA_FORMAT}/delete`, {
     method: "POST",
     body: JSON.stringify({ public_id: id, kind }),
