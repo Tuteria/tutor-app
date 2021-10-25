@@ -331,6 +331,7 @@ export const clientAdapter: any = {
       if ("accessToken" in data) {
         storage.set(NEW_TUTOR_TOKEN, data.accessToken);
         delete data.accessToken;
+        storage.set(NEW_TUTOR_INFO, data);
       }
       return data;
     }
@@ -402,7 +403,7 @@ export const clientAdapter: any = {
       }));
     }
   },
-  deleteSubjectImage: async(id) => {
+  deleteSubjectImage: async (id) => {
     const response = await postFetcher(
       "/api/tutors/delete-media",
       { id },
@@ -446,4 +447,5 @@ export const clientAdapter: any = {
     throw "Failed to save subject details";
   },
   initializeApplication,
+  async sendEmailVerification({ email, code }) {},
 };

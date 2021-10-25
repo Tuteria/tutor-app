@@ -504,7 +504,11 @@ export const serverAdapter = {
   },
 
   async authenticateUserCode(email: string, code: string) {
-    const data = await authenticateLoginDetails({ email, code });
+    const data = await authenticateLoginDetails({
+      email,
+      code,
+      verify_email: true,
+    });
     return data;
   },
 
@@ -609,7 +613,7 @@ export const serverAdapter = {
   },
   getTuteriaSubjects,
   deleteMedia: async (data) => {
-    const result = await destroy(data)
+    const result = await destroy(data);
     return result;
-  }
+  },
 };
