@@ -2,7 +2,8 @@ import XFormDAta from "form-data";
 import fs from "fs";
 import fetch from "node-fetch";
 // const MEDIA_SERVICE = process.env.MEDIA_SERVICE || "http://localhost:8000";
-const MEDIA_SERVICE = process.env.MEDIA_SERVICE || "http://staging-prod.tuteria.com:8020";
+const MEDIA_SERVICE =
+  process.env.MEDIA_SERVICE || "http://staging-prod.tuteria.com:8020";
 // const MEDIA_SERVICE = process.env.MEDIA_SERVICE || "https://sheet.tuteria.com";
 const MEDIA_FORMAT = process.env.MEDIA_FORMAT || "test";
 
@@ -59,6 +60,21 @@ export async function upload(filePath: any, options: any, transform: boolean) {
 //     );
 //   });
 // }
+
+export async function destroy(id: string, kind="image") {
+  let response = await fetch(`${MEDIA_SERVICE}/media/${MEDIA_FORMAT}/delete`, {
+    method: "POST",
+    body: JSON.stringify({ public_id: id, kind }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (response.status < 400) {
+    let result = await response.json();
+    return result.data;
+  }
+  throw "Error from server";
+}
 
 export async function getCloudinaryUrl(public_id, options = {}) {
   let response = await fetch(`${MEDIA_SERVICE}/media/${MEDIA_FORMAT}/get_url`, {

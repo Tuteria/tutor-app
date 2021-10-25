@@ -1,6 +1,6 @@
 import { File } from "formidable";
 import jwt from "jsonwebtoken";
-import { upload } from "./cloudinary";
+import { destroy, upload } from "./cloudinary";
 import { sendClientLoginCodes } from "./email";
 import {
   API_TEST,
@@ -607,5 +607,9 @@ export const serverAdapter = {
     const result = await saveTutorSubjectInfo(subject);
     return result;
   },
-  getTuteriaSubjects
+  getTuteriaSubjects,
+  deleteMedia: async (data) => {
+    const result = await destroy(data)
+    return result;
+  }
 };

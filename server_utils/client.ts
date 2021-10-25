@@ -402,6 +402,18 @@ export const clientAdapter: any = {
       }));
     }
   },
+  deleteSubjectImage: async(id) => {
+    const response = await postFetcher(
+      "/api/tutors/delete-media",
+      { id },
+      true
+    );
+    if (response.ok) {
+      const { data } = await response.json();
+      return data;
+    }
+    throw "Failed to delete image";
+  },
   updateTutorSubjectInfo: async (subject, subject_id) => {
     const response = await postFetcher(
       "/api/tutors/save-subject-info",
