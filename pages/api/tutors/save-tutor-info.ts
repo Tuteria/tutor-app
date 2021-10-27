@@ -6,7 +6,7 @@ import { serverAdapter } from "../../../server_utils/server";
 export default authCheck(
   async (req, userInfo) => {
     const { slug, data } = req.body;
-    return await serverAdapter.saveTutorInfo({ slug, data }, true);
+    return await serverAdapter.saveTutorInfo({ userInfo.slug, data }, true);
   },
   // this is only used when testing the apis.
   { method: "POST", includeToken: "accessToken" }

@@ -5,12 +5,11 @@ import { serverAdapter } from "../../../server_utils/server";
 export default authCheck(
   async (req, userInfo) => {
     const includeSubjects = req.query.subjects === "true";
-    const [tutorData, { skills = [] }] = await Promise.all([
-      serverAdapter.getTutorInfo(userInfo.personalInfo.email),
-      includeSubjects ? serverAdapter.getTutorSubjects(userInfo.personalInfo.email): {},
-    ]);
-    const accessToken = serverAdapter.upgradeAccessToken(tutorData);
-    return { accessToken, tutorData, tutorSubjects: skills, supportedCountries: ["Nigeria"] }
+    return await serverAdapter.getTutorDetails(
+      userInfo.personalInfo.email,
+      includeSubjects,
+      true
+    );
   },
   // this is only used when testing the apis.
   {

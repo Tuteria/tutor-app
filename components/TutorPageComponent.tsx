@@ -57,15 +57,16 @@ const TutorPageComponent: React.FC<{
   onTakeTest?: (subject: string) => string;
   onEditSubject?: (subject: any) => string;
   onNextStep: () => void;
-}> = ({ store, onTakeTest, onEditSubject, onNextStep }) => {
+  currentStep?: string;
+}> = ({ store, onTakeTest, onEditSubject, currentStep, onNextStep }) => {
   const { getFormWrapperProps, formIndex, steps, activeStep, completedForm } =
-    useTutorApplicationFlow(store);
+    useTutorApplicationFlow(store, currentStep);
 
   return (
     <TutorPageWrapper
-      formIndex={formIndex}
-      steps={steps}
-      activeStep={activeStep}
+      // formIndex={formIndex}
+      // steps={steps}
+      // activeStep={activeStep}
       store={store}
     >
       <FormWrapper
