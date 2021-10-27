@@ -4,7 +4,11 @@ import { clientAdapter } from "../server_utils/client";
 import { usePrefetchHook } from "../server_utils/util";
 
 export default function Index() {
-  const { navigate } = usePrefetchHook({ routes: ["/login"] });
+  const { navigate } = usePrefetchHook({ routes: ["/login", "/apply"] });
+
+  async function authenticateUser(data) {
+    return clientAdapter.authenticateUser(data);
+  }
 
   const onSubmit = async (data: { email: string }) => {
     try {
@@ -14,5 +18,14 @@ export default function Index() {
       throw e;
     }
   };
-  return <LandingPage onSubmit={onSubmit} />;
+  return (
+    <LandingPage
+      onSubmit={onSubmit}
+      email=""
+      onResendOTP={authenticateUser}
+      onOTPSubmit={authenticateUser}
+      onEmailSubmit={authenticateUser}
+      onNavigate={() => navigate("/apply")}
+    />
+  );
 }
