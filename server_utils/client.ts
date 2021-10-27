@@ -402,10 +402,11 @@ export const clientAdapter: any = {
       }));
     }
   },
-  deleteSubjectImage: async(id) => {
+  deleteMedia: async(payload) => {
+    debugger
     const response = await postFetcher(
       "/api/tutors/delete-media",
-      { id },
+      payload,
       true
     );
     if (response.ok) {
