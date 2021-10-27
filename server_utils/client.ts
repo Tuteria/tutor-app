@@ -84,10 +84,10 @@ async function getTutorInfo(includeSubjects: boolean) {
   );
   if (response.ok) {
     const { data } = await response.json();
-    const { tutorData, tutorSubjects, supportedCountries, accessToken } = data;
+    const { tutorData, tutorSubjects, accessToken } = data;
     storage.set(NEW_TUTOR_TOKEN, accessToken);
     storage.set(NEW_TUTOR_INFO, tutorData);
-    return { tutorData, tutorSubjects, supportedCountries, accessToken };
+    return { tutorData, tutorSubjects, accessToken };
   }
   if (response.status === 403) {
     throw "Invalid Credentials";
@@ -98,13 +98,36 @@ async function initializeApplication(
   adapter: AdapterType,
   { regions, countries, supportedCountries, educationData, tuteriaSubjects }
 ) {
-  const { accessToken, tutorData, tutorSubjects } = await getTutorInfo(
-    tuteriaSubjects.length > 0
-  );
+  let tutorData = storage.get("fetchedTutorData");
+  if (Object.keys(tutorData).length > 2) {
+    storage.clear("fetchedTutorData");
+  } else {
+    const {
+      accessToken,
+      tutorData: x,
+      tutorSubjects,
+    } = await getTutorInfo(tuteriaSubjects.length > 0);
+    tutorData = { accessToken, tutorData: x, tutorSubjects };
+  }
+  return buildTutorData(tutorData, adapter, {
+    regions,
+    countries,
+    supportedCountries,
+    educationData,
+    tuteriaSubjects,
+  });
+}
+function buildTutorData(
+  fetchedData: { tutorData: any; accessToken: any; tutorSubjects: any[] },
+  adapter: AdapterType,
+  { regions, countries, supportedCountries, educationData, tuteriaSubjects }
+) {
+  let { tutorData, accessToken, tutorSubjects } = fetchedData;
   storage.set(adapter.regionKey, regions);
   storage.set(adapter.countryKey, countries);
   storage.set(adapter.tuteriaSubjectsKey, tuteriaSubjects);
   storage.set(adapter.supportedCountriesKey, supportedCountries);
+
   return {
     tutorInfo: tutorData,
     accessToken,
@@ -148,7 +171,23 @@ const saveSubject = (subject_id, subject) => {
   storage.set(`${CURRENT_SKILL}_${subject_id}`, subject);
 };
 
+function getQueryValues() {
+  if (typeof window !== "undefined") {
+    var query = window.location.search.substring(1);
+    var vars = query.split("&");
+    let result = {};
+    for (var i = 0; i < vars.length; i++) {
+      var pair = vars[i].split("=");
+      let p = decodeURIComponent(pair[0]);
+      let q = decodeURIComponent(pair[1]);
+      result[p] = q;
+    }
+    return result;
+  }
+  return {};
+}
 export const clientAdapter: any = {
+  getQueryValues,
   saveSubject,
   fetchBanksInfo: async (countrySupported) => {
     let response = await postFetcher(
@@ -329,6 +368,7 @@ export const clientAdapter: any = {
     if (response.ok) {
       const { data } = await response.json();
       if ("accessToken" in data) {
+        storage.set("fetchedTutorData",{accessToken:data.accessToken,tutorData:data})
         storage.set(NEW_TUTOR_TOKEN, data.accessToken);
         delete data.accessToken;
         storage.set(NEW_TUTOR_INFO, data);

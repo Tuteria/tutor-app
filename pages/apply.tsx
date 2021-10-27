@@ -68,10 +68,14 @@ export default function ApplicationPage({
       onError(error);
     }
   }
-
+  let { currentStep } = clientAdapter.getQueryValues();
   return (
-    <LoadingStateWrapper initialize={initialize}>
+    <LoadingStateWrapper
+      defaultLoading={currentStep === undefined}
+      initialize={initialize}
+    >
       <TutorPageComponent
+        currentStep={currentStep}
         key={loaded}
         store={store}
         onNextStep={() => {
