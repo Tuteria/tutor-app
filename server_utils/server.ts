@@ -624,7 +624,7 @@ export const serverAdapter = {
     email: string,
     withSubject = false,
     decodeToken = false,
-    tutorData
+    tutorData?: any
   ) {
     let promise = [Promise.resolve(tutorData)];
     if (!tutorData) {

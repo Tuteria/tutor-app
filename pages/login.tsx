@@ -7,19 +7,11 @@ export default function LoginPage({ email, next }) {
   const { navigate } = usePrefetchHook({ routes: [next] });
   const showOTP = email ? true : false;
   async function authenticateUser(data) {
-    return clientAdapter.authenticateUser(data);
+    await clientAdapter.authenticateUser(data);
+    navigate(next);
   }
 
-  return (
-    <Login
-      email={email}
-      showOTP={showOTP}
-      onEmailSubmit={authenticateUser}
-      onOTPSubmit={authenticateUser}
-      onResendOTP={authenticateUser}
-      onNavigate={() => navigate(next)}
-    />
-  );
+  return <Login email={email} showOTP={showOTP} onLogin={authenticateUser} />;
 }
 
 export async function getServerSideProps({ query }) {

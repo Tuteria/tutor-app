@@ -47,9 +47,11 @@ export default function ApplicationPage({
         tutorInfo: {
           ...result.tutorInfo,
           appData: {
-            ...(result.tutorInfo?.appData || {}),
-            currentEditableForm: STEPS.VERIFICATION,
-            currentStep: APPLICATION_STEPS.APPLY,
+            ...(result.tutorInfo?.appData || {
+              currentStep: APPLICATION_STEPS.APPLY,
+            }),
+            // currentEditableForm: STEPS.VERIFICATION,
+            // currentStep: APPLICATION_STEPS.APPLY,
           },
         },
       });
