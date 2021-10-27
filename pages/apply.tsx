@@ -48,7 +48,7 @@ export default function ApplicationPage({
           ...result.tutorInfo,
           appData: {
             ...(result.tutorInfo?.appData || {}),
-            // currentEditableForm: STEPS.SUBJECT_SELECTION,
+            currentEditableForm: STEPS.VERIFICATION,
             currentStep: APPLICATION_STEPS.APPLY,
           },
         },
@@ -75,7 +75,7 @@ export default function ApplicationPage({
       initialize={initialize}
     >
       <TutorPageComponent
-        currentStep={currentStep}
+        currentStep={currentStep ? store.currentEditableForm : currentStep}
         key={loaded}
         store={store}
         onNextStep={() => {

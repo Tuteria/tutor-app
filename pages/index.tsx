@@ -3,29 +3,38 @@ import React from "react";
 import { clientAdapter } from "../server_utils/client";
 import { usePrefetchHook } from "../server_utils/util";
 
-export default function Index() {
+function Index() {
   const { navigate } = usePrefetchHook({ routes: ["/login", "/apply"] });
 
-  async function authenticateUser(data) {
-    return clientAdapter.authenticateUser(data);
+  async function checkLoggedInStatus() {
+    try {
+      let { loggedIn, email } = await clientAdapter.updateLoggedInStatus();
+      return { loggedIn, email };
+    } catch (error) {
+      console.log(error);
+    }
   }
 
-  const onSubmit = async (data: { email: string }) => {
+  async function authenticateUser(data, key) {
     try {
-      const { redirectUrl } = await clientAdapter.beginTutorApplication(data);
-      navigate(redirectUrl);
-    } catch (e) {
-      throw e;
+      let response = await clientAdapter.authenticateUser(data);
+      if (key === "otp-code") {
+        navigate("/apply?currentStep=personal-info");
+      }
+      return response;
+    } catch (error) {
+      throw error;
     }
-  };
+  }
+
   return (
     <LandingPage
-      onSubmit={onSubmit}
-      email=""
-      onResendOTP={authenticateUser}
-      onOTPSubmit={authenticateUser}
-      onEmailSubmit={authenticateUser}
-      onNavigate={() => navigate("/apply")}
+      continueUrl="/apply?currentStep=personal-info"
+      onSubmit={clientAdapter.beginTutorApplication}
+      onLogin={authenticateUser}
+      isUserLoggedIn={checkLoggedInStatus}
     />
   );
 }
+
+export default Index;

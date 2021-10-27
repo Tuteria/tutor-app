@@ -30,7 +30,7 @@ export async function upload(filePath: any, options: any, transform: boolean) {
   );
   if (result.full_response) {
     let r = result.full_response;
-    const quality = r.quality_analysis?.focus >= 0.5;
+    const quality = r.quality_analysis?.focus >= 0.8;
     let response = {
       public_id: r.public_id,
       bytes: r.bytes,

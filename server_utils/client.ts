@@ -9,6 +9,7 @@ const NEW_TUTOR_INFO = "NEW_TUTOR_INFO";
 const TUTOR_QUIZZES = "TUTOR-QUIZZES";
 const TUTERIA_SUBJECTS_KEY = "TUTERIA_SUBJECTS";
 const CURRENT_SKILL = "TUTERIA_SKILL";
+const FETCHED_TUTOR_KEY = "fetchedTutorData";
 
 function decodeToken(existingTokenFromUrl = "", key = NEW_TUTOR_TOKEN) {
   let urlAccessToken = existingTokenFromUrl;
@@ -98,9 +99,9 @@ async function initializeApplication(
   adapter: AdapterType,
   { regions, countries, supportedCountries, educationData, tuteriaSubjects }
 ) {
-  let tutorData = storage.get("fetchedTutorData");
-  if (Object.keys(tutorData).length > 2) {
-    storage.clear("fetchedTutorData");
+  let tutorData = storage.get(FETCHED_TUTOR_KEY);
+  if ("tutorData" in tutorData) {
+    storage.clear(FETCHED_TUTOR_KEY);
   } else {
     const {
       accessToken,
@@ -207,6 +208,7 @@ export const clientAdapter: any = {
     const formData = new FormData();
     files.forEach((file) => formData.append("media", file));
     formData.append("folder", "identity");
+    formData.append("kind", "image");
     const { data: response } = await axios.post(
       "/api/tutors/upload-media",
       formData,
@@ -233,7 +235,6 @@ export const clientAdapter: any = {
     const body = new FormData();
     files.forEach((file) => body.append("media", file));
     body.append("folder", folder);
-    debugger;
     const response = await multipartFetch("/api/tutors/upload-media", body);
     if (response.ok) {
       const { data } = await response.json();
@@ -265,6 +266,7 @@ export const clientAdapter: any = {
     const formData = new FormData();
     formData.append("media", file);
     formData.append("folder", "profile_pics");
+    formData.append("kind", "image");
     formData.append("publicId", `${slug}-profile`);
     formData.append("transform", "true");
     const response = await multipartFetch("/api/tutors/upload-media", formData);
@@ -326,14 +328,19 @@ export const clientAdapter: any = {
   },
   saveTutorInfo: async (payload) => {
     const token = storage.get(NEW_TUTOR_TOKEN, "");
-    const response = await fetch(`/api/tutors/save-tutor-info`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
+    const response = await postFetcher(
+      "/api/tutors/save-tutor-info",
+      payload,
+      true
+    );
+    // const response = await fetch(`/api/tutors/save-tutor-info`, {
+    //   method: "POST",
+    //   headers: {
+    //     Authorization: `Bearer ${token}`,
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify(payload),
+    // });
     if (response.ok) {
       const { data } = await response.json();
       let accessToken = data.accessToken;
@@ -367,13 +374,13 @@ export const clientAdapter: any = {
 
     if (response.ok) {
       const { data } = await response.json();
-      if ("accessToken" in data) {
-        storage.set("fetchedTutorData",{accessToken:data.accessToken,tutorData:data})
+      if ("loginType" in data) {
+        return { loggedIn: false, email: data.email, loginType: "code" };
+      } else {
+        storage.set(FETCHED_TUTOR_KEY, data);
         storage.set(NEW_TUTOR_TOKEN, data.accessToken);
-        delete data.accessToken;
-        storage.set(NEW_TUTOR_INFO, data);
       }
-      return data;
+      return { loggedIn: true, email: data.email };
     }
     throw "Failed to register user";
   },
@@ -386,7 +393,8 @@ export const clientAdapter: any = {
     if (response.ok) {
       const { data } = await response.json();
       if (otp) {
-        storage.set(NEW_TUTOR_TOKEN, data.access_token);
+        storage.set(FETCHED_TUTOR_KEY, data);
+        storage.set(NEW_TUTOR_TOKEN, data.accessToken);
       }
       return data;
     }
@@ -443,6 +451,20 @@ export const clientAdapter: any = {
       }));
     }
   },
+  remoteDeleteImage: async (data) => {
+    const response = await postFetcher(
+      "/api/tutors/delete-media",
+      {
+        id: data.public_id,
+        kind: "image",
+      },
+      true
+    );
+    if (response.ok) {
+      return await response.json();
+    }
+    throw "Failed to delete image";
+  },
   deleteSubjectImage: async (id) => {
     const response = await postFetcher(
       "/api/tutors/delete-media",
@@ -488,4 +510,18 @@ export const clientAdapter: any = {
   },
   initializeApplication,
   async sendEmailVerification({ email, code }) {},
+  async updateLoggedInStatus() {
+    try {
+      const {
+        accessToken,
+        tutorData: x,
+        tutorSubjects,
+      } = await getTutorInfo(true);
+      let tutorData = { accessToken, tutorData: x, tutorSubjects };
+      storage.set(FETCHED_TUTOR_KEY, tutorData);
+      return { isLoggedIn: true, email: x?.personalInfo?.email || "" };
+    } catch (error) {
+      return { isLoggedIn: false, email: "" };
+    }
+  },
 };

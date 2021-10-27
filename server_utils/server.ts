@@ -305,6 +305,22 @@ async function getTuteriaSubjects(
   if (foundSubject) return foundSubject;
   throw new Error("Subject not found");
 }
+async function getTutorSubjects(email: string) {
+  const selectedSubjects = await saveUserSelectedSubjects({
+    email,
+    subjects: [],
+  });
+  const [
+    allowedQuizzes,
+    //  subjectsData
+  ] = await Promise.all([
+    fetchAllowedQuizesForUser(email),
+    // getTestableSubjects(),
+  ]);
+  let skills = formatSubjects(selectedSubjects, allowedQuizzes);
+  return { skills, allowedQuizzes };
+  // .filter((item) => item.category);
+}
 export const serverAdapter = {
   apiTest: API_TEST,
   bulkFetchQuizSubjectsFromSheet,
@@ -509,7 +525,11 @@ export const serverAdapter = {
       code,
       verify_email: true,
     });
-    return data;
+    if ("code" in data) {
+      return data;
+    }
+    let response = await this.getTutorDetails(email, true, true, data);
+    return response;
   },
 
   async loginUser(email: string) {
@@ -517,10 +537,9 @@ export const serverAdapter = {
     if ("code" in data) {
       const payload = sendClientLoginCodes(email, data.code);
       await this.sendNotification(payload);
-      return { email: data.email };
+      return { email: data.email, loginType: "code" };
     }
-    const accessToken = this.upgradeAccessToken(data);
-    return { accessToken };
+    return await this.getTutorDetails(email, true, true, data);
   },
 
   async saveTutorSubject(payload: any) {
@@ -578,22 +597,7 @@ export const serverAdapter = {
     return response;
     // .filter((item) => item.category);
   },
-  getTutorSubjects: async (email: string) => {
-    const selectedSubjects = await saveUserSelectedSubjects({
-      email,
-      subjects: [],
-    });
-    const [
-      allowedQuizzes,
-      //  subjectsData
-    ] = await Promise.all([
-      fetchAllowedQuizesForUser(email),
-      // getTestableSubjects(),
-    ]);
-    let skills = formatSubjects(selectedSubjects, allowedQuizzes);
-    return { skills, allowedQuizzes };
-    // .filter((item) => item.category);
-  },
+  getTutorSubjects,
 
   deleteSubject: async (data: { email: string; ids: number[] }) => {
     const response = await deleteTutorSubject(data);
@@ -615,5 +619,50 @@ export const serverAdapter = {
   deleteMedia: async (data) => {
     const result = await destroy(data);
     return result;
+  },
+  async getTutorDetails(
+    email: string,
+    withSubject = false,
+    decodeToken = false,
+    tutorData
+  ) {
+    let promise = [Promise.resolve(tutorData)];
+    if (!tutorData) {
+      promise = [
+        authenticateLoginDetails({
+          email,
+          auto_login: true,
+          is_admin: true,
+        }),
+      ];
+    }
+    if (withSubject) {
+      promise.push(getTutorSubjects(email));
+    }
+    let response = await Promise.all(promise);
+    let result: { tutorData: any; tutorSubjects: any[]; accessToken?: string } =
+      { tutorData: response[0], tutorSubjects: [] };
+    if (response.length > 1) {
+      result.tutorSubjects = response[1].skills;
+    }
+    if (decodeToken) {
+      result.accessToken = this.upgradeAccessToken(result.tutorData);
+    }
+    return result;
+  },
+  async beginTutorApplication({ email, firstName, password, countryCode }) {
+    const data = await authenticateLoginDetails({
+      email,
+      other_details: {
+        first_name: firstName,
+        password,
+      },
+    });
+    if ("code" in data) {
+      const payload = sendClientLoginCodes(email, data.code);
+      await this.sendNotification(payload);
+      return { email: data.email, loginType: "code" };
+    }
+    return await this.getTutorDetails(email, true, true, data);
   },
 };
