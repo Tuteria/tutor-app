@@ -9,7 +9,7 @@ const NEW_TUTOR_INFO = "NEW_TUTOR_INFO";
 const TUTOR_QUIZZES = "TUTOR-QUIZZES";
 const TUTERIA_SUBJECTS_KEY = "TUTERIA_SUBJECTS";
 const CURRENT_SKILL = "TUTERIA_SKILL";
-const FETCHED_TUTOR_KEY = "fetchedTutorData";
+export const FETCHED_TUTOR_KEY = "fetchedTutorData";
 
 function decodeToken(existingTokenFromUrl = "", key = NEW_TUTOR_TOKEN) {
   let urlAccessToken = existingTokenFromUrl;
@@ -190,6 +190,12 @@ function getQueryValues() {
 export const clientAdapter: any = {
   getQueryValues,
   saveSubject,
+  canUseSpinner() {
+    if (typeof window !== "undefined") {
+      return storage.get(FETCHED_TUTOR_KEY) === "";
+    }
+    return false;
+  },
   fetchBanksInfo: async (countrySupported) => {
     let response = await postFetcher(
       "/api/get-bank-details",
@@ -506,9 +512,9 @@ export const clientAdapter: any = {
       } = await getTutorInfo(true);
       let tutorData = { accessToken, tutorData: x, tutorSubjects };
       storage.set(FETCHED_TUTOR_KEY, tutorData);
-      return { isLoggedIn: true, email: x?.personalInfo?.email || "" };
+      return { loggedIn: true, email: x?.personalInfo?.email || "" };
     } catch (error) {
-      return { isLoggedIn: false, email: "" };
+      return { loggedIn: false, email: "" };
     }
   },
 };

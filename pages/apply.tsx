@@ -34,6 +34,7 @@ export default function ApplicationPage({
   const [loaded, setLoaded] = React.useState("initialize");
 
   async function initialize(setIsLoading) {
+    setIsLoading(true);
     try {
       let result = await clientAdapter.initializeApplication(adapter, {
         regions: allRegions,
@@ -42,6 +43,9 @@ export default function ApplicationPage({
         educationData,
         tuteriaSubjects,
       });
+      if (!clientAdapter.canUseSpinner()) {
+        setIsLoading(false);
+      }
       store.initializeTutorData({
         ...result,
         tutorInfo: {
@@ -73,7 +77,9 @@ export default function ApplicationPage({
   let { currentStep } = clientAdapter.getQueryValues();
   return (
     <LoadingStateWrapper
-      defaultLoading={currentStep === undefined}
+      defaultLoading={false}
+      // controlled={false}
+      // defaultLoading={currentStep === undefined}
       initialize={initialize}
     >
       <TutorPageComponent
