@@ -41,10 +41,14 @@ export default function ApplicationPage({
         countries: allCountries,
         supportedCountries,
         educationData,
-        tuteriaSubjects,
+        tuteriaSubjects: [],
       });
       if (!clientAdapter.canUseSpinner()) {
-        setIsLoading(false);
+        if (
+          result.tutorInfo?.appData?.currentStep === APPLICATION_STEPS.APPLY
+        ) {
+          setIsLoading(false);
+        }
       }
       store.initializeTutorData({
         ...result,
@@ -54,7 +58,7 @@ export default function ApplicationPage({
             ...(result.tutorInfo?.appData || {
               currentStep: APPLICATION_STEPS.APPLY,
             }),
-            // currentEditableForm: STEPS.VERIFICATION,
+            // currentEditableForm: STEPS.GUARANTOR_INFO,
             // currentStep: APPLICATION_STEPS.APPLY,
           },
         },

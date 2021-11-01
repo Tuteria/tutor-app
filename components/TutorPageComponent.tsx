@@ -22,14 +22,6 @@ const EducationHistory = Dynamic(
   () => import("@tuteria/shared-lib/src/tutor-revamp/EducationHistory")
 );
 
-const TutorSubjectsPage = Dynamic(
-  () => import("@tuteria/shared-lib/src/tutor-revamp/Subject")
-);
-
-const VerificationIdentity = Dynamic(
-  () => import("@tuteria/shared-lib/src/tutor-revamp/VerificationIdentity")
-);
-
 const ScheduleCard = Dynamic(
   () => import("@tuteria/shared-lib/src/tutor-revamp/Schedule")
 );
@@ -54,11 +46,9 @@ const TeachingProfile = Dynamic(
 
 const TutorPageComponent: React.FC<{
   store: IRootStore;
-  onTakeTest?: (subject: string) => string;
-  onEditSubject?: (subject: any) => string;
   onNextStep: () => void;
   currentStep?: string;
-}> = ({ store, onTakeTest, onEditSubject, currentStep, onNextStep }) => {
+}> = ({ store, currentStep, onNextStep }) => {
   const { getFormWrapperProps, formIndex, steps, activeStep, completedForm } =
     useTutorApplicationFlow(store, currentStep);
 
@@ -79,15 +69,9 @@ const TutorPageComponent: React.FC<{
         <EducationHistory {...getFormWrapperProps(STEPS.EDUCATION_HISTORY)} />
 
         <WorkHistory {...getFormWrapperProps(STEPS.WORK_HISTORY)} />
-        <TutorSubjectsPage
-          {...getFormWrapperProps(STEPS.SUBJECT_SELECTION)}
-          onTakeTest={onTakeTest}
-          onEditSubject={onEditSubject}
-        />
 
         <ScheduleCard {...getFormWrapperProps(STEPS.SCHEDULE_INFO)} />
         <TeachingProfile {...getFormWrapperProps(STEPS.TEACHING_PROFILE)} />
-        <VerificationIdentity {...getFormWrapperProps(STEPS.VERIFICATION)} />
 
         <GuarantorsInfoForm {...getFormWrapperProps(STEPS.GUARANTOR_INFO)} />
         <PaymentInfo {...getFormWrapperProps(STEPS.PAYMENT_INFO)} />
