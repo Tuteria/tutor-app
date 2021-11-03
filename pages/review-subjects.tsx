@@ -20,9 +20,7 @@ const adapter: any = {
   loadExistingTutorInfo: clientAdapter.loadExistingTutorInfo,
   loadExistingSubject: clientAdapter.loadExistingSubject,
   saveSubject: clientAdapter.saveSubject,
-  saveTutorSubjects: async () => {
-    debugger;
-  },
+  saveTutorSubjects: async () => {},
   buildQuizData: clientAdapter.buildQuizData,
   submitQuizResults: async () => {},
   beginQuiz: clientAdapter.beginQuiz,
