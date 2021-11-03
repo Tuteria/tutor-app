@@ -42,6 +42,15 @@ export default function TutorVerificationPage({
         //     videoSummary: {},
         //   },
         // },
+        // tutorInfo: {
+        //   ...result.tutorInfo,
+        //   appData: {
+        //     ...({
+        //       currentStep: APPLICATION_STEPS.VERIFY,
+        //       currentEditableForm: STEPS.VERIFY_EMAIL,
+        //     }),
+        //   },
+        // },
       });
       if (store.currentStep === APPLICATION_STEPS.VERIFY) {
         setIsLoading(false);
