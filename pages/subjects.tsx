@@ -37,13 +37,13 @@ export default function TutorVerificationPage({
         ...result,
         tutorInfo: {
           ...result.tutorInfo,
-          appData: {
-            ...(result.tutorInfo?.appData || {
-              currentStep: APPLICATION_STEPS.APPLY,
-            }),
-            // currentEditableForm: STEPS.GUARANTOR_INFO,
-            currentStep: APPLICATION_STEPS.COMPLETE,
-          },
+          // appData: {
+          //   ...(result.tutorInfo?.appData || {
+          //     currentStep: APPLICATION_STEPS.APPLY,
+          //   }),
+          //   // currentEditableForm: STEPS.GUARANTOR_INFO,
+          //   currentStep: APPLICATION_STEPS.COMPLETE,
+          // },
         },
       });
       if (store.currentStep === APPLICATION_STEPS.COMPLETE) {
