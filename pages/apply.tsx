@@ -68,7 +68,7 @@ export default function ApplicationPage({
       } else {
         const paths = {
           [APPLICATION_STEPS.VERIFY]: `/verify`,
-          [APPLICATION_STEPS.COMPLETE]: `/complete?access_token=${result.accessToken}`,
+          [APPLICATION_STEPS.COMPLETE]: `/subjects?access_token=${result.accessToken}`,
         };
         navigate(paths[store.currentStep]);
       }
