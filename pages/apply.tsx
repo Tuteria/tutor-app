@@ -58,8 +58,10 @@ export default function ApplicationPage({
             ...(result.tutorInfo?.appData || {
               currentStep: APPLICATION_STEPS.APPLY,
             }),
-            // currentEditableForm: STEPS.GUARANTOR_INFO,
-            // currentStep: APPLICATION_STEPS.APPLY,
+            // ...({
+            //   currentStep: APPLICATION_STEPS.APPLY,
+            //   currentEditableForm: STEPS.AGREEMENT_INFO,
+            // }),
           },
         },
       });
