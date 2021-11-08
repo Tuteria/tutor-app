@@ -41,9 +41,9 @@ export default function TutorVerificationPage({
         if (result.tutorInfo.others.videoSummary?.url.includes("http")) {
           step = STEPS.VERIFY_EMAIL;
         }
-        // if (result.tutorInfo.email_verified) {
-        //   step = STEPS.UPLOAD_EDUCATION
-        // }
+        if (step === STEPS.VERIFY_EMAIL && result.tutorInfo.email_verified) {
+          step = STEPS.GUARANTOR_INFO;
+        }
       }
       await store.initializeTutorData({
         ...result,
