@@ -502,7 +502,18 @@ export const clientAdapter: any = {
     throw "Failed to save subject details";
   },
   initializeApplication,
-  async sendEmailVerification({ email, code }) {},
+  async sendEmailVerification({ email, code }) {
+    const response = await postFetcher("/api/login", { email, code }, false);
+    if (response.ok) {
+      const {data} = await response.json();
+      if (code) {
+        return {verified: true}
+      } else {
+        return data
+      }
+    }
+    throw "Error verifying email"
+  },
   async updateLoggedInStatus() {
     try {
       const {
