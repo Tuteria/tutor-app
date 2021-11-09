@@ -187,6 +187,7 @@ function getQueryValues() {
   }
   return {};
 }
+
 export const clientAdapter: any = {
   getQueryValues,
   saveSubject,
@@ -505,14 +506,14 @@ export const clientAdapter: any = {
   async sendEmailVerification({ email, code }) {
     const response = await postFetcher("/api/login", { email, code }, false);
     if (response.ok) {
-      const {data} = await response.json();
+      const { data } = await response.json();
       if (code) {
-        return {verified: true}
+        return { verified: true };
       } else {
-        return data
+        return data;
       }
     }
-    throw "Error verifying email"
+    throw "Error verifying email";
   },
   async updateLoggedInStatus() {
     try {
