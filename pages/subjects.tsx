@@ -46,12 +46,13 @@ export default function TutorVerificationPage({
           // },
         },
       });
-      if (store.currentStep === APPLICATION_STEPS.COMPLETE) {
+      if (store.currentStep === APPLICATION_STEPS.SUBJECT) {
         setIsLoading(false);
       } else {
         const paths = {
           [APPLICATION_STEPS.APPLY]: `/apply`,
           [APPLICATION_STEPS.VERIFY]: `/verify`,
+          [APPLICATION_STEPS.COMPLETE]: `/complete?access_token=${result.accessToken}`,
         };
         let _path = paths[store.currentStep];
         if (_path) {

@@ -2,7 +2,10 @@ import { useToast } from "@chakra-ui/toast";
 import { loadAdapter } from "@tuteria/shared-lib/src/adapter";
 import { LoadingStateWrapper } from "@tuteria/shared-lib/src/components/data-display/LoadingState";
 import { initializeStore } from "@tuteria/shared-lib/src/stores";
-import { APPLICATION_STEPS,STEPS } from "@tuteria/shared-lib/src/stores/rootStore";
+import {
+  APPLICATION_STEPS,
+  STEPS,
+} from "@tuteria/shared-lib/src/stores/rootStore";
 import VerificationPage from "@tuteria/shared-lib/src/tutor-application/pages/VerificationPage";
 import React from "react";
 import { clientAdapter } from "../server_utils/client";
@@ -48,7 +51,8 @@ export default function TutorVerificationPage({
       } else {
         const paths = {
           [APPLICATION_STEPS.APPLY]: `/apply`,
-          [APPLICATION_STEPS.COMPLETE]: `/subjects?access_token=${result.accessToken}`,
+          [APPLICATION_STEPS.SUBJECT]: `/subjects?access_token=${result.accessToken}`,
+          [APPLICATION_STEPS.COMPLETE]: `/complete?access_token=${result.accessToken}`,
         };
         let _path = paths[store.currentStep];
         if (_path) {
@@ -82,7 +86,7 @@ export default function TutorVerificationPage({
       <VerificationPage
         store={store}
         onNextStep={async () => {
-          let token = await store.submitApplication(true);
+          let token = await store.submitApplication(store.currentStep);
           navigate(`/subjects`);
         }}
       />
