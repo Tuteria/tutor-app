@@ -120,10 +120,10 @@ export async function sendEmailNotification(data) {
   if (IS_DEVELOPMENT === "development") {
     console.log(data);
   } else if (IS_DEVELOPMENT === "staging") {
-    datToSend.to = [TEST_EMAIL];
-    if (datToSend.sms_options) {
-      datToSend.sms_options.receiver = TEST_NUMBER;
-    }
+    // datToSend.to = [TEST_EMAIL];
+    // if (datToSend.sms_options) {
+    //   datToSend.sms_options.receiver = TEST_NUMBER;
+    // }
   }
   if(IS_DEVELOPMENT !== "development"){
     const response = await fetch(`${NOTIFICATION_SERVICE}/send_message/`, {

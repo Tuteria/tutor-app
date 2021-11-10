@@ -5,6 +5,7 @@ import { usePrefetchHook } from "../server_utils/util";
 
 function Index() {
   const { navigate } = usePrefetchHook({ routes: ["/login", "/apply"] });
+  const continueUrl = "/apply?currentStep=personal-info";
 
   async function checkLoggedInStatus() {
     try {
@@ -26,10 +27,12 @@ function Index() {
       throw error;
     }
   }
+  
 
   return (
     <LandingPage
-      continueUrl="/apply?currentStep=personal-info"
+      beginApplication={() => navigate(continueUrl)}
+      continueUrl={continueUrl}
       onSubmit={clientAdapter.beginTutorApplication}
       onLogin={authenticateUser}
       isUserLoggedIn={checkLoggedInStatus}
