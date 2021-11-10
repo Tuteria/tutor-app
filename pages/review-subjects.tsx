@@ -37,13 +37,7 @@ const adapter: any = {
       tutorSubjects: [tutorSubject],
     };
   },
-  getTutorSubjects: async () => {},
-  getTuteriaSubjects: clientAdapter.getTuteriaSubjects,
-  deleteSubject: async () => {},
-  loadExistingTutorInfo: clientAdapter.loadExistingTutorInfo,
   loadExistingSubject: clientAdapter.loadExistingSubject,
-  saveSubject: clientAdapter.saveSubject,
-  saveTutorSubjects: async () => {},
   buildQuizData: clientAdapter.buildQuizData,
   submitQuizResults: async () => {},
   beginQuiz: async () => ({}),
