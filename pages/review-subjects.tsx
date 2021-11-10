@@ -66,6 +66,7 @@ export default function SubjectReviewPage({ tuteriaSubjects = [] }) {
     } catch (error) {
       setError(true)
       setLoading(false);
+      console.log("eeeeeeeeeeee", error)
       displayToast({
         status: "error",
         title: "Error occured",

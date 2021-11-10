@@ -296,7 +296,7 @@ async function getTuteriaSubjects(
         url,
         test_name,
         pass_mark,
-        test_sheet_id: testSheetID,
+        test_sheet_id: testSheetID || null,
       })
     ),
   }));
