@@ -21,7 +21,7 @@ export default function TutorVerificationPage({
 }) {
   const toast = useToast();
   const { navigate } = usePrefetchHook({
-    routes: ["/login", "/complete", "/apply"],
+    routes: ["/login", "/complete", "subjects", "/apply"],
   });
 
   async function initialize(setIsLoading) {
