@@ -60,7 +60,8 @@ export default function TutorVerificationPage({
       } else {
         const paths = {
           [APPLICATION_STEPS.APPLY]: `/apply`,
-          [APPLICATION_STEPS.COMPLETE]: `/subjects?access_token=${result.accessToken}`,
+          [APPLICATION_STEPS.SUBJECT]: `/subjects?access_token=${result.accessToken}`,
+          [APPLICATION_STEPS.COMPLETE]: `/complete?access_token=${result.accessToken}`,
         };
         let _path = paths[store.currentStep];
         if (_path) {
@@ -94,7 +95,7 @@ export default function TutorVerificationPage({
       <VerificationPage
         store={store}
         onNextStep={async () => {
-          let token = await store.submitApplication(true);
+          let token = await store.submitApplication(store.currentStep);
           navigate(`/subjects`);
         }}
       />

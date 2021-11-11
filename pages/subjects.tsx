@@ -21,7 +21,7 @@ export default function TutorVerificationPage({
 }) {
   const toast = useToast();
   const { navigate } = usePrefetchHook({
-    routes: ["/login", "/complete", "/apply"],
+    routes: ["/login", "/complete", "subjects", "/apply"],
   });
 
   async function initialize(setIsLoading) {
@@ -46,12 +46,13 @@ export default function TutorVerificationPage({
           // },
         },
       });
-      if (store.currentStep === APPLICATION_STEPS.COMPLETE) {
+      if (store.currentStep === APPLICATION_STEPS.SUBJECT) {
         setIsLoading(false);
       } else {
         const paths = {
           [APPLICATION_STEPS.APPLY]: `/apply`,
           [APPLICATION_STEPS.VERIFY]: `/verify`,
+          [APPLICATION_STEPS.COMPLETE]: `/complete?access_token=${result.accessToken}`,
         };
         let _path = paths[store.currentStep];
         if (_path) {
@@ -82,7 +83,13 @@ export default function TutorVerificationPage({
       text="Fetching Tutor subjects..."
       initialize={initialize}
     >
-      <SubjectCreationPage store={store} />
+      <SubjectCreationPage
+        onNextStep={async () => {
+          let token = await store.submitApplication(store.currentStep);
+          navigate(`/complete?access_token=${token}`);
+        }}
+        store={store}
+      />
     </LoadingStateWrapper>
   );
 }
