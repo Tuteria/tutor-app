@@ -1,13 +1,27 @@
+import { initializeStore } from "@tuteria/shared-lib/src/stores";
+import { APPLICATION_STEPS } from "@tuteria/shared-lib/src/stores/rootStore";
 import CompletedApplicationPage from "@tuteria/shared-lib/src/tutor-revamp/CompletedApplicationPage";
 import React from "react";
+import { clientAdapter } from "../server_utils/client";
 import { getUserInfo, serverAdapter } from "../server_utils/server";
+import { usePrefetchHook } from "../server_utils/util";
+
+const store = initializeStore(clientAdapter);
 
 export default function CompletedPage({ tutorInfo }: any) {
+  const { navigate } = usePrefetchHook({
+    routes: ["/login", "/complete", "subjects", "/apply"],
+  });
+
+  React.useEffect(() => {
+    store.setCurrentStep("complete");
+  }, []);
+
   return (
     <CompletedApplicationPage
       firstName={tutorInfo.personalInfo.firstName}
-      isPremium={true}
-      photo="https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&crop=faces&fit=crop&h=200&w=200"
+      store={store}
+      photo={store.identity.profilePhoto}
     />
   );
 }
