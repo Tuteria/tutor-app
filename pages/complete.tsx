@@ -4,12 +4,17 @@ import CompletedApplicationPage from "@tuteria/shared-lib/src/tutor-revamp/Compl
 import React from "react";
 import { clientAdapter } from "../server_utils/client";
 import { getUserInfo, serverAdapter } from "../server_utils/server";
+import { usePrefetchHook } from "../server_utils/util";
 
 const store = initializeStore(clientAdapter);
 
 export default function CompletedPage({ tutorInfo }: any) {
+  const { navigate } = usePrefetchHook({
+    routes: ["/login", "/complete", "subjects", "/apply"],
+  });
+
   React.useEffect(() => {
-    store.setCurrentStep(APPLICATION_STEPS.COMPLETE);
+    store.setCurrentStep("complete");
   }, []);
 
   return (

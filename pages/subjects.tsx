@@ -83,7 +83,13 @@ export default function TutorVerificationPage({
       text="Fetching Tutor subjects..."
       initialize={initialize}
     >
-      <SubjectCreationPage store={store} />
+      <SubjectCreationPage
+        onNextStep={async () => {
+          let token = await store.submitApplication(store.currentStep);
+          navigate(`/complete?access_token=${token}`);
+        }}
+        store={store}
+      />
     </LoadingStateWrapper>
   );
 }
