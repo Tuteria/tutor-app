@@ -38,7 +38,7 @@ const adapter: any = {
     };
   },
   loadExistingSubject: clientAdapter.loadExistingSubject,
-  buildQuizData: clientAdapter.buildQuizData,
+  buildQuizData: clientAdapter.buildReviewQuizData,
   submitQuizResults: async () => {},
   beginQuiz: async () => ({}),
 };
