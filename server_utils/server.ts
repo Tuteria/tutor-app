@@ -120,8 +120,8 @@ const transformData = (data: any, showAnswer = false) =>
     is_latex: item.is_latex || false,
     comprehension: item.comprehension
       ? {
-          passage: item.comprehension,
-        }
+        passage: item.comprehension,
+      }
       : null,
     options_display: item.options_layout || "vertical",
     answers: item.answer_set.map((option) => {
@@ -156,13 +156,15 @@ const fetchQuizSubjectsFromSheet = async (
     test_name: string;
     pass_mark: number;
     test_sheet_id?: number;
-  }>
+  }>,
+  refresh = false
 ): Promise<Array<any>> => {
   let quizzes = await getQuizzesFromSubjects(
     subjects.map(({ test_name, test_sheet_id }) => ({
       test_name,
       test_sheet_id,
-    }))
+    })),
+    refresh
   );
   let quizzesData = subjects.map((subject, index) => ({
     skill: subject.name,
@@ -171,8 +173,12 @@ const fetchQuizSubjectsFromSheet = async (
     questions: quizzes[index],
   }));
   const result: Array<SavedQuizDataType> = await bulkCreateQuizOnBackend(
-    quizzesData
+    quizzesData,
+    refresh
   );
+  if (refresh) {
+    return result;
+  }
   return result.map((item) => ({
     ...item,
     questions: transformData(item.questions, true),
@@ -321,11 +327,18 @@ async function getTutorSubjects(email: string) {
   return { skills, allowedQuizzes };
   // .filter((item) => item.category);
 }
+
+async function createQuizFromSheet({ subjects }) {
+  const result = await fetchQuizSubjectsFromSheet(subjects, true)
+  return result
+}
+
 export const serverAdapter = {
   apiTest: API_TEST,
   bulkFetchQuizSubjectsFromSheet,
   getUserInfo,
   getQuizzesForTuteriaSubject: fetchQuizSubjectsFromSheet,
+  createQuizFromSheet,
   async initializeApplication() {
     const [
       result,

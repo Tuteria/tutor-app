@@ -198,10 +198,22 @@ async function buildReviewQuizData(subjectInfo: TuteriaSubjectType) {
   throw "Error building quiz";
 }
 
+async function createQuizFromSheet(subject) {
+  const response = await postFetcher("/api/quiz/create-quiz-from-sheet", {
+    subjects: subject
+  }, false);
+  if (response.ok) {
+    const { data } = await response.json();
+    return data
+  }
+  throw "Error building quiz";
+}
+
 export const clientAdapter: any = {
   getQueryValues,
   saveSubject,
   buildReviewQuizData,
+  createQuizFromSheet,
   canUseSpinner() {
     if (typeof window !== "undefined") {
       return storage.get(FETCHED_TUTOR_KEY) === "";

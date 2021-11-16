@@ -41,6 +41,7 @@ const adapter: any = {
   buildQuizData: clientAdapter.buildReviewQuizData,
   submitQuizResults: async () => {},
   beginQuiz: async () => ({}),
+  createQuizFromSheet: clientAdapter.createQuizFromSheet
 };
 
 const subjectStore = SubjectStore.create({}, { adapter: loadAdapter(adapter) });
@@ -88,6 +89,7 @@ export default function SubjectReviewPage({ tuteriaSubjects = [] }) {
         navigateToSubject={() => {}}
         toSubjectEditPage={() => {}}
         subjectInfo={inst}
+        showRefresh={true}
       />
     </LoadingStateWrapper>
   );
