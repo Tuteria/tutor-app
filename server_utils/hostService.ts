@@ -6,6 +6,8 @@ const NOTIFICATION_SERVICE =
   process.env.NOTIFICATION_SERVICE || "http://email-service.tuteria.com:5000";
 const SCHEDULER_SERVICE =
   process.env.SCHEDULER_SERVICE || "http://email-service.tuteria.com:8092";
+const SHEET_HOST_URL = process.env.SHEET_HOST_URL || "https://sheet.tuteria.com"
+
 
 export const IS_TEST = process.env.IS_TEST || "true";
 let ADMIN_EMAIL = process.env.ADMIN_EMAIL;
@@ -34,7 +36,8 @@ export async function bulkCreateQuizOnBackend(
       image_layout?: string;
       is_latex?: string;
     }>;
-  }>
+  }>,
+  refresh = false
 ): Promise<
   Array<{
     name: string;
@@ -48,12 +51,18 @@ export async function bulkCreateQuizOnBackend(
     questions: any[];
   }>
 > {
-  let response = await fetch(`${HOST}/api/ensure-quiz-creation/`, {
+  let url = `${HOST}/api/ensure-quiz-creation/`;
+  let payload: any = { info: data };
+  if (refresh) {
+    url = `${HOST}/api/repopulate-quiz/`
+    payload = data[0]
+  }
+  let response = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ info: data }),
+    body: JSON.stringify(payload),
   });
   if (response.status < 500) {
     let result = await response.json();
@@ -125,7 +134,7 @@ export async function sendEmailNotification(data) {
     //   datToSend.sms_options.receiver = TEST_NUMBER;
     // }
   }
-  if(IS_DEVELOPMENT !== "development"){
+  if (IS_DEVELOPMENT !== "development") {
     const response = await fetch(`${NOTIFICATION_SERVICE}/send_message/`, {
       method: "POST",
       headers: { "content-type": "application/json" },
