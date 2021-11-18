@@ -127,11 +127,15 @@ function buildTutorData(
   { regions, countries, supportedCountries, educationData, tuteriaSubjects }
 ) {
   let { tutorData, accessToken, tutorSubjects } = fetchedData;
+  tutorSubjects = tutorSubjects.map(subject => {
+    const foundSubject = tuteriaSubjects.find(item => item.name === subject.name)
+    return {...subject, category: foundSubject ? foundSubject.category : ""}
+  })
   storage.set(adapter.regionKey, regions);
   storage.set(adapter.countryKey, countries);
   storage.set(adapter.tuteriaSubjectsKey, tuteriaSubjects);
   storage.set(adapter.supportedCountriesKey, supportedCountries);
-  
+
   return {
     tutorInfo: tutorData,
     accessToken,
