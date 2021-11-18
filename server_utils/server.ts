@@ -29,6 +29,7 @@ import {
   getTestableSubjects,
   getTuteriaSubjectData,
   getTuteriaSubjectList,
+  getPreferences,
 } from "@tuteria/tuteria-data/src";
 import { TuteriaSubjectType } from "./types";
 
@@ -691,4 +692,9 @@ export const serverAdapter = {
     }
     return await this.getTutorDetails(email, true, true, data);
   },
+
+  async getPreferences() {
+    const preferences = await getPreferences();
+    return preferences;
+  }
 };
