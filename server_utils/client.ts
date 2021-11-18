@@ -9,6 +9,9 @@ const NEW_TUTOR_INFO = "NEW_TUTOR_INFO";
 const TUTOR_QUIZZES = "TUTOR-QUIZZES";
 const TUTERIA_SUBJECTS_KEY = "TUTERIA_SUBJECTS";
 const CURRENT_SKILL = "TUTERIA_SKILL";
+const SUBJECT_DESCRIPTION = "SUBJECT_DESCRIPTION"
+const TEACHING_STYLE = "TEACHING_STYLE"
+const TEACHING_TRACK = "TEACHING_TRACK"
 export const FETCHED_TUTOR_KEY = "fetchedTutorData";
 
 function decodeToken(existingTokenFromUrl = "", key = NEW_TUTOR_TOKEN) {
@@ -128,7 +131,7 @@ function buildTutorData(
   storage.set(adapter.countryKey, countries);
   storage.set(adapter.tuteriaSubjectsKey, tuteriaSubjects);
   storage.set(adapter.supportedCountriesKey, supportedCountries);
-
+  
   return {
     tutorInfo: tutorData,
     accessToken,
@@ -381,8 +384,8 @@ export const clientAdapter: any = {
     }
     throw "Failed to save tutor info";
   },
-  submitSelectedSubjects: async () => {},
-  updateUserPassword: async () => {},
+  submitSelectedSubjects: async () => { },
+  updateUserPassword: async () => { },
   validateCredentials: () => {
     let data = decodeToken();
     if (data) {
@@ -521,6 +524,9 @@ export const clientAdapter: any = {
         })),
       };
       saveSubject(subject_id, formattedData);
+      storage.clear(SUBJECT_DESCRIPTION)
+      storage.clear(TEACHING_STYLE)
+      storage.clear(TEACHING_TRACK)
       return data;
     }
     throw "Failed to save subject details";
