@@ -11,7 +11,7 @@ const TUTERIA_SUBJECTS_KEY = "TUTERIA_SUBJECTS";
 const CURRENT_SKILL = "TUTERIA_SKILL";
 const SUBJECT_DESCRIPTION = "SUBJECT_DESCRIPTION"
 const TEACHING_STYLE = "TEACHING_STYLE"
-const TEACHING_TRACK = "TEACHING_TRACK"
+const TRACK_RECORD = "TRACK_RECORD"
 export const FETCHED_TUTOR_KEY = "fetchedTutorData";
 
 function decodeToken(existingTokenFromUrl = "", key = NEW_TUTOR_TOKEN) {
@@ -129,7 +129,7 @@ function buildTutorData(
   let { tutorData, accessToken, tutorSubjects } = fetchedData;
   tutorSubjects = tutorSubjects.map(subject => {
     const foundSubject = tuteriaSubjects.find(item => item.name === subject.name)
-    return {...subject, category: foundSubject ? foundSubject.category : ""}
+    return { ...subject, category: foundSubject ? foundSubject.category : "" }
   })
   storage.set(adapter.regionKey, regions);
   storage.set(adapter.countryKey, countries);
@@ -178,6 +178,12 @@ function getTutorSubject(
 const saveSubject = (subject_id, subject) => {
   storage.set(`${CURRENT_SKILL}_${subject_id}`, subject);
 };
+
+const clearSubjectDescription = () => {
+  storage.clear(SUBJECT_DESCRIPTION)
+  storage.clear(TEACHING_STYLE)
+  storage.clear(TRACK_RECORD)
+}
 
 function getQueryValues() {
   if (typeof window !== "undefined") {
@@ -528,9 +534,7 @@ export const clientAdapter: any = {
         })),
       };
       saveSubject(subject_id, formattedData);
-      storage.clear(SUBJECT_DESCRIPTION)
-      storage.clear(TEACHING_STYLE)
-      storage.clear(TEACHING_TRACK)
+      clearSubjectDescription()
       return data;
     }
     throw "Failed to save subject details";
@@ -562,4 +566,10 @@ export const clientAdapter: any = {
       return { loggedIn: false, email: "" };
     }
   },
+  saveOnBlur: (name, value) => {
+    storage.set(name, value)
+  },
+  loadSubjectDescription: (name) => {
+    storage.get(name, "")
+  }
 };
