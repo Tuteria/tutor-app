@@ -2,9 +2,9 @@ import XFormDAta from "form-data";
 import fs from "fs";
 import fetch from "node-fetch";
 // const MEDIA_SERVICE = process.env.MEDIA_SERVICE || "http://localhost:8000";
-const MEDIA_SERVICE =
-  process.env.MEDIA_SERVICE || "http://staging-prod.tuteria.com:8020";
-// const MEDIA_SERVICE = process.env.MEDIA_SERVICE || "https://sheet.tuteria.com";
+// const MEDIA_SERVICE = process.env.MEDIA_SERVICE || "http://dev.tuteria.com:8020";
+// process.env.MEDIA_SERVICE || "http://staging-prod.tuteria.com:8020";
+const MEDIA_SERVICE = process.env.MEDIA_SERVICE || "https://gsheet.vercel.app";
 const MEDIA_FORMAT = process.env.MEDIA_FORMAT || "test";
 
 async function transformImage(publicId: string) {
@@ -61,7 +61,7 @@ export async function upload(filePath: any, options: any, transform: boolean) {
 //   });
 // }
 
-export async function destroy({id, kind="image"}) {
+export async function destroy({ id, kind = "image" }) {
   let response = await fetch(`${MEDIA_SERVICE}/media/${MEDIA_FORMAT}/delete`, {
     method: "POST",
     body: JSON.stringify({ public_id: id, kind }),
