@@ -304,6 +304,14 @@ function formatSubjects(
   return result;
 }
 
+async function getTuteriaSubjectsWithPreferences() {
+  const [tuteriaSubjects, preferences] = await Promise.all([
+    getTuteriaSubjects(),
+    getPreferences(),
+  ]);
+  return { tuteriaSubjects, preferences };
+}
+
 async function getTuteriaSubjects(
   subject?: string
 ): Promise<Array<TuteriaSubjectType> | TuteriaSubjectType | any> {
@@ -353,28 +361,37 @@ export const serverAdapter = {
   getUserInfo,
   getQuizzesForTuteriaSubject: fetchQuizSubjectsFromSheet,
   createQuizFromSheet,
-  async initializeApplication() {
+  async initializeApplication(includePrefs?: boolean) {
     const [
       result,
       allCountries,
       supportedCountries,
       educationData,
-      tuteriaSubjects,
+      subjectData,
     ] = await Promise.all([
       getLocationInfoFromSheet(),
       fetchAllCountries(),
       getSupportedCountries(),
       getEducationData(),
-      getTuteriaSubjects(),
+      includePrefs ? getTuteriaSubjectsWithPreferences() : getTuteriaSubjects(),
     ]);
-    return {
+
+    const data: any = {
       allRegions: result.regions,
       allCountries,
       supportedCountries,
       educationData,
-      tuteriaSubjects,
     };
+
+    if (Array.isArray(subjectData)) {
+      data.tuteriaSubjects = subjectData;
+    } else {
+      data.tuteriaSubjects = subjectData.tuteriaSubjects;
+      data.preferences = subjectData.preferences;
+    }
+    return data;
   },
+
   async saveTutorInfo(data: any, encode = false) {
     let result = await saveTutorInfoService(data);
     if (encode) {

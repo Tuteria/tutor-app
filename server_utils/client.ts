@@ -1,5 +1,6 @@
 import { AdapterType } from "@tuteria/shared-lib/src/adapter";
 import storage from "@tuteria/shared-lib/src/local-storage";
+import seshStorage from "@tuteria/shared-lib/src/storage";
 import axios from "axios";
 import jwt_decode from "jwt-decode";
 import { TuteriaSubjectType } from "./types";
@@ -8,6 +9,7 @@ const NEW_TUTOR_TOKEN = "NEW_TUTOR_TOKEN";
 const NEW_TUTOR_INFO = "NEW_TUTOR_INFO";
 const TUTOR_QUIZZES = "TUTOR-QUIZZES";
 const TUTERIA_SUBJECTS_KEY = "TUTERIA_SUBJECTS";
+const TUTERIA_PREFERENCE_KEY = "TUTERIA_PREFERENCES";
 const CURRENT_SKILL = "TUTERIA_SKILL";
 const SUBJECT_DESCRIPTION = "SUBJECT_DESCRIPTION"
 const TEACHING_STYLE = "TEACHING_STYLE"
@@ -100,9 +102,12 @@ async function getTutorInfo(includeSubjects: boolean) {
 }
 async function initializeApplication(
   adapter: AdapterType,
-  { regions, countries, supportedCountries, educationData, tuteriaSubjects }
+  { regions, countries, supportedCountries, educationData, tuteriaSubjects, preferences = [] }
 ) {
   let tutorData = storage.get(FETCHED_TUTOR_KEY);
+  if (preferences.length > 0) {
+    seshStorage.set(TUTERIA_PREFERENCE_KEY, preferences);
+  }
   if ("tutorData" in tutorData) {
     storage.clear(FETCHED_TUTOR_KEY);
   } else {
@@ -571,5 +576,10 @@ export const clientAdapter: any = {
   },
   loadSubjectDescription: (name) => {
     return storage.get(name, "")
+  },
+
+  buildPreferences(subject: { category: string, [key: string]: any  }) {
+    const preferences = seshStorage.get(TUTERIA_PREFERENCE_KEY, []);
+    return preferences.filter(({ category }) => category === subject.category); 
   }
 };
