@@ -1,9 +1,10 @@
 import XFormDAta from "form-data";
 import fs from "fs";
 import fetch from "node-fetch";
+import { getCloudinaryDetails } from "@tuteria/tuteria-data/src";
 // const MEDIA_SERVICE = process.env.MEDIA_SERVICE || "http://localhost:8000";
 const MEDIA_SERVICE =
-  process.env.MEDIA_SERVICE || "http://staging-prod.tuteria.com:8020";
+  process.env.MEDIA_SERVICE || "https://gsheet.vercel.app";
 // const MEDIA_SERVICE = process.env.MEDIA_SERVICE || "https://sheet.tuteria.com";
 const MEDIA_FORMAT = process.env.MEDIA_FORMAT || "test";
 
@@ -23,10 +24,12 @@ async function transformImage(publicId: string) {
 export async function upload(filePath: any, options: any, transform: boolean) {
   let new_options = { ...options, file_name: options.public_id };
   delete new_options.public_id;
+  const serverConfig = await getCloudinaryDetails(MEDIA_FORMAT);
   let result = await uploadCloudinaryResource(
     filePath,
     new_options,
-    options.kind as any
+    options.kind as any,
+    JSON.stringify(serverConfig),
   );
   if (result.full_response) {
     let r = result.full_response;
@@ -95,9 +98,11 @@ export type UploadTypes = "image" | "video" | "raw";
 export async function uploadCloudinaryResource(
   fileObj: any,
   options: any,
-  kind: UploadTypes = "image"
+  kind: UploadTypes = "image",
+  serverConfig?: string,
 ) {
   let formData = new XFormDAta();
+
   Object.keys(options).forEach((key) => {
     if (options[key]) {
       formData.append(key, options[key]);
@@ -105,6 +110,10 @@ export async function uploadCloudinaryResource(
   });
   formData.append(kind, fs.createReadStream(fileObj.path));
   formData.append("kind", kind);
+  if (serverConfig) {
+    formData.append("server_config", serverConfig);
+  }
+
   console.log(options);
   let response = await fetch(`${MEDIA_SERVICE}/media/${MEDIA_FORMAT}/upload`, {
     method: "POST",
