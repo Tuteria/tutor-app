@@ -42,7 +42,7 @@ export default function TutorVerificationPage({
           //     currentStep: APPLICATION_STEPS.APPLY,
           //   }),
           //   // currentEditableForm: STEPS.GUARANTOR_INFO,
-          //   currentStep: APPLICATION_STEPS.COMPLETE,
+          //   currentStep: APPLICATION_STEPS.SUBJECT,
           // },
         },
       });
