@@ -29,6 +29,7 @@ import {
   getTestableSubjects,
   getTuteriaSubjectData,
   getTuteriaSubjectList,
+  getPreferences,
 } from "@tuteria/tuteria-data/src";
 import { TuteriaSubjectType } from "./types";
 
@@ -110,32 +111,45 @@ const bulkFetchQuizSubjectsFromSheet = async (
   }
   return rr;
 };
-
+function is_figure(content: string) {
+  let regex = /(http|ftp|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])/gm;
+  let matched = content.match(regex)
+  if (Array.isArray(matched)) {
+    return matched[0]
+  }
+  return null
+}
 const transformData = (data: any, showAnswer = false) =>
-  data.map((item) => ({
-    id: item.id,
-    pretext: item.pretext || null,
-    content: item.content,
-    figure: item.image,
-    is_latex: item.is_latex || false,
-    comprehension: item.comprehension
-      ? {
+  data.map((item) => {
+    const question = {
+      id: item.id,
+      pretext: item.pretext || null,
+      content: item.content,
+      figure: item.image,
+      is_latex: item.is_latex || false,
+      comprehension: item.comprehension
+        ? {
           passage: item.comprehension,
         }
-      : null,
-    options_display: item.options_layout || "vertical",
-    answers: item.answer_set.map((option) => {
-      const optionData = {
-        content: option.content,
-        is_latex: item.is_latex || false,
-        figure: null,
-        answer_type: "TEXT",
-      };
-      return showAnswer
-        ? { ...optionData, correct: showAnswer ? option.correct : null }
-        : optionData;
-    }),
-  }));
+        : null,
+      options_display: item.options_layout || "vertical",
+      answers: item.answer_set.map((option) => {
+        const optionData = {
+          content: option.content,
+          is_latex: item.is_latex || false,
+          figure: is_figure(option.content),
+          answer_type: "TEXT",
+        };
+        return showAnswer
+          ? { ...optionData, correct: showAnswer ? option.correct : null }
+          : optionData;
+      }),
+    }
+
+    if (question.answers[0].figure) question.options_display = "horizontal"
+
+    return question
+  });
 
 type SavedQuizDataType = {
   name: string;
@@ -156,13 +170,15 @@ const fetchQuizSubjectsFromSheet = async (
     test_name: string;
     pass_mark: number;
     test_sheet_id?: number;
-  }>
+  }>,
+  refresh = false
 ): Promise<Array<any>> => {
   let quizzes = await getQuizzesFromSubjects(
     subjects.map(({ test_name, test_sheet_id }) => ({
       test_name,
       test_sheet_id,
-    }))
+    })),
+    refresh
   );
   let quizzesData = subjects.map((subject, index) => ({
     skill: subject.name,
@@ -171,8 +187,12 @@ const fetchQuizSubjectsFromSheet = async (
     questions: quizzes[index],
   }));
   const result: Array<SavedQuizDataType> = await bulkCreateQuizOnBackend(
-    quizzesData
+    quizzesData,
+    refresh
   );
+  if (refresh) {
+    return result;
+  }
   return result.map((item) => ({
     ...item,
     questions: transformData(item.questions, true),
@@ -321,11 +341,18 @@ async function getTutorSubjects(email: string) {
   return { skills, allowedQuizzes };
   // .filter((item) => item.category);
 }
+
+async function createQuizFromSheet({ subjects }) {
+  const result = await fetchQuizSubjectsFromSheet(subjects, true)
+  return result
+}
+
 export const serverAdapter = {
   apiTest: API_TEST,
   bulkFetchQuizSubjectsFromSheet,
   getUserInfo,
   getQuizzesForTuteriaSubject: fetchQuizSubjectsFromSheet,
+  createQuizFromSheet,
   async initializeApplication() {
     const [
       result,
@@ -665,4 +692,9 @@ export const serverAdapter = {
     }
     return await this.getTutorDetails(email, true, true, data);
   },
+
+  async getPreferences() {
+    const preferences = await getPreferences();
+    return preferences;
+  }
 };

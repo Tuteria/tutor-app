@@ -38,9 +38,10 @@ const adapter: any = {
     };
   },
   loadExistingSubject: clientAdapter.loadExistingSubject,
-  buildQuizData: clientAdapter.buildQuizData,
+  buildQuizData: clientAdapter.buildReviewQuizData,
   submitQuizResults: async () => {},
   beginQuiz: async () => ({}),
+  createQuizFromSheet: clientAdapter.createQuizFromSheet
 };
 
 const subjectStore = SubjectStore.create({}, { adapter: loadAdapter(adapter) });
@@ -66,7 +67,6 @@ export default function SubjectReviewPage({ tuteriaSubjects = [] }) {
     } catch (error) {
       setError(true)
       setLoading(false);
-      console.log("eeeeeeeeeeee", error)
       displayToast({
         status: "error",
         title: "Error occured",
@@ -89,6 +89,7 @@ export default function SubjectReviewPage({ tuteriaSubjects = [] }) {
         navigateToSubject={() => {}}
         toSubjectEditPage={() => {}}
         subjectInfo={inst}
+        showRefresh={true}
       />
     </LoadingStateWrapper>
   );

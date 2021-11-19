@@ -30,10 +30,6 @@ const Agreements = Dynamic(
   () => import("@tuteria/shared-lib/src/tutor-revamp/Agreements")
 );
 
-const GuarantorsInfoForm = Dynamic(
-  () => import("@tuteria/shared-lib/src/tutor-revamp/Guarantors")
-);
-
 const NewDevelopment = Dynamic(
   () => import("@tuteria/shared-lib/src/tutor-revamp/NewDevelopment")
 );
@@ -72,8 +68,6 @@ const TutorPageComponent: React.FC<{
 
         <ScheduleCard {...getFormWrapperProps(STEPS.SCHEDULE_INFO)} />
         <TeachingProfile {...getFormWrapperProps(STEPS.TEACHING_PROFILE)} />
-
-        <GuarantorsInfoForm {...getFormWrapperProps(STEPS.GUARANTOR_INFO)} />
         <PaymentInfo {...getFormWrapperProps(STEPS.PAYMENT_INFO)} />
         <NewDevelopment {...getFormWrapperProps(STEPS.NEW_DEVELOPMENT)} />
         <Agreements {...getFormWrapperProps(STEPS.AGREEMENT_INFO)} />

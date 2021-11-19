@@ -17,4 +17,4 @@ build:
     - docker push $CONTAINER_IMAGE:latest
   only:
     - develop
-    - malik-develop
+    # - malik-develop
