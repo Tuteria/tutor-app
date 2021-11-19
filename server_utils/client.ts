@@ -570,6 +570,6 @@ export const clientAdapter: any = {
     storage.set(name, value)
   },
   loadSubjectDescription: (name) => {
-    storage.get(name, "")
+    return storage.get(name, "")
   }
 };
