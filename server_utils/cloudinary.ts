@@ -8,7 +8,7 @@ import { getCloudinaryDetails } from "@tuteria/tuteria-data/src";
 const MEDIA_SERVICE = process.env.MEDIA_SERVICE || "http://dev.tuteria.com:8020";
 const MEDIA_FORMAT = process.env.MEDIA_FORMAT || "test";
 
-async function transformImage(publicId: string) {
+async function transformImage(publicId: string, serverConfig) {
   const url = await getCloudinaryUrl(publicId, {
     gravity: "face",
     width: 150,
@@ -17,7 +17,7 @@ async function transformImage(publicId: string) {
     fetch_format: "auto",
     quality: "auto",
     kind: "image",
-  });
+  }, serverConfig);
   return url;
 }
 
@@ -41,7 +41,7 @@ export async function upload(filePath: any, options: any, transform: boolean) {
       quality: quality,
     };
     if (transform) {
-      response.url = await transformImage(r.public_id);
+      response.url = await transformImage(r.public_id, serverConfig);
     }
     return response;
   }
@@ -79,10 +79,14 @@ export async function destroy({ id, kind = "image" }) {
   throw "Error from server";
 }
 
-export async function getCloudinaryUrl(public_id, options = {}) {
+export async function getCloudinaryUrl(public_id: string, options = {}, serverConfig: any) {
   let response = await fetch(`${MEDIA_SERVICE}/media/${MEDIA_FORMAT}/get_url`, {
     method: "POST",
-    body: JSON.stringify({ public_id, ...options }),
+    body: JSON.stringify({
+      public_id,
+      server_config: serverConfig,
+      ...options
+    }),
     headers: {
       "Content-Type": "application/json",
     },
