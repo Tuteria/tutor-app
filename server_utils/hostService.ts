@@ -1,3 +1,5 @@
+import { getSpellCheckDetails } from "@tuteria/tuteria-data/src";
+
 export let HOST = process.env.HOST_ENDPOINT || "http://backup.tuteria.com:8000";
 export const IS_DEVELOPMENT = process.env.IS_DEVELOPMENT || "development";
 export let DEV = IS_DEVELOPMENT === "development";
@@ -6,8 +8,10 @@ const NOTIFICATION_SERVICE =
   process.env.NOTIFICATION_SERVICE || "http://email-service.tuteria.com:5000";
 const SCHEDULER_SERVICE =
   process.env.SCHEDULER_SERVICE || "http://email-service.tuteria.com:8092";
-const SHEET_HOST_URL = process.env.SHEET_HOST_URL || "https://sheet.tuteria.com"
-
+const SHEET_HOST_URL =
+  process.env.SHEET_HOST_URL || "https://sheet.tuteria.com";
+const SPELL_CHECK_URL =
+  process.env.SPELL_CHECK_URL || "https://gsheet.vercel.app";
 
 export const IS_TEST = process.env.IS_TEST || "true";
 let ADMIN_EMAIL = process.env.ADMIN_EMAIL;
@@ -54,8 +58,8 @@ export async function bulkCreateQuizOnBackend(
   let url = `${HOST}/api/ensure-quiz-creation/`;
   let payload: any = { info: data };
   if (refresh) {
-    url = `${HOST}/api/repopulate-quiz/`
-    payload = data[0]
+    url = `${HOST}/api/repopulate-quiz/`;
+    payload = data[0];
   }
   let response = await fetch(url, {
     method: "POST",
@@ -140,10 +144,9 @@ export async function sendEmailNotification(data) {
       headers: { "content-type": "application/json" },
       body: JSON.stringify(datToSend),
     });
-    console.log(datToSend)
+    console.log(datToSend);
     const result = await response.json();
     return result;
-
   }
 }
 
@@ -323,4 +326,21 @@ export async function getBanksSupported(supportedCountry: string) {
   let countryData = await import("@tuteria/shared-lib/src/data/banks.json");
   let bankdDetails = countryData.default[supportedCountry] || [];
   return bankdDetails;
+}
+
+export async function checkSpellingAndGrammar(
+  text: string,
+  other_texts: string[]
+) {
+  let server_config = await getSpellCheckDetails();
+  let response = await postHelper(
+    "/sc/evaluate",
+    { text, other_texts, server_config },
+    SPELL_CHECK_URL
+  );
+  if (response.ok) {
+    let result = await response.json();
+    return result.data;
+  }
+  throw new Error("Failed to run check");
 }

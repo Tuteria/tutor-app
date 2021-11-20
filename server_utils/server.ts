@@ -7,6 +7,7 @@ import {
   authenticateLoginDetails,
   beginQuiz,
   bulkCreateQuizOnBackend,
+  checkSpellingAndGrammar,
   deleteTutorSubject,
   fetchAllCountries,
   fetchAllowedQuizesForUser,
@@ -715,5 +716,8 @@ export const serverAdapter = {
   async getPreferences() {
     const preferences = await getPreferences();
     return preferences;
+  },
+  async spellCheck(text: string, other_texts: string[]) {
+    return await checkSpellingAndGrammar(text, other_texts);
   },
 };
