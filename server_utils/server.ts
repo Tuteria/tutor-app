@@ -30,6 +30,7 @@ import {
   getTuteriaSubjectData,
   getTuteriaSubjectList,
   getPreferences,
+  getSpellCheckDetails,
 } from "@tuteria/tuteria-data/src";
 import { TuteriaSubjectType } from "./types";
 
@@ -112,12 +113,13 @@ const bulkFetchQuizSubjectsFromSheet = async (
   return rr;
 };
 function is_figure(content: string) {
-  let regex = /(http|ftp|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])/gm;
-  let matched = content.match(regex)
+  let regex =
+    /(http|ftp|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])/gm;
+  let matched = content.match(regex);
   if (Array.isArray(matched)) {
-    return matched[0]
+    return matched[0];
   }
-  return null
+  return null;
 }
 const transformData = (data: any, showAnswer = false) =>
   data.map((item) => {
@@ -129,8 +131,8 @@ const transformData = (data: any, showAnswer = false) =>
       is_latex: item.is_latex || false,
       comprehension: item.comprehension
         ? {
-          passage: item.comprehension,
-        }
+            passage: item.comprehension,
+          }
         : null,
       options_display: item.options_layout || "vertical",
       answers: item.answer_set.map((option) => {
@@ -144,11 +146,11 @@ const transformData = (data: any, showAnswer = false) =>
           ? { ...optionData, correct: showAnswer ? option.correct : null }
           : optionData;
       }),
-    }
+    };
 
-    if (question.answers[0].figure) question.options_display = "horizontal"
+    if (question.answers[0].figure) question.options_display = "horizontal";
 
-    return question
+    return question;
   });
 
 type SavedQuizDataType = {
@@ -343,8 +345,8 @@ async function getTutorSubjects(email: string) {
 }
 
 async function createQuizFromSheet({ subjects }) {
-  const result = await fetchQuizSubjectsFromSheet(subjects, true)
-  return result
+  const result = await fetchQuizSubjectsFromSheet(subjects, true);
+  return result;
 }
 
 export const serverAdapter = {
@@ -696,5 +698,5 @@ export const serverAdapter = {
   async getPreferences() {
     const preferences = await getPreferences();
     return preferences;
-  }
+  },
 };
