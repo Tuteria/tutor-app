@@ -18,6 +18,7 @@ export default function TutorVerificationPage({
   supportedCountries,
   educationData,
   tuteriaSubjects = [],
+  preferences,
 }) {
   const toast = useToast();
   const { navigate } = usePrefetchHook({
@@ -32,8 +33,9 @@ export default function TutorVerificationPage({
         supportedCountries,
         educationData,
         tuteriaSubjects,
+        preferences,
       });
-      await store.initializeTutorData({
+      store.initializeTutorData({
         ...result,
         tutorInfo: {
           ...result.tutorInfo,
@@ -94,7 +96,7 @@ export default function TutorVerificationPage({
   );
 }
 export async function getStaticProps() {
-  const result = await serverAdapter.initializeApplication();
+  const result = await serverAdapter.initializeApplication(true);
   return {
     props: {
       ...result,
