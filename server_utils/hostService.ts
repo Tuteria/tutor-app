@@ -222,6 +222,8 @@ export type TuteriaSubjectServerResponse = Array<{
     trackRecords: string;
     teachingRequirements: string;
     preliminaryQuestions: string;
+    agree: boolean;
+    preferences: any[];
   };
 }>;
 
