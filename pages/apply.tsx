@@ -28,7 +28,7 @@ export default function ApplicationPage({
   educationData: any[];
   tuteriaSubjects: TuteriaSubjectType[];
 }) {
-  const { navigate, onError } = usePrefetchHook({
+  const { navigate, onError, buildNavigation } = usePrefetchHook({
     routes: ["/login", "/complete"],
   });
   const [loaded, setLoaded] = React.useState("initialize");
@@ -68,12 +68,8 @@ export default function ApplicationPage({
       if (store.currentStep === APPLICATION_STEPS.APPLY) {
         setIsLoading(false);
       } else {
-        const paths = {
-          [APPLICATION_STEPS.VERIFY]: `/verify`,
-          [APPLICATION_STEPS.SUBJECT]: `/subjects?access_token=${result.accessToken}`,
-          [APPLICATION_STEPS.COMPLETE]: `/complete?access_token=${result.accessToken}`,
-        };
-        navigate(paths[store.currentStep]);
+        let v = buildNavigation(result.accessToken, result.tutorInfo);
+        navigate(v);
       }
       setLoaded("done");
     } catch (error) {

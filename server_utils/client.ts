@@ -11,9 +11,9 @@ const TUTOR_QUIZZES = "TUTOR-QUIZZES";
 const TUTERIA_SUBJECTS_KEY = "TUTERIA_SUBJECTS";
 const TUTERIA_PREFERENCE_KEY = "TUTERIA_PREFERENCES";
 const CURRENT_SKILL = "TUTERIA_SKILL";
-const SUBJECT_DESCRIPTION = "SUBJECT_DESCRIPTION"
-const TEACHING_STYLE = "TEACHING_STYLE"
-const TRACK_RECORD = "TRACK_RECORD"
+const SUBJECT_DESCRIPTION = "SUBJECT_DESCRIPTION";
+const TEACHING_STYLE = "TEACHING_STYLE";
+const TRACK_RECORD = "TRACK_RECORD";
 export const FETCHED_TUTOR_KEY = "fetchedTutorData";
 
 function decodeToken(existingTokenFromUrl = "", key = NEW_TUTOR_TOKEN) {
@@ -102,7 +102,14 @@ async function getTutorInfo(includeSubjects: boolean) {
 }
 async function initializeApplication(
   adapter: AdapterType,
-  { regions, countries, supportedCountries, educationData, tuteriaSubjects, preferences = [] }
+  {
+    regions,
+    countries,
+    supportedCountries,
+    educationData,
+    tuteriaSubjects,
+    preferences = [],
+  }
 ) {
   let tutorData = storage.get(FETCHED_TUTOR_KEY);
   if (preferences.length > 0) {
@@ -132,10 +139,12 @@ function buildTutorData(
   { regions, countries, supportedCountries, educationData, tuteriaSubjects }
 ) {
   let { tutorData, accessToken, tutorSubjects } = fetchedData;
-  tutorSubjects = tutorSubjects.map(subject => {
-    const foundSubject = tuteriaSubjects.find(item => item.name === subject.name)
-    return { ...subject, category: foundSubject ? foundSubject.category : "" }
-  })
+  tutorSubjects = tutorSubjects.map((subject) => {
+    const foundSubject = tuteriaSubjects.find(
+      (item) => item.name === subject.name
+    );
+    return { ...subject, category: foundSubject ? foundSubject.category : "" };
+  });
   storage.set(adapter.regionKey, regions);
   storage.set(adapter.countryKey, countries);
   storage.set(adapter.tuteriaSubjectsKey, tuteriaSubjects);
@@ -185,10 +194,10 @@ const saveSubject = (subject_id, subject) => {
 };
 
 const clearSubjectDescription = () => {
-  storage.clear(SUBJECT_DESCRIPTION)
-  storage.clear(TEACHING_STYLE)
-  storage.clear(TRACK_RECORD)
-}
+  storage.clear(SUBJECT_DESCRIPTION);
+  storage.clear(TEACHING_STYLE);
+  storage.clear(TRACK_RECORD);
+};
 
 function getQueryValues() {
   if (typeof window !== "undefined") {
@@ -207,7 +216,11 @@ function getQueryValues() {
 }
 
 async function buildReviewQuizData(subjectInfo: TuteriaSubjectType) {
-  const response = await postFetcher("/api/quiz/generate-review-quiz", subjectInfo, false);
+  const response = await postFetcher(
+    "/api/quiz/generate-review-quiz",
+    subjectInfo,
+    false
+  );
   if (response.ok) {
     const { data } = await response.json();
     let [quizToTake, quizzesList] = data;
@@ -217,12 +230,16 @@ async function buildReviewQuizData(subjectInfo: TuteriaSubjectType) {
 }
 
 async function createQuizFromSheet(subject) {
-  const response = await postFetcher("/api/quiz/create-quiz-from-sheet", {
-    subjects: subject
-  }, false);
+  const response = await postFetcher(
+    "/api/quiz/create-quiz-from-sheet",
+    {
+      subjects: subject,
+    },
+    false
+  );
   if (response.ok) {
     const { data } = await response.json();
-    return data
+    return data;
   }
   throw "Error building quiz";
 }
@@ -399,8 +416,8 @@ export const clientAdapter: any = {
     }
     throw "Failed to save tutor info";
   },
-  submitSelectedSubjects: async () => { },
-  updateUserPassword: async () => { },
+  submitSelectedSubjects: async () => {},
+  updateUserPassword: async () => {},
   validateCredentials: () => {
     let data = decodeToken();
     if (data) {
@@ -539,7 +556,7 @@ export const clientAdapter: any = {
         })),
       };
       saveSubject(subject_id, formattedData);
-      clearSubjectDescription()
+      clearSubjectDescription();
       return data;
     }
     throw "Failed to save subject details";
@@ -566,20 +583,39 @@ export const clientAdapter: any = {
       } = await getTutorInfo(true);
       let tutorData = { accessToken, tutorData: x, tutorSubjects };
       storage.set(FETCHED_TUTOR_KEY, tutorData);
-      return { loggedIn: true, email: x?.personalInfo?.email || "" };
+      return {
+        loggedIn: true,
+        email: x?.personalInfo?.email || "",
+        tutorData: tutorData.tutorData,
+        accessToken,
+      };
     } catch (error) {
       return { loggedIn: false, email: "" };
     }
   },
   saveOnBlur: (name, value) => {
-    storage.set(name, value)
+    storage.set(name, value);
   },
   loadSubjectDescription: (name) => {
-    return storage.get(name, "")
+    return storage.get(name, "");
   },
 
-  buildPreferences(subject: { category: string, [key: string]: any  }) {
+  buildPreferences(subject: { category: string; [key: string]: any }) {
     const preferences = seshStorage.get(TUTERIA_PREFERENCE_KEY, []);
-    return preferences.filter(({ category }) => category === subject.category); 
-  }
+    return preferences.filter(({ category }) => category === subject.category);
+  },
+  async checkSpellingAndGrammar(checks) {
+    const response = await postFetcher(
+      "/api/tutors/spell-check",
+      { checks },
+      true
+    );
+    if (response.ok) {
+      const { data, hasError } = await response.json();
+      if (hasError) {
+        throw data;
+      }
+    }
+    throw "Error verifying email";
+  },
 };

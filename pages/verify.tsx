@@ -23,7 +23,7 @@ export default function TutorVerificationPage({
   tuteriaSubjects = [],
 }) {
   const toast = useToast();
-  const { navigate } = usePrefetchHook({
+  const { navigate, buildNavigation } = usePrefetchHook({
     routes: ["/login", "/complete", "/apply"],
   });
 
@@ -58,14 +58,9 @@ export default function TutorVerificationPage({
       if (store.currentStep === APPLICATION_STEPS.VERIFY) {
         setIsLoading(false);
       } else {
-        const paths = {
-          [APPLICATION_STEPS.APPLY]: `/apply`,
-          [APPLICATION_STEPS.SUBJECT]: `/subjects?access_token=${result.accessToken}`,
-          [APPLICATION_STEPS.COMPLETE]: `/complete?access_token=${result.accessToken}`,
-        };
-        let _path = paths[store.currentStep];
+        let _path = buildNavigation(result.accessToken, result.tutorInfo);
         if (_path) {
-          navigate(paths[store.currentStep]);
+          navigate(_path);
         } else {
           navigate("/apply");
         }

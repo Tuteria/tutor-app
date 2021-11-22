@@ -1,5 +1,4 @@
 import { initializeStore } from "@tuteria/shared-lib/src/stores";
-import { APPLICATION_STEPS } from "@tuteria/shared-lib/src/stores/rootStore";
 import CompletedApplicationPage from "@tuteria/shared-lib/src/tutor-revamp/CompletedApplicationPage";
 import React from "react";
 import { clientAdapter } from "../server_utils/client";

@@ -717,7 +717,29 @@ export const serverAdapter = {
     const preferences = await getPreferences();
     return preferences;
   },
-  async spellCheck(text: string, other_texts: string[]) {
-    return await checkSpellingAndGrammar(text, other_texts);
+  async spellCheck(
+    text: string,
+    other_texts: string[],
+    key?: string,
+    parse = false
+  ) {
+    let result = await checkSpellingAndGrammar(text, other_texts, parse);
+    if (key) {
+      return { key, data: result };
+    }
+    return result;
+  },
+  async bulkSpellChecker(
+    checks: Array<{ key?: string; text?: string; other_texts: string[] }>
+  ) {
+    let instance = this;
+    let response = await Promise.all(
+      checks.map((o) => instance.spellCheck(o.text, o.other_texts, o.key, true))
+    );
+    let result = {};
+    response.forEach((r) => {
+      result[r.key] = r.data;
+    });
+    return result;
   },
 };

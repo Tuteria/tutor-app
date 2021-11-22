@@ -327,10 +327,27 @@ export async function getBanksSupported(supportedCountry: string) {
   let bankdDetails = countryData.default[supportedCountry] || [];
   return bankdDetails;
 }
+function evaluateSpelling(x: any[]) {
+  let spellingErrors = x
+    .filter((o) => o.type === "spelling")
+    .map((o) => o.text);
+  let y = {};
+  x.filter((o) => o.type === "grammar").forEach((o) => {
+    y[o.text] = o.message;
+  });
+  return {
+    spelling: spellingErrors,
+    grammar: y,
+  };
+}
+function evaluate(x: any[]) {
+  return x;
+}
 
 export async function checkSpellingAndGrammar(
   text: string,
-  other_texts: string[]
+  other_texts: string[],
+  parse?: boolean
 ) {
   let server_config = await getSpellCheckDetails();
   let response = await postHelper(
@@ -339,8 +356,15 @@ export async function checkSpellingAndGrammar(
     SPELL_CHECK_URL
   );
   if (response.ok) {
-    let result = await response.json();
-    return result.data;
+    let { data } = await response.json();
+    if (parse) {
+      return {
+        ...evaluateSpelling(data.spelling),
+        similarity: evaluate(data.similarity),
+      };
+    }
+    return data;
+    // return result;
   }
   throw new Error("Failed to run check");
 }
