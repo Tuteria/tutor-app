@@ -6,9 +6,12 @@ import { usePrefetchHook } from "../server_utils/util";
 export default function LoginPage({ email, next }) {
   const { navigate } = usePrefetchHook({ routes: [next] });
   const showOTP = email ? true : false;
-  async function authenticateUser(data) {
-    await clientAdapter.authenticateUser(data);
-    navigate(next);
+  async function authenticateUser(payload, key) {
+    const data = await clientAdapter.authenticateUser(payload);
+    if (key === "otp-code") {
+      navigate(next);
+    }
+    return data;
   }
 
   return <Login email={email} showOTP={showOTP} onLogin={authenticateUser} />;
