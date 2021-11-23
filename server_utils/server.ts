@@ -284,12 +284,14 @@ function formatSubjects(
       tuteriaStatus: item.status,
       status,
       hourlyRate: item.price,
-      preferences: item.other_info.preferences || [],
+      // preferences: item.other_info.preferences || [],
+      preferences: item.other_info?.preliminaryQuestions || [],
       agree: item.other_info?.agree || false,
       teachingStyle: item.other_info?.teachingStyle || "",
       trackRecords: item.other_info?.trackRecords || "",
       teachingRequirements: item.other_info?.teachingRequirements || [],
-      preliminaryQuestions: item.other_info?.preliminaryQuestions || [],
+      // preliminaryQuestions: item.other_info?.preliminaryQuestions || [],
+      preliminaryQuestions: [],
       canTakeTest:
         item.sittings.length === 0 && (item.status === 3 || item.status === 5),
       exhibitions: (item.exhibitions || []).map((o) => {
@@ -297,7 +299,6 @@ function formatSubjects(
           url: o.url || "",
           id: o.image,
           caption: o.caption,
-          // isNew: false,
         };
       }),
       // test_detail: test_detail.find(
