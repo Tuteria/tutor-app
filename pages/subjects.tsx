@@ -18,9 +18,10 @@ export default function TutorVerificationPage({
   supportedCountries,
   educationData,
   tuteriaSubjects = [],
+  preferences,
 }) {
   const toast = useToast();
-  const { navigate } = usePrefetchHook({
+  const { navigate, buildNavigation } = usePrefetchHook({
     routes: ["/login", "/complete", "subjects", "/apply"],
   });
 
@@ -32,8 +33,9 @@ export default function TutorVerificationPage({
         supportedCountries,
         educationData,
         tuteriaSubjects,
+        preferences,
       });
-      await store.initializeTutorData({
+      store.initializeTutorData({
         ...result,
         tutorInfo: {
           ...result.tutorInfo,
@@ -49,14 +51,9 @@ export default function TutorVerificationPage({
       if (store.currentStep === APPLICATION_STEPS.SUBJECT) {
         setIsLoading(false);
       } else {
-        const paths = {
-          [APPLICATION_STEPS.APPLY]: `/apply`,
-          [APPLICATION_STEPS.VERIFY]: `/verify`,
-          [APPLICATION_STEPS.COMPLETE]: `/complete?access_token=${result.accessToken}`,
-        };
-        let _path = paths[store.currentStep];
+        let _path = buildNavigation(result.accessToken, result.tutorInfo);
         if (_path) {
-          navigate(paths[store.currentStep]);
+          navigate(_path);
         } else {
           navigate("/apply");
         }
@@ -94,7 +91,7 @@ export default function TutorVerificationPage({
   );
 }
 export async function getStaticProps() {
-  const result = await serverAdapter.initializeApplication();
+  const result = await serverAdapter.initializeApplication(true);
   return {
     props: {
       ...result,

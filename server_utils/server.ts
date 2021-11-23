@@ -7,6 +7,7 @@ import {
   authenticateLoginDetails,
   beginQuiz,
   bulkCreateQuizOnBackend,
+  checkSpellingAndGrammar,
   deleteTutorSubject,
   fetchAllCountries,
   fetchAllowedQuizesForUser,
@@ -29,6 +30,8 @@ import {
   getTestableSubjects,
   getTuteriaSubjectData,
   getTuteriaSubjectList,
+  getPreferences,
+  getSpellCheckDetails,
 } from "@tuteria/tuteria-data/src";
 import { TuteriaSubjectType } from "./types";
 
@@ -111,12 +114,13 @@ const bulkFetchQuizSubjectsFromSheet = async (
   return rr;
 };
 function is_figure(content: string) {
-  let regex = /(http|ftp|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])/gm;
-  let matched = content.match(regex)
+  let regex =
+    /(http|ftp|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])/gm;
+  let matched = content.match(regex);
   if (Array.isArray(matched)) {
-    return matched[0]
+    return matched[0];
   }
-  return null
+  return null;
 }
 const transformData = (data: any, showAnswer = false) =>
   data.map((item) => {
@@ -128,8 +132,8 @@ const transformData = (data: any, showAnswer = false) =>
       is_latex: item.is_latex || false,
       comprehension: item.comprehension
         ? {
-          passage: item.comprehension,
-        }
+            passage: item.comprehension,
+          }
         : null,
       options_display: item.options_layout || "vertical",
       answers: item.answer_set.map((option) => {
@@ -143,11 +147,11 @@ const transformData = (data: any, showAnswer = false) =>
           ? { ...optionData, correct: showAnswer ? option.correct : null }
           : optionData;
       }),
-    }
+    };
 
-    if (question.answers[0].figure) question.options_display = "horizontal"
+    if (question.answers[0].figure) question.options_display = "horizontal";
 
-    return question
+    return question;
   });
 
 type SavedQuizDataType = {
@@ -279,6 +283,9 @@ function formatSubjects(
       ),
       tuteriaStatus: item.status,
       status,
+      hourlyRate: item.price,
+      preferences: item.other_info.preferences || [],
+      agree: item.other_info?.agree || false,
       teachingStyle: item.other_info?.teachingStyle || "",
       trackRecords: item.other_info?.trackRecords || "",
       teachingRequirements: item.other_info?.teachingRequirements || [],
@@ -301,6 +308,14 @@ function formatSubjects(
     };
   });
   return result;
+}
+
+async function getTuteriaSubjectsWithPreferences() {
+  const [tuteriaSubjects, preferences] = await Promise.all([
+    getTuteriaSubjects(),
+    getPreferences(),
+  ]);
+  return { tuteriaSubjects, preferences };
 }
 
 async function getTuteriaSubjects(
@@ -342,8 +357,8 @@ async function getTutorSubjects(email: string) {
 }
 
 async function createQuizFromSheet({ subjects }) {
-  const result = await fetchQuizSubjectsFromSheet(subjects, true)
-  return result
+  const result = await fetchQuizSubjectsFromSheet(subjects, true);
+  return result;
 }
 
 export const serverAdapter = {
@@ -352,28 +367,37 @@ export const serverAdapter = {
   getUserInfo,
   getQuizzesForTuteriaSubject: fetchQuizSubjectsFromSheet,
   createQuizFromSheet,
-  async initializeApplication() {
+  async initializeApplication(includePrefs?: boolean) {
     const [
       result,
       allCountries,
       supportedCountries,
       educationData,
-      tuteriaSubjects,
+      subjectData,
     ] = await Promise.all([
       getLocationInfoFromSheet(),
       fetchAllCountries(),
       getSupportedCountries(),
       getEducationData(),
-      getTuteriaSubjects(),
+      includePrefs ? getTuteriaSubjectsWithPreferences() : getTuteriaSubjects(),
     ]);
-    return {
+
+    const data: any = {
       allRegions: result.regions,
       allCountries,
       supportedCountries,
       educationData,
-      tuteriaSubjects,
     };
+
+    if (Array.isArray(subjectData)) {
+      data.tuteriaSubjects = subjectData;
+    } else {
+      data.tuteriaSubjects = subjectData.tuteriaSubjects;
+      data.preferences = subjectData.preferences;
+    }
+    return data;
   },
+
   async saveTutorInfo(data: any, encode = false) {
     let result = await saveTutorInfoService(data);
     if (encode) {
@@ -690,5 +714,35 @@ export const serverAdapter = {
       return { email: data.email, loginType: "code" };
     }
     return await this.getTutorDetails(email, true, true, data);
+  },
+
+  async getPreferences() {
+    const preferences = await getPreferences();
+    return preferences;
+  },
+  async spellCheck(
+    text: string,
+    other_texts: string[],
+    key?: string,
+    parse = false
+  ) {
+    let result = await checkSpellingAndGrammar(text, other_texts, parse);
+    if (key) {
+      return { key, data: result };
+    }
+    return result;
+  },
+  async bulkSpellChecker(
+    checks: Array<{ key?: string; text?: string; other_texts: string[] }>
+  ) {
+    let instance = this;
+    let response = await Promise.all(
+      checks.map((o) => instance.spellCheck(o.text, o.other_texts, o.key, true))
+    );
+    let result = {};
+    response.forEach((r) => {
+      result[r.key] = r.data;
+    });
+    return result;
   },
 };

@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { useToast } from "@chakra-ui/react";
 import getConfig from "next/config";
 import { format } from "url";
+import { APPLICATION_STEPS } from "@tuteria/shared-lib/src/stores/rootStore";
 
 const { publicRuntimeConfig } = getConfig() || {};
 
@@ -46,6 +47,16 @@ export const usePrefetchHook = ({
       });
     }
   }
+  function buildNavigation(accessToken, tutorData) {
+    const paths = {
+      [APPLICATION_STEPS.APPLY]: `/apply?currentStep=personal-info`,
+      [APPLICATION_STEPS.VERIFY]: `/verify`,
+      [APPLICATION_STEPS.SUBJECT]: `/subjects?access_token=${accessToken}`,
+      [APPLICATION_STEPS.COMPLETE]: `/complete?access_token=${accessToken}`,
+    };
+    let step = tutorData?.appData?.currentStep || APPLICATION_STEPS.APPLY;
+    return paths[step];
+  }
 
-  return { navigate, router, onError, toast };
+  return { navigate, router, onError, toast, buildNavigation };
 };
