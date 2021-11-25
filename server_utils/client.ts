@@ -538,24 +538,24 @@ export const clientAdapter: any = {
     );
     if (response.ok) {
       const { data } = await response.json();
-      const formattedData = {
-        id: subject_id,
-        title: subject.heading,
-        description: subject.description,
-        certifications: (subject.certifications || []).map((cert) => ({
-          name: cert.award_name,
-          institution: cert.award_institution,
-        })),
-        teachingStyle: subject.other_info.teachingStyle,
-        trackRecords: subject.other_info.trackRecords,
-        teachingRequirements: subject.other_info.teachingRequirements,
-        preliminaryQuestions: subject.other_info.preliminaryQuestions,
-        exhibitions: subject.exhibitions.map((exhibition) => ({
-          id: exhibition.image,
-          caption: exhibition.caption,
-        })),
-      };
-      saveSubject(subject_id, formattedData);
+      // const formattedData = {
+      //   id: subject_id,
+      //   title: subject.heading,
+      //   description: subject.description,
+      //   certifications: (subject.certifications || []).map((cert) => ({
+      //     name: cert.award_name,
+      //     institution: cert.award_institution,
+      //   })),
+      //   teachingStyle: subject.other_info.teachingStyle,
+      //   trackRecords: subject.other_info.trackRecords,
+      //   teachingRequirements: subject.other_info.teachingRequirements,
+      //   preliminaryQuestions: subject.other_info.preliminaryQuestions,
+      //   exhibitions: subject.exhibitions.map((exhibition) => ({
+      //     id: exhibition.image,
+      //     caption: exhibition.caption,
+      //   })),
+      // };
+      // saveSubject(subject_id, formattedData);
       clearSubjectDescription();
       return data;
     }
