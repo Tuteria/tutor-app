@@ -10,9 +10,10 @@ const SCHEDULER_SERVICE =
   process.env.SCHEDULER_SERVICE || "http://email-service.tuteria.com:8092";
 const SHEET_HOST_URL =
   process.env.SHEET_HOST_URL || "https://sheet.tuteria.com";
-const SPELL_CHECK_URL =
-  process.env.SPELL_CHECK_URL || "https://gsheet.vercel.app";
-
+// const SPELL_CHECK_URL =
+//   process.env.SPELL_CHECK_URL || "https://gsheet.vercel.app";
+  const SPELL_CHECK_URL =
+  process.env.SPELL_CHECK_URL || "http://dev.tuteria.com:8020";
 export const IS_TEST = process.env.IS_TEST || "true";
 let ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 let ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
