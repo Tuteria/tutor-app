@@ -723,27 +723,49 @@ export const serverAdapter = {
   },
   async spellCheck(
     text: string,
-    other_texts: string[],
+    other_texts: Array<{ key: string; value: string }>,
     key?: string,
-    parse = false
+    parse = false,
+    config = { similarity: 0.7 }
   ) {
-    let result = await checkSpellingAndGrammar(text, other_texts, parse);
+    let multiple_texts = other_texts.map((o) => o.value);
+    let { spelling, grammar, similarity } = await checkSpellingAndGrammar(
+      text,
+      multiple_texts,
+      parse
+    );
+    console.log(similarity);
+    let newSimilarity = similarity
+      .map((j, i) => ({
+        key: other_texts[i].key,
+        value: j,
+      }))
+      .filter((u) => u.value.similarity >= config.similarity)
+      .map((o) => o.key);
     if (key) {
-      return { key, data: result };
+      return { key, data: { grammar, similarSubjects: newSimilarity } };
     }
-    return result;
+    return { grammar, similarSubjects: newSimilarity };
   },
   async bulkSpellChecker(
-    checks: Array<{ key?: string; text?: string; other_texts: string[] }>
+    checks: Array<{ key?: string; text?: string; other_texts: string[] }>,
+    config: any
   ) {
     let instance = this;
     let response = await Promise.all(
-      checks.map((o) => instance.spellCheck(o.text, o.other_texts, o.key, true))
+      checks.map((o) =>
+        instance.spellCheck(o.text, o.other_texts, o.key, true, config)
+      )
     );
     let result = {};
     response.forEach((r) => {
       result[r.key] = r.data;
     });
-    return result;
+    let hasError = response.some(
+      (u) =>
+        Object.values(u.data.grammar).length > 0 ||
+        u.data.similarSubjects.length > 0
+    );
+    return { data: result, hasError };
   },
 };

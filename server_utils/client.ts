@@ -611,7 +611,9 @@ export const clientAdapter: any = {
       true
     );
     if (response.ok) {
-      const { data, hasError } = await response.json();
+      const {
+        data: { data, hasError },
+      } = await response.json();
       if (hasError) {
         throw data;
       }
@@ -619,7 +621,10 @@ export const clientAdapter: any = {
     throw "Error verifying email";
   },
   getEarningPercentage() {
-    return 70;
+    let tutorInfo = this.loadExistingTutorInfo();
+    let others = tutorInfo?.others || {};
+    let isPremium = others?.premium;
+    return isPremium ? 75 : 70;
   },
   getPriceSuggestion(subject: string) {
     return {
