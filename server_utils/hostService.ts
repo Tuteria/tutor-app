@@ -1,4 +1,4 @@
-import { getSpellCheckDetails } from "@tuteria/tuteria-data/src";
+import { getSpellCheckDetails, TuteriaSubjectServerResponse } from "@tuteria/tuteria-data/src";
 
 export let HOST = process.env.HOST_ENDPOINT || "http://backup.tuteria.com:8000";
 export const IS_DEVELOPMENT = process.env.IS_DEVELOPMENT || "development";
@@ -206,26 +206,7 @@ export const updateTestStatus = async (data: {
   throw new Error("Error updating test status from backend.");
 };
 
-export type TuteriaSubjectServerResponse = Array<{
-  pk: number;
-  skill: { name: string };
-  status: number;
-  heading?: string;
-  description?: string;
-  price?: string;
-  has_updated_price: boolean;
-  certifications: any[];
-  sittings: any[];
-  exhibitions: Array<{ image: string; url: string; caption: string }>;
-  other_info?: {
-    teachingStyle: string;
-    trackRecords: string;
-    teachingRequirements: string;
-    preliminaryQuestions: string;
-    agree: boolean;
-    preferences: any[];
-  };
-}>;
+
 
 export const saveUserSelectedSubjects = async (data: {
   email: string;

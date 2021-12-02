@@ -17,7 +17,6 @@ import {
   saveTutorSubjectService,
   saveUserSelectedSubjects,
   sendEmailNotification,
-  TuteriaSubjectServerResponse,
   updateTestStatus,
   userRetakeTest,
 } from "./hostService";
@@ -32,6 +31,7 @@ import {
   getTuteriaSubjectList,
   getPreferences,
   getSpellCheckDetails,
+  formatSubjects,
 } from "@tuteria/tuteria-data/src";
 import { TuteriaSubjectType } from "./types";
 
@@ -249,67 +249,7 @@ export function getUserInfo(
   return null;
 }
 
-function formatSubjects(
-  subjects: TuteriaSubjectServerResponse,
-  allowedQuizzes: Array<{ name: string }> = []
-) {
-  const result = subjects.map((item) => {
-    // const { category, subcategory } = subjectsData.find(
-    //   (subject) => item.skill.name === subject.tuteria_name
-    // ) || { category: null, subcategory: null };
-    let mapping = {
-      1: "pending",
-      2: "active",
-      3: "suspended",
-      4: "denied",
-      5: "in-progress",
-    };
-    let status = mapping[item.status];
-    let exists = allowedQuizzes.find((o) => o.name === item.skill.name);
-    if (exists) {
-      status = "not-started";
-    }
-    return {
-      // ...item,
-      id: item.pk,
-      name: item.skill.name,
-      title: item.heading || "",
-      description: item.description,
-      certifications: item.certifications.map(
-        ({ award_name, award_institution }) => ({
-          name: award_name,
-          institution: award_institution,
-        })
-      ),
-      tuteriaStatus: item.status,
-      status,
-      hourlyRate: item.price,
-      // preferences: item.other_info.preferences || [],
-      preferences: item.other_info?.preliminaryQuestions || [],
-      agree: item.other_info?.agree || false,
-      teachingStyle: item.other_info?.teachingStyle || "",
-      trackRecords: item.other_info?.trackRecords || "",
-      teachingRequirements: item.other_info?.teachingRequirements || [],
-      // preliminaryQuestions: item.other_info?.preliminaryQuestions || [],
-      preliminaryQuestions: [],
-      canTakeTest:
-        item.sittings.length === 0 && (item.status === 3 || item.status === 5),
-      exhibitions: (item.exhibitions || []).map((o) => {
-        return {
-          url: o.url || "",
-          id: o.image,
-          caption: o.caption,
-        };
-      }),
-      // test_detail: test_detail.find(
-      //   ({ name, testable }: any) => name === item.skill.name && testable
-      // ) || null,
-      // category,
-      // subcategory,
-    };
-  });
-  return result;
-}
+
 
 async function getTuteriaSubjectsWithPreferences() {
   const [tuteriaSubjects, preferences] = await Promise.all([
