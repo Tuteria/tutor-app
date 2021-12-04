@@ -108,10 +108,7 @@ export const saveTutorInfoService = async ({
   slug: string;
   data: { [key: string]: any };
 }) => {
-  const response = await postHelper("/api/tutors/save-tutor-info", {
-    slug,
-    data,
-  });
+  const response = await postHelper(`/new-flow/tutor/${slug}/update`, data);
   if (response.ok) {
     const { data } = await response.json();
     return data;
