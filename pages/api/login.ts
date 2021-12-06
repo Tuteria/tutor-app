@@ -1,5 +1,6 @@
 import { defaultView } from "../../middlewares";
 import { serverAdapter } from "../../server_utils/server";
+import { HOST } from '../../server_utils/hostService';
 
 export default defaultView(
   async (req) => {
@@ -7,8 +8,10 @@ export default defaultView(
     let data;
     if (email && code) {
       data = await serverAdapter.authenticateUserCode(email, code);
-      // const access_token = serverAdapter.upgradeAccessToken(userInfo);
-      // data = { access_token };
+      if (data.tutorData.application_status === 'VERIFIED') {
+        const { pk, slug } = data.tutorData;
+        data.redirectUrl = `${HOST}/users/authenticate/${pk}/${slug}`; 
+      }
     } else {
       data = await serverAdapter.loginUser(email);
     }

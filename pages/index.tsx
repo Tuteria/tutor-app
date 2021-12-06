@@ -1,15 +1,14 @@
-import LandingPage from "@tuteria/shared-lib/src/tutor-application/pages/LandingPage";
-import React from "react";
-import { clientAdapter } from "../server_utils/client";
-import { usePrefetchHook } from "../server_utils/util";
-import { APPLICATION_STEPS } from "@tuteria/shared-lib/src/stores/rootStore";
+import LandingPage from '@tuteria/shared-lib/src/tutor-application/pages/LandingPage';
+import React from 'react';
+import { clientAdapter } from '../server_utils/client';
+import { usePrefetchHook } from '../server_utils/util';
 
 function Index() {
   const { navigate, buildNavigation } = usePrefetchHook({
-    routes: ["/login", "/apply"],
+    routes: ['/login', '/apply'],
   });
   const [continueUrl, setUrl] = React.useState(
-    "/apply?currentStep=personal-info"
+    '/apply?currentStep=personal-info'
   );
 
   async function checkLoggedInStatus() {
@@ -31,14 +30,17 @@ function Index() {
   async function authenticateUser(data, key) {
     try {
       let response = await clientAdapter.authenticateUser(data);
-      if (key === "otp-code") {
-        let accessToken = response.accessToken;
-
-        let v = buildNavigation(accessToken, response?.tutorData);
-        if (v) {
-          navigate(v);
+      if (key === 'otp-code') {
+        if (response.tutorData.application_status === 'VERIFIED') {
+          window.location.replace(response.redirectUrl);
         } else {
-          navigate("/apply?currentStep=personal-info");
+          let accessToken = response.accessToken;
+          let v = buildNavigation(accessToken, response?.tutorData);
+          if (v) {
+            navigate(v);
+          } else {
+            navigate('/apply?currentStep=personal-info');
+          }
         }
       }
       return response;
