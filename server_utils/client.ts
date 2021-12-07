@@ -601,8 +601,20 @@ export const clientAdapter: any = {
   },
 
   buildPreferences(subject: { category: string; [key: string]: any }) {
+    const placeholder = '$subject_name';
     const preferences = seshStorage.get(TUTERIA_PREFERENCE_KEY, []);
-    return preferences.filter(({ category }) => category === subject.category);
+    const result = preferences
+      .filter(({ category }) => category === subject.category)
+      .map((preference) => {
+        for (let key in preference) {
+          const value = preference[key];
+          if (typeof value === 'string' && value.includes(placeholder)) {
+            preference[key] = value.replace(placeholder, subject.name);
+          }
+        }
+        return preference;
+      });
+     return result;
   },
   async checkSpellingAndGrammar(checks) {
     const response = await postFetcher(

@@ -9,7 +9,7 @@ export default function LoginPage({ email, next }) {
   async function authenticateUser(payload, key) {
     const data = await clientAdapter.authenticateUser(payload);
     if (key === "otp-code") {
-      if (data.tutorData.application_status === 'VERIFIED') {
+      if (data.redirectUrl) {
         window.location.replace(data.redirectUrl);
       } else navigate(next);
     }

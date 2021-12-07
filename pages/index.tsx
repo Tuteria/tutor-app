@@ -31,7 +31,7 @@ function Index() {
     try {
       let response = await clientAdapter.authenticateUser(data);
       if (key === 'otp-code') {
-        if (response.tutorData.application_status === 'VERIFIED') {
+        if (response.redirectUrl) {
           window.location.replace(response.redirectUrl);
         } else {
           let accessToken = response.accessToken;
