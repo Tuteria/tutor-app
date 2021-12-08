@@ -89,7 +89,7 @@ export default function SubjectReviewPage({ tuteriaSubjects = [] }) {
         navigateToSubject={() => {}}
         toSubjectEditPage={() => {}}
         subjectInfo={inst}
-        showRefresh={true}
+        isReview={true}
       />
     </LoadingStateWrapper>
   );
