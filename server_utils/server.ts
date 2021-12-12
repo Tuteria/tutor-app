@@ -12,12 +12,14 @@ import {
   fetchAllCountries,
   fetchAllowedQuizesForUser,
   getQuizData,
+  HOST,
   saveTutorInfoService,
   saveTutorSubjectInfo,
   saveTutorSubjectService,
   saveUserSelectedSubjects,
   sendEmailNotification,
   updateTestStatus,
+  serverValidatePersonalInfo,
   userRetakeTest,
 } from "./hostService";
 import {
@@ -248,8 +250,6 @@ export function getUserInfo(
   }
   return null;
 }
-
-
 
 async function getTuteriaSubjectsWithPreferences() {
   const [tuteriaSubjects, preferences] = await Promise.all([
@@ -631,13 +631,21 @@ export const serverAdapter = {
       promise.push(getTutorSubjects(email));
     }
     let response = await Promise.all(promise);
-    let result: { tutorData: any; tutorSubjects: any[]; accessToken?: string } =
-      { tutorData: response[0], tutorSubjects: [] };
+    let result: {
+      tutorData: any;
+      tutorSubjects: any[];
+      accessToken?: string;
+      redirectUrl?: string;
+    } = { tutorData: response[0], tutorSubjects: [] };
     if (response.length > 1) {
       result.tutorSubjects = response[1].skills;
     }
     if (decodeToken) {
       result.accessToken = this.upgradeAccessToken(result.tutorData);
+    }
+    if (result?.tutorData?.application_status === "VERIFIED") {
+      let { pk, slug } = result.tutorData;
+      result.redirectUrl = `${HOST}/users/authenticate/${pk}/${slug}`;
     }
     return result;
   },
@@ -708,4 +716,14 @@ export const serverAdapter = {
     );
     return { data: result, hasError };
   },
+  async validatePersonalInfo(payload:any,personalInfo:any){
+    let result = await serverValidatePersonalInfo(payload, personalInfo.email)
+     if(Object.keys(result).length > 0){
+        return {
+            hasError:true,
+            data:result
+        }
+    }
+    return {}
+  }
 };

@@ -227,6 +227,24 @@ export const saveUserSelectedSubjects = async (data: {
   throw new Error("Error saving selected-subjects");
 };
 
+export async function serverValidatePersonalInfo(data,email){
+  let response = await fetch(`${HOST}/new-subject-flow/validate-personal-info`, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+    method: "POST",
+    body: JSON.stringify({data,email}),
+  });
+  if (response.status < 500) {
+    let result = await response.json();
+    if (result.status) {
+      return result.data;
+    }
+    return result;
+  }
+  throw new Error("Error allowing user to retake test");
+}
+
 export const userRetakeTest = async (data: {
   email: string;
   subjects: string[];

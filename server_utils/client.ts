@@ -90,10 +90,10 @@ async function getTutorInfo(includeSubjects: boolean) {
   );
   if (response.ok) {
     const { data } = await response.json();
-    const { tutorData, tutorSubjects, accessToken } = data;
+    const { tutorData, tutorSubjects, accessToken, redirectUrl } = data;
     storage.set(NEW_TUTOR_TOKEN, accessToken);
     storage.set(NEW_TUTOR_INFO, tutorData);
-    return { tutorData, tutorSubjects, accessToken };
+    return { tutorData, tutorSubjects, accessToken, redirectUrl };
   }
   if (response.status === 403) {
     throw "Invalid Credentials";
@@ -270,8 +270,11 @@ export const clientAdapter: any = {
     throw "Error fetching bank info";
   },
   cloudinaryApiHandler: async (files, progressCallback) => {
+    const { slug }: any = decodeToken();
     const formData = new FormData();
-    files.forEach((file) => formData.append("media", file));
+    files.forEach((file) => {
+      formData.append("media", file);
+    });
     formData.append("folder", "identity");
     formData.append("kind", "image");
     const { data: response } = await axios.post(
@@ -349,7 +352,19 @@ export const clientAdapter: any = {
   deleteSubject: async (id) => {
     const response = await postFetcher(
       "/api/tutors/delete-tutor-subject",
-      { id },
+      { ids: [id] },
+      true
+    );
+    if (response.ok) {
+      const { data } = await response.json();
+      return data;
+    }
+    throw "Failed to delete tutor subjects";
+  },
+  deleteBulkSubjects: async (ids, status) => {
+    const response = await postFetcher(
+      "/api/tutors/delete-tutor-subject",
+      { ids },
       true
     );
     if (response.ok) {
@@ -445,7 +460,12 @@ export const clientAdapter: any = {
         storage.set(FETCHED_TUTOR_KEY, data);
         storage.set(NEW_TUTOR_TOKEN, data.accessToken);
       }
-      return { loggedIn: true, email: data.email };
+      return {
+        loggedIn: true,
+        email: data.email,
+        tutorData: data,
+        accessToken: data.accessToken,
+      };
     }
     throw "Failed to register user";
   },
@@ -580,6 +600,7 @@ export const clientAdapter: any = {
         accessToken,
         tutorData: x,
         tutorSubjects,
+        redirectUrl,
       } = await getTutorInfo(true);
       let tutorData = { accessToken, tutorData: x, tutorSubjects };
       storage.set(FETCHED_TUTOR_KEY, tutorData);
@@ -588,6 +609,7 @@ export const clientAdapter: any = {
         email: x?.personalInfo?.email || "",
         tutorData: tutorData.tutorData,
         accessToken,
+        redirectUrl,
       };
     } catch (error) {
       return { loggedIn: false, email: "" };
@@ -601,20 +623,20 @@ export const clientAdapter: any = {
   },
 
   buildPreferences(subject: { category: string; [key: string]: any }) {
-    const placeholder = '$subject_name';
+    const placeholder = "$subject_name";
     const preferences = seshStorage.get(TUTERIA_PREFERENCE_KEY, []);
     const result = preferences
       .filter(({ category }) => category === subject.category)
       .map((preference) => {
         for (let key in preference) {
           const value = preference[key];
-          if (typeof value === 'string' && value.includes(placeholder)) {
+          if (typeof value === "string" && value.includes(placeholder)) {
             preference[key] = value.replace(placeholder, subject.name);
           }
         }
         return preference;
       });
-     return result;
+    return result;
   },
   async checkSpellingAndGrammar(checks) {
     const response = await postFetcher(
@@ -638,11 +660,27 @@ export const clientAdapter: any = {
     let isPremium = others?.premium;
     return isPremium ? 75 : 70;
   },
-  getPriceSuggestion(subject: string) {
+  async getPriceSuggestion(subject: string) {
     return {
       minimum: "1750",
       maximum: "3600",
       recommended: "2750",
     };
+  },
+  async validatePersonalInfo(formValues) {
+    console.log({ formValues });
+    const response = await postFetcher(
+      "/api/tutors/validate-personal-info",
+      formValues,
+      true
+    );
+    if (response.ok) {
+      const {
+        data: { data, hasError },
+      } = await response.json();
+      if (hasError) {
+        throw { formErrors: data };
+      }
+    }
   },
 };
