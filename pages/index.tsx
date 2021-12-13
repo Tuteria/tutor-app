@@ -13,7 +13,7 @@ function Index() {
   const [continueText, setContinueText] = React.useState(
     "Continue Application"
   );
-  const [tutorData,setTutorData] = React.useState()
+  const [tutorData, setTutorData] = React.useState<any>()
 
   async function checkLoggedInStatus() {
     try {
@@ -74,7 +74,7 @@ function Index() {
     <LandingPage
       beginApplication={() => {
         if(tutorData){
-        let v = buildNavigation(tutorData.accessToken, tutorData?.tutorData);
+        let v = buildNavigation(tutorData?.accessToken, tutorData?.tutorData);
           if (v) {
             navigate(v);
           } else {

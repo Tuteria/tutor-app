@@ -85,6 +85,7 @@ export default function SubjectReviewPage({ tuteriaSubjects = [] }) {
     >
       <TuteriaQuizPage
         store={subjectStore.currentSubject}
+        subjectStore={subjectStore}
         canTakeQuiz={true}
         navigateToSubject={() => {}}
         toSubjectEditPage={() => {}}
