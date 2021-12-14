@@ -478,8 +478,10 @@ export const clientAdapter: any = {
     if (response.ok) {
       const { data } = await response.json();
       if (otp) {
-        storage.set(FETCHED_TUTOR_KEY, data);
-        storage.set(NEW_TUTOR_TOKEN, data.accessToken);
+        if (!data.redirectUrl) {
+          storage.set(FETCHED_TUTOR_KEY, data);
+          storage.set(NEW_TUTOR_TOKEN, data.accessToken);
+        }
       }
       return data;
     }
@@ -632,6 +634,9 @@ export const clientAdapter: any = {
           const value = preference[key];
           if (typeof value === "string" && value.includes(placeholder)) {
             preference[key] = value.replace(placeholder, subject.name);
+          }
+          if (preference.category === "Test Prep" && key === "name" && ["modules", "test_results"].includes(preference[key])) {
+            preference.options = subject.preferenceOptions;
           }
         }
         return preference;
