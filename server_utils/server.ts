@@ -1,3 +1,13 @@
+import {
+  formatSubjects,
+  getPreferences,
+  getQuizzesFromSubjects,
+  getSheetTestData,
+  getStaticInfo,
+  getTestableSubjects,
+  getTuteriaSubjectData,
+  getTuteriaSubjectList,
+} from "@tuteria/tuteria-data/src";
 import { File } from "formidable";
 import jwt from "jsonwebtoken";
 import { destroy, upload } from "./cloudinary";
@@ -9,7 +19,6 @@ import {
   bulkCreateQuizOnBackend,
   checkSpellingAndGrammar,
   deleteTutorSubject,
-  fetchAllCountries,
   fetchAllowedQuizesForUser,
   getQuizData,
   HOST,
@@ -18,23 +27,10 @@ import {
   saveTutorSubjectService,
   saveUserSelectedSubjects,
   sendEmailNotification,
-  updateTestStatus,
   serverValidatePersonalInfo,
+  updateTestStatus,
   userRetakeTest,
 } from "./hostService";
-import {
-  getEducationData,
-  getLocationInfoFromSheet,
-  getQuizzesFromSubjects,
-  getSheetTestData,
-  getSupportedCountries,
-  getTestableSubjects,
-  getTuteriaSubjectData,
-  getTuteriaSubjectList,
-  getPreferences,
-  getSpellCheckDetails,
-  formatSubjects,
-} from "@tuteria/tuteria-data/src";
 import { TuteriaSubjectType } from "./types";
 
 const DEFAULT_TOTAL_QUESTIONS = 30;
@@ -251,13 +247,6 @@ export function getUserInfo(
   return null;
 }
 
-async function getTuteriaSubjectsWithPreferences() {
-  const [tuteriaSubjects, preferences] = await Promise.all([
-    getTuteriaSubjects(),
-    getPreferences(),
-  ]);
-  return { tuteriaSubjects, preferences };
-}
 
 async function getTuteriaSubjects(
   subject?: string
@@ -309,34 +298,7 @@ export const serverAdapter = {
   getQuizzesForTuteriaSubject: fetchQuizSubjectsFromSheet,
   createQuizFromSheet,
   async initializeApplication(includePrefs?: boolean) {
-    const [
-      result,
-      allCountries,
-      supportedCountries,
-      educationData,
-      subjectData,
-    ] = await Promise.all([
-      getLocationInfoFromSheet(),
-      fetchAllCountries(),
-      getSupportedCountries(),
-      getEducationData(),
-      includePrefs ? getTuteriaSubjectsWithPreferences() : getTuteriaSubjects(),
-    ]);
-
-    const data: any = {
-      allRegions: result.regions,
-      allCountries,
-      supportedCountries,
-      educationData,
-    };
-
-    if (Array.isArray(subjectData)) {
-      data.tuteriaSubjects = subjectData;
-    } else {
-      data.tuteriaSubjects = subjectData.tuteriaSubjects;
-      data.preferences = subjectData.preferences;
-    }
-    return data;
+    return await getStaticInfo();
   },
 
   async saveTutorInfo(data: any, encode = false) {
@@ -716,14 +678,14 @@ export const serverAdapter = {
     );
     return { data: result, hasError };
   },
-  async validatePersonalInfo(payload:any,personalInfo:any){
-    let result = await serverValidatePersonalInfo(payload, personalInfo.email)
-     if(Object.keys(result).length > 0){
-        return {
-            hasError:true,
-            data:result
-        }
+  async validatePersonalInfo(payload: any, personalInfo: any) {
+    let result = await serverValidatePersonalInfo(payload, personalInfo.email);
+    if (Object.keys(result).length > 0) {
+      return {
+        hasError: true,
+        data: result,
+      };
     }
-    return {}
-  }
+    return {};
+  },
 };

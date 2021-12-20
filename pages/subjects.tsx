@@ -19,6 +19,7 @@ export default function TutorVerificationPage({
   educationData,
   tuteriaSubjects = [],
   preferences,
+  pricing,
 }) {
   const toast = useToast();
   const { navigate, buildNavigation } = usePrefetchHook({
@@ -34,6 +35,7 @@ export default function TutorVerificationPage({
         educationData,
         tuteriaSubjects,
         preferences,
+        pricing,
       });
       store.initializeTutorData({
         ...result,
