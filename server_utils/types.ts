@@ -11,4 +11,5 @@ export type TuteriaSubjectType = {
   }>;
   category?: string;
   subcategory?: string;
+  duration?: number
 };
