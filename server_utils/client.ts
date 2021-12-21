@@ -109,6 +109,7 @@ async function initializeApplication(
     educationData,
     tuteriaSubjects,
     preferences = [],
+    pricing,
   }
 ) {
   let tutorData = storage.get(FETCHED_TUTOR_KEY);
@@ -131,12 +132,13 @@ async function initializeApplication(
     supportedCountries,
     educationData,
     tuteriaSubjects,
+    pricing,
   });
 }
 function buildTutorData(
   fetchedData: { tutorData: any; accessToken: any; tutorSubjects: any[] },
   adapter: AdapterType,
-  { regions, countries, supportedCountries, educationData, tuteriaSubjects }
+  { regions, countries, supportedCountries, educationData, tuteriaSubjects,pricing }
 ) {
   let { tutorData, accessToken, tutorSubjects } = fetchedData;
   tutorSubjects = tutorSubjects.map((subject) => {
@@ -158,6 +160,7 @@ function buildTutorData(
       regions,
       countries,
       supportedCountries,
+      pricing,
       educationData: {
         degree_data: educationData.degree_data,
         grade_data: educationData.grade_data,

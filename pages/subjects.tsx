@@ -37,7 +37,6 @@ export default function TutorVerificationPage({
         preferences,
         pricing,
       });
-      debugger;
       store.initializeTutorData({
         ...result,
         tutorInfo: {
