@@ -43,7 +43,7 @@ function buildQuizInfo(
   }>,
   total_questions = DEFAULT_TOTAL_QUESTIONS
 ) {
-  const QUIZ_DURATION = 30;
+  // const QUIZ_DURATION = 30;
   const QUIZ_TYPE = "Multiple choice";
   const subjects = subjectInfo.subjects.map((o) => o.name);
   let fetchedQuizzes = quizDataFromSheet;
@@ -73,7 +73,7 @@ function buildQuizInfo(
       slug: subjectInfo.slug,
       pass_mark: subjectInfo.pass_mark,
       type: QUIZ_TYPE,
-      duration: QUIZ_DURATION,
+      duration: subjectInfo.duration,
       questions,
     },
     fetchedQuizzes,
@@ -340,11 +340,13 @@ export const serverAdapter = {
     name,
     pass_mark,
     subjects,
+    duration,
     total_questions,
   }: {
     slug: string;
     name: string;
     pass_mark: number;
+    duration: number;
     subjects: Array<{
       name: string;
       url: string;
@@ -356,7 +358,7 @@ export const serverAdapter = {
   }) => {
     const fetchedQuizzes: any = await fetchQuizSubjectsFromSheet(subjects);
     return buildQuizInfo(
-      { slug, name, pass_mark, subjects },
+      { slug, name, pass_mark, subjects, duration },
       fetchedQuizzes,
       total_questions
     );
