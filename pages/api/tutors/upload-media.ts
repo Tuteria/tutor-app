@@ -27,10 +27,24 @@ export default authCheck(
     if (fields.publicId) {
       options.public_id = fields.publicId as string;
     }
+    let quality_check = false;
+    if (fields.quality_check === "true") {
+      quality_check = true;
+    }
+    let face_check = false;
+    if (fields.face_check === "true") {
+      face_check = true;
+    }
     const transform = fields.transform
       ? fields.transform.includes("true".toLowerCase())
       : false;
-    const data = await serverAdapter.uploadMedia(tempFiles, options, transform);
+    const data = await serverAdapter.uploadMedia(
+      tempFiles,
+      options,
+      transform,
+      quality_check,
+      face_check
+    );
     return data;
   },
   {

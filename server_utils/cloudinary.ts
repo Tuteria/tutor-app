@@ -5,41 +5,72 @@ import { getCloudinaryDetails } from "@tuteria/tuteria-data/src";
 // const MEDIA_SERVICE = process.env.MEDIA_SERVICE || "http://localhost:8000";
 // const MEDIA_SERVICE = process.env.MEDIA_SERVICE || "http://dev.tuteria.com:8020";
 // process.env.MEDIA_SERVICE || "http://staging-prod.tuteria.com:8020";
-const MEDIA_SERVICE = process.env.MEDIA_SERVICE || "http://dev.tuteria.com:8020";
+const MEDIA_SERVICE =
+  process.env.MEDIA_SERVICE || "http://dev.tuteria.com:8020";
 const MEDIA_FORMAT = process.env.MEDIA_FORMAT || "test";
 
 async function transformImage(publicId: string, serverConfig) {
-  const url = await getCloudinaryUrl(publicId, {
-    gravity: "face",
-    width: 150,
-    height: 150,
-    crop: "fill",
-    fetch_format: "auto",
-    quality: "auto",
-    kind: "image",
-  }, serverConfig);
+  const url = await getCloudinaryUrl(
+    publicId,
+    {
+      gravity: "face",
+      width: 300,
+      height: 300,
+      crop: "fill",
+      fetch_format: "auto",
+      quality: "auto",
+      kind: "image",
+    },
+    serverConfig
+  );
   return url;
 }
 
-export async function upload(filePath: any, options: any, transform: boolean) {
+export async function upload(
+  filePath: any,
+  options: any,
+  transform: boolean,
+  quality_check = false,
+  face_check = false
+) {
   let new_options = { ...options, file_name: options.public_id };
   delete new_options.public_id;
   const serverConfig = await getCloudinaryDetails(MEDIA_FORMAT);
+  let checks: any = {};
+  if (quality_check) {
+    checks.quality_analysis = 1;
+  }
+  if (face_check) {
+    checks.detection = "adv_face";
+  }
+  if (Object.keys(checks).length > 0) {
+    checks = JSON.stringify(checks);
+  } else {
+    checks = null;
+  }
   let result = await uploadCloudinaryResource(
     filePath,
     new_options,
     options.kind as any,
     JSON.stringify(serverConfig),
+    checks
   );
   if (result.full_response) {
     let r = result.full_response;
-    const quality = r.quality_analysis?.focus >= 0.8;
-    let response = {
+
+    let response: any = {
       public_id: r.public_id,
       bytes: r.bytes,
       url: r.secure_url,
-      quality: quality,
     };
+    if (r.quality_analysis?.focus) {
+      const quality = r.quality_analysis?.focus >= 0.3;
+      response.quality = quality;
+    }
+    if (r.info?.detection?.adv_face) {
+      let hasFace = r.info.detection.adv_face?.data?.length > 0 || false;
+      response.has_face = hasFace;
+    }
     if (transform) {
       response.url = await transformImage(r.public_id, serverConfig);
     }
@@ -79,13 +110,17 @@ export async function destroy({ id, kind = "image" }) {
   throw "Error from server";
 }
 
-export async function getCloudinaryUrl(public_id: string, options = {}, serverConfig: any) {
+export async function getCloudinaryUrl(
+  public_id: string,
+  options = {},
+  serverConfig: any
+) {
   let response = await fetch(`${MEDIA_SERVICE}/media/${MEDIA_FORMAT}/get_url`, {
     method: "POST",
     body: JSON.stringify({
       public_id,
       server_config: serverConfig,
-      ...options
+      ...options,
     }),
     headers: {
       "Content-Type": "application/json",
@@ -104,6 +139,7 @@ export async function uploadCloudinaryResource(
   options: any,
   kind: UploadTypes = "image",
   serverConfig?: string,
+  checks?: any
 ) {
   let formData = new XFormDAta();
 
@@ -117,7 +153,9 @@ export async function uploadCloudinaryResource(
   if (serverConfig) {
     formData.append("server_config", serverConfig);
   }
-
+  if (checks) {
+    formData.append("checks", checks);
+  }
   console.log(options);
   let response = await fetch(`${MEDIA_SERVICE}/media/${MEDIA_FORMAT}/upload`, {
     method: "POST",

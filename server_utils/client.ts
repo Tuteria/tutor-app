@@ -110,7 +110,7 @@ async function initializeApplication(
     tuteriaSubjects,
     preferences = [],
     pricing,
-    groups = []
+    groups = [],
   }
 ) {
   let tutorData = storage.get(FETCHED_TUTOR_KEY);
@@ -140,7 +140,15 @@ async function initializeApplication(
 function buildTutorData(
   fetchedData: { tutorData: any; accessToken: any; tutorSubjects: any[] },
   adapter: AdapterType,
-  { regions, countries, supportedCountries, educationData, tuteriaSubjects,pricing,groups }
+  {
+    regions,
+    countries,
+    supportedCountries,
+    educationData,
+    tuteriaSubjects,
+    pricing,
+    groups,
+  }
 ) {
   let { tutorData, accessToken, tutorSubjects } = fetchedData;
   tutorSubjects = tutorSubjects.map((subject) => {
@@ -157,7 +165,7 @@ function buildTutorData(
   return {
     tutorInfo: tutorData,
     accessToken,
-    subjectData: { tutorSubjects, tuteriaSubjects,groups },
+    subjectData: { tutorSubjects, tuteriaSubjects, groups },
     staticData: {
       regions,
       countries,
@@ -342,6 +350,8 @@ export const clientAdapter: any = {
     formData.append("kind", "image");
     formData.append("publicId", `${slug}-profile`);
     formData.append("transform", "true");
+    formData.append("quality_check", "true");
+    formData.append("face_check", "true");
     const response = await multipartFetch("/api/tutors/upload-media", formData);
     if (response.ok) {
       const { data } = await response.json();
@@ -350,6 +360,7 @@ export const clientAdapter: any = {
         profile_id: image.public_id,
         url: image.url,
         quality: image.quality,
+        has_face: image.has_face,
       };
     }
     throw "Failed to upload profile pic";
@@ -640,7 +651,11 @@ export const clientAdapter: any = {
           if (typeof value === "string" && value.includes(placeholder)) {
             preference[key] = value.replace(placeholder, subject.name);
           }
-          if (preference.category === "Test Prep" && key === "name" && ["modules", "test_results"].includes(preference[key])) {
+          if (
+            preference.category === "Test Prep" &&
+            key === "name" &&
+            ["modules", "test_results"].includes(preference[key])
+          ) {
             preference.options = subject.preferenceOptions;
           }
         }

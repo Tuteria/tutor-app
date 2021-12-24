@@ -247,7 +247,6 @@ export function getUserInfo(
   return null;
 }
 
-
 async function getTuteriaSubjects(
   subject?: string
 ): Promise<Array<TuteriaSubjectType> | TuteriaSubjectType | any> {
@@ -558,10 +557,16 @@ export const serverAdapter = {
     const response = await deleteTutorSubject(data);
     return response;
   },
-  uploadMedia: async (files: File[], options: any, transform: boolean) => {
+  uploadMedia: async (
+    files: File[],
+    options: any,
+    transform: boolean,
+    quality_check = false,
+    face_check = false
+  ) => {
     const data = await Promise.all(
       files.map((file) => {
-        return upload(file, options, transform);
+        return upload(file, options, transform, quality_check, face_check);
       })
     );
     return data;
