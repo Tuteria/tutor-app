@@ -16,6 +16,12 @@ export default authCheck(
     if (!result.tutorData?.personalInfo?.locationCountry) {
       result.tutorData.personalInfo.locationCountry = clientIp.country;
     }
+    if (!result.tutorData?.personalInfo?.country) {
+      result.tutorData.personalInfo.country = clientIp.country;
+    }    if (!result.tutorData?.personalInfo?.country_code) {
+      result.tutorData.personalInfo.country_code = clientIp.country_code;
+    }
+    
     return result;
   },
   // this is only used when testing the apis.
