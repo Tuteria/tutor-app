@@ -64,7 +64,7 @@ export async function upload(
       url: r.secure_url,
     };
     if (r.quality_analysis?.focus) {
-      const quality = r.quality_analysis?.focus >= 0.3;
+      const quality = r.quality_analysis?.focus >= 0.1;
       response.quality = quality;
     }
     if (r.info?.detection?.adv_face) {

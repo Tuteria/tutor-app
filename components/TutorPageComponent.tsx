@@ -8,6 +8,7 @@ import TutorPageWrapper from "@tuteria/shared-lib/src/tutor-revamp";
 import { observer } from "mobx-react-lite";
 import React from "react";
 import Dynamic from "next/dynamic";
+import { ChevronRightIcon } from "@chakra-ui/icons";
 
 const PersonalInfo = Dynamic(
   () => import("@tuteria/shared-lib/src/tutor-revamp/PersonalInfo")
@@ -81,10 +82,13 @@ const TutorPageComponent: React.FC<{
           }}
           colorScheme="blue"
           size="lg"
+          height={["48px", "64px"]}
+          rightIcon={<ChevronRightIcon fontSize="2xl" />}
           isLoading={store.applicationLoading}
+          loadingText="Submitting"
           isDisabled={!completedForm}
         >
-          Submit Application
+          Next step: Verifications
         </Button>
       </Stack>
     </TutorPageWrapper>
