@@ -6,6 +6,7 @@ import {
   getStaticInfo,
   getTestableSubjects,
   getTuteriaSubjectData,
+  getIpData,
   getTuteriaSubjectList,
 } from "@tuteria/tuteria-data/src";
 import { File } from "formidable";
@@ -694,5 +695,15 @@ export const serverAdapter = {
       };
     }
     return {};
+  },
+  async getIpFromRequest(req: any) {
+    let client_ip = undefined;
+    if (req) {
+      client_ip = req.headers["x-forwarded-for"] || "";
+      // if client ip is more than 1
+      client_ip = client_ip.split(",")[0];
+    }
+    let ipLocations = await getIpData(client_ip);
+    return ipLocations;
   },
 };

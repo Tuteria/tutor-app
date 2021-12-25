@@ -5,11 +5,18 @@ import { serverAdapter } from "../../../server_utils/server";
 export default authCheck(
   async (req, userInfo) => {
     const includeSubjects = req.query.subjects === "true";
-    return await serverAdapter.getTutorDetails(
-      userInfo.personalInfo.email,
-      includeSubjects,
-      true
-    );
+    let [clientIp, result] = await Promise.all([
+      serverAdapter.getIpFromRequest(req),
+      serverAdapter.getTutorDetails(
+        userInfo.personalInfo.email,
+        includeSubjects,
+        true
+      ),
+    ]);
+    if (!result.tutorData?.personalInfo?.locationCountry) {
+      result.tutorData.personalInfo.locationCountry = clientIp.country;
+    }
+    return result;
   },
   // this is only used when testing the apis.
   {
