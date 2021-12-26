@@ -7,7 +7,9 @@ import {
   getTestableSubjects,
   getTuteriaSubjectData,
   getIpData,
+  transformData,
   getTuteriaSubjectList,
+  buildQuizInfo
 } from "@tuteria/tuteria-data/src";
 import { File } from "formidable";
 import jwt from "jsonwebtoken";
@@ -33,53 +35,6 @@ import {
   userRetakeTest,
 } from "./hostService";
 import { TuteriaSubjectType } from "./types";
-
-const DEFAULT_TOTAL_QUESTIONS = 30;
-function buildQuizInfo(
-  subjectInfo: TuteriaSubjectType,
-  quizDataFromSheet: Array<{
-    name: string;
-    passmark: number;
-    questions: any[];
-  }>,
-  total_questions = DEFAULT_TOTAL_QUESTIONS
-) {
-  // const QUIZ_DURATION = 30;
-  const QUIZ_TYPE = "Multiple choice";
-  const subjects = subjectInfo.subjects.map((o) => o.name);
-  let fetchedQuizzes = quizDataFromSheet;
-  const filteredQuizzes = fetchedQuizzes.filter((x) =>
-    subjects.includes(x.name)
-  );
-  const questionsFromFilteredQuizzes = filteredQuizzes.map((o) => o.questions);
-  let questionSplit: number[] = generateQuestionSplit(
-    filteredQuizzes.length,
-    total_questions
-  );
-  let questions: any;
-  if (filteredQuizzes.length > 1) {
-    questionSplit = generateQuestionSplit(
-      filteredQuizzes.length,
-      total_questions
-    );
-    questions = questionsFromFilteredQuizzes
-      .map((questions, index) => questions.slice(0, questionSplit[index]))
-      .flat();
-  } else {
-    questions = questionsFromFilteredQuizzes[0].slice(0, questionSplit[0]);
-  }
-  return [
-    {
-      title: subjectInfo.name,
-      slug: subjectInfo.slug,
-      pass_mark: subjectInfo.pass_mark,
-      type: QUIZ_TYPE,
-      duration: subjectInfo.duration,
-      questions,
-    },
-    fetchedQuizzes,
-  ];
-}
 
 const bulkFetchQuizSubjectsFromSheet = async (
   subjects: string[],
@@ -112,46 +67,6 @@ const bulkFetchQuizSubjectsFromSheet = async (
   }
   return rr;
 };
-function is_figure(content: string) {
-  let regex =
-    /(http|ftp|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])/gm;
-  let matched = content.match(regex);
-  if (Array.isArray(matched)) {
-    return matched[0];
-  }
-  return null;
-}
-const transformData = (data: any, showAnswer = false) =>
-  data.map((item) => {
-    const question = {
-      id: item.id,
-      pretext: item.pretext || null,
-      content: item.content,
-      figure: item.image,
-      is_latex: item.is_latex || false,
-      comprehension: item.comprehension
-        ? {
-            passage: item.comprehension,
-          }
-        : null,
-      options_display: item.options_layout || "vertical",
-      answers: item.answer_set.map((option) => {
-        const optionData = {
-          content: option.content,
-          is_latex: item.is_latex || false,
-          figure: is_figure(option.content),
-          answer_type: "TEXT",
-        };
-        return showAnswer
-          ? { ...optionData, correct: showAnswer ? option.correct : null }
-          : optionData;
-      }),
-    };
-
-    if (question.answers[0].figure) question.options_display = "horizontal";
-
-    return question;
-  });
 
 type SavedQuizDataType = {
   name: string;
@@ -197,7 +112,7 @@ const fetchQuizSubjectsFromSheet = async (
   }
   return result.map((item) => ({
     ...item,
-    questions: transformData(item.questions, true),
+    questions: transformData(item.questions, true,item.name),
   }));
 };
 
