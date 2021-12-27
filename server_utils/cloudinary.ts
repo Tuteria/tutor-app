@@ -41,7 +41,7 @@ export async function upload(
     checks.quality_analysis = 1;
   }
   if (face_check) {
-    checks.detection = "adv_face";
+    checks.detection = "google_face_check";
   }
   if (Object.keys(checks).length > 0) {
     checks = JSON.stringify(checks);
@@ -67,10 +67,11 @@ export async function upload(
       const quality = r.quality_analysis?.focus >= 0.1;
       response.quality = quality;
     }
-    if (r.info?.detection?.adv_face) {
-      let hasFace = r.info.detection.adv_face?.data?.length > 0 || false;
+    if (r.vision_ai) {
+      let hasFace = r.vision_ai.faces_detected > 0;
       response.has_face = hasFace;
     }
+    console.log(JSON.stringify(r));
     if (transform) {
       response.url = await transformImage(r.public_id, serverConfig);
     }
