@@ -72,9 +72,9 @@ export async function upload(
       response.has_face = hasFace;
     }
     console.log(JSON.stringify(r));
-    if (transform) {
-      response.url = await transformImage(r.public_id, serverConfig);
-    }
+    // if (transform) {
+    //   response.url = await transformImage(r.public_id, serverConfig);
+    // }
     return response;
   }
   throw "Error saving to cloudinary";
