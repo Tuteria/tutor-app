@@ -77,6 +77,10 @@ export default function ApplicationPage({
       onError(error);
     }
   }
+  function onLogout(){
+    clientAdapter.onLogout()
+    navigate("/")
+  }
   let { currentStep } = clientAdapter.getQueryValues();
   return (
     <LoadingStateWrapper
@@ -89,6 +93,7 @@ export default function ApplicationPage({
         currentStep={currentStep ? store.currentEditableForm : currentStep}
         key={loaded}
         store={store}
+        onLogout={onLogout}
         onNextStep={() => {
           navigate("/verify");
         }}

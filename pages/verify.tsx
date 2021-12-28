@@ -82,6 +82,10 @@ export default function TutorVerificationPage({
     }
   }
 
+  function onLogout(){
+    clientAdapter.onLogout()
+    navigate("/")
+  }
   return (
     <LoadingStateWrapper
       text="Fetching Tutor details..."
@@ -89,6 +93,7 @@ export default function TutorVerificationPage({
     >
       <VerificationPage
         store={store}
+        onLogout={onLogout}
         onNextStep={async () => {
           let token = await store.submitApplication(store.currentStep);
           navigate(`/subjects`);

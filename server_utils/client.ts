@@ -708,4 +708,7 @@ export const clientAdapter: any = {
       }
     }
   },
+  onLogout(){
+    window.localStorage.clear()
+  }
 };

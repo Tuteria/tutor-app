@@ -79,12 +79,17 @@ export default function TutorVerificationPage({
     }
   }
 
+  function onLogout(){
+    clientAdapter.onLogout()
+    navigate("/")
+  }
   return (
     <LoadingStateWrapper
       text="Fetching Tutor subjects..."
       initialize={initialize}
     >
       <SubjectCreationPage
+        onLogout={onLogout}
         onNextStep={async () => {
           let token = await store.submitApplication(store.currentStep);
           navigate(`/complete?access_token=${token}`);
