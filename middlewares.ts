@@ -69,7 +69,7 @@ export const authCheck = (
           }
           res.status(200).json({ status: true, data: response });
           if (options.afterResponse) {
-            await options.afterResponse();
+            await options.afterResponse(req);
           }
         } catch (error) {
           console.log(error);
