@@ -326,7 +326,7 @@ export const clientAdapter: any = {
   async submitVideoRecording(blob) {
     const { slug }: any = decodeToken();
     const formData = new FormData();
-    formData.append("media", new File([blob], `${slug}-video`));
+    formData.append("media", blob, `${slug}-video`);
     formData.append("folder", "video-submission");
     formData.append("publicId", `${slug}-video`);
     formData.append("kind", "video");
