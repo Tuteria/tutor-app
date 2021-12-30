@@ -97,9 +97,10 @@ export async function upload(
 // }
 
 export async function destroy({ id, kind = "image" }) {
+  const serverConfig = await getCloudinaryDetails(MEDIA_FORMAT);
   let response = await fetch(`${MEDIA_SERVICE}/media/${MEDIA_FORMAT}/delete`, {
     method: "POST",
-    body: JSON.stringify({ public_id: id, kind }),
+    body: JSON.stringify({ public_id: id, kind,server_config: serverConfig }),
     headers: {
       "Content-Type": "application/json",
     },

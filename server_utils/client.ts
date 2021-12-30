@@ -285,11 +285,11 @@ export const clientAdapter: any = {
   cloudinaryApiHandler: async (files, progressCallback) => {
     const { slug }: any = decodeToken();
     const formData = new FormData();
-    files.forEach((file) => {
-      formData.append("media", file);
-    });
+    // only one identity is needed
+    formData.append("media", files[0]);
     formData.append("folder", "identity");
     formData.append("kind", "image");
+    formData.append("publicId", `${slug}-identity`)
     const { data: response } = await axios.post(
       "/api/tutors/upload-media",
       formData,
@@ -558,7 +558,7 @@ export const clientAdapter: any = {
     const response = await postFetcher(
       "/api/tutors/delete-media",
       {
-        id: data.public_id,
+        id: data.name || data.public_id,
         kind: "image",
       },
       true

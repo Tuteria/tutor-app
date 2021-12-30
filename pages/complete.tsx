@@ -19,9 +19,14 @@ export default function CompletedPage({ tutorInfo }: any) {
     setLoading(true)
   }, []);
 
+function onLogout(){
+    clientAdapter.onLogout()
+    navigate("/")
+  }
   return (
     <CompletedApplicationPage
       key={loading as any}
+      onLogout={onLogout}
       firstName={tutorInfo.personalInfo.firstName}
       store={store}
       photo={store.identity.profilePhoto}
