@@ -129,10 +129,10 @@ const generateQuestionSplit = (
   return numOfQuestions;
 };
 
-const getQuizQuestions = async (subject: string, showAnswer: boolean) => {
-  const questions = await getQuizData(subject);
-  return transformData(questions, showAnswer);
-};
+// const getQuizQuestions = async (subject: string, showAnswer: boolean) => {
+//   const questions = await getQuizData(subject);
+//   return transformData(questions, showAnswer,subject);
+// };
 
 function verifyAccessToken(access_token, force = true, returnResult = false) {
   let result = null;
@@ -277,55 +277,6 @@ export const serverAdapter = {
       fetchedQuizzes,
       total_questions
     );
-  },
-  generateQuizes: async ({
-    name,
-    slug,
-    subjects,
-    pass_mark,
-    showAnswer = false,
-  }: {
-    name: string;
-    slug: string;
-    pass_mark: string;
-    subjects: Array<{
-      name: string;
-      url: string;
-      test_name: string;
-      pass_mark: number;
-      test_sheet_id?: number;
-    }>;
-    showAnswer: boolean;
-  }) => {
-    const DEFAULT_TOTAL_QUESTIONS = 30;
-    const QUIZ_DURATION = 30;
-    const QUIZ_TYPE = "Multiple choice";
-    const quizDataFromSheet: any = await fetchQuizSubjectsFromSheet(subjects);
-    const quizQuestions = quizDataFromSheet.map(({ questions }) =>
-      transformData(questions, showAnswer)
-    );
-    let questionSplit: number[];
-    let questions: any;
-    if (subjects.length > 1) {
-      questionSplit = generateQuestionSplit(
-        subjects.length,
-        DEFAULT_TOTAL_QUESTIONS
-      );
-      questions = quizQuestions
-        .map((questions, index) => questions.splice(0, questionSplit[index]))
-        .flat();
-    } else {
-      questions = quizQuestions[0];
-    }
-
-    return {
-      title: name,
-      slug,
-      pass_mark,
-      type: QUIZ_TYPE,
-      duration: QUIZ_DURATION,
-      questions,
-    };
   },
   startQuiz: async (data: { email: string; subjects: string[] }) => {
     return await beginQuiz(data);

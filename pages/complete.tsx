@@ -8,19 +8,24 @@ import { usePrefetchHook } from "../server_utils/util";
 const store = initializeStore(clientAdapter);
 
 export default function CompletedPage({ tutorInfo }: any) {
+  const [loading, setLoading] = React.useState(false);
   const { navigate } = usePrefetchHook({
     routes: ["/login", "/complete", "subjects", "/apply"],
   });
 
   React.useEffect(() => {
+    store.updateTutorInfo(tutorInfo)
     store.setCurrentStep("complete");
+    setLoading(true)
   }, []);
 
   return (
     <CompletedApplicationPage
+      key={loading as any}
       firstName={tutorInfo.personalInfo.firstName}
       store={store}
       photo={store.identity.profilePhoto}
+      subjectLink="/subjects?force=true"
     />
   );
 }

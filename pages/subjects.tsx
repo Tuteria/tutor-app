@@ -43,23 +43,22 @@ export default function TutorVerificationPage({
         ...result,
         tutorInfo: {
           ...result.tutorInfo,
-          // appData: {
-          //   ...(result.tutorInfo?.appData || {
-          //     currentStep: APPLICATION_STEPS.APPLY,
-          //   }),
-          //   // currentEditableForm: STEPS.GUARANTOR_INFO,
-          //   currentStep: APPLICATION_STEPS.SUBJECT,
-          // },
         },
       });
       if (store.currentStep === APPLICATION_STEPS.SUBJECT) {
         setIsLoading(false);
       } else {
         let _path = buildNavigation(result.accessToken, result.tutorInfo);
-        if (_path) {
-          navigate(_path);
-        } else {
-          navigate("/apply");
+        let queryParams = clientAdapter.getQueryValues()
+        if (queryParams.force === "true"){
+          setIsLoading(false)
+        }else{
+
+          if (_path) {
+            navigate(_path);
+          } else {
+            navigate("/apply");
+          }
         }
       }
     } catch (error) {

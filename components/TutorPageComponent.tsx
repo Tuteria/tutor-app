@@ -46,7 +46,7 @@ const TutorPageComponent: React.FC<{
   onNextStep: () => void;
   currentStep?: string;
   onLogout?:()=>any;
-}> = ({ store, currentStep, onNextStep }) => {
+}> = ({ store, currentStep, onNextStep,onLogout }) => {
   const { getFormWrapperProps, formIndex, steps, activeStep, completedForm } =
     useTutorApplicationFlow(store, currentStep);
 
