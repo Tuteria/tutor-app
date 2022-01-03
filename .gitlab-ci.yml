@@ -53,6 +53,9 @@ staging:
   script:
     - python -m pip install fabric==1.13.2
     - fab deploy_staging
+  environment:
+    name: staging
+    url: https://tutor-staging-prod.tuteria.com
   only:
     - develop
 deploy:
@@ -87,5 +90,8 @@ deploy:
   script:
     - python -m pip install fabric==1.13.2
     - fab deploy_next
+  environment:
+    name: production
+    url: https://tutors.tuteria.com
   only:
     - master
