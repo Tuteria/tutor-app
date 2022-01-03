@@ -50,7 +50,7 @@ export default authCheck(
   {
     method: "POST",
     afterResponse: async () => {
-      Promise.all(tempFiles.map(({ path }) => fs.promises.unlink(path)));
+      await Promise.all(tempFiles.map(({ path }) => fs.promises.unlink(path)));
     },
   }
 );

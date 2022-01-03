@@ -71,7 +71,7 @@ export async function upload(
       let hasFace = r.vision_ai.faces_detected > 0;
       response.has_face = hasFace;
     }
-    console.log(JSON.stringify(r));
+    // console.log(JSON.stringify(r));
     // if (transform) {
     //   response.url = await transformImage(r.public_id, serverConfig);
     // }
