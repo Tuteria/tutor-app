@@ -1,6 +1,6 @@
 {
   "name": "tutor-app",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "scripts": {
     "dev": "cross-env SECRET_KEY=staging_secret_101 ADMIN_EMAIL=gbozee@example.com ADMIN_PASSWORD=punnisher2321 next dev",

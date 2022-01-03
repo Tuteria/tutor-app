@@ -25,20 +25,9 @@ const MyApp = ({ Component, pageProps }) => {
           <meta name="description" content="Description" />
           <meta name="keywords" content="Keywords" />
           <title>Tuteria Tutor Application</title>
-
+          <link rel="icon" href="/favicon.ico" />
           <link rel="manifest" href="/manifest.json" />
-          <link
-            href="/icons/favicon-16x16.png"
-            rel="icon"
-            type="image/png"
-            sizes="16x16"
-          />
-          <link
-            href="/icons/favicon-32x32.png"
-            rel="icon"
-            type="image/png"
-            sizes="32x32"
-          />
+         
           <link rel="apple-touch-icon" href="/apple-icon.png"></link>
           <meta name="theme-color" content="#317EFB" />
           <script dangerouslySetInnerHTML={{__html:`
@@ -62,6 +51,9 @@ const MyApp = ({ Component, pageProps }) => {
     '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-NJQC9N');
           `}}/>
+      {pageProps.displayCrisp?null:
+        <script type="text/javascript" dangerouslySetInnerHTML={{__html:`window.$crisp=[];window.CRISP_WEBSITE_ID="6d3491e9-3cbf-4b1d-9c31-5e4eb5c87af2";(function(){d=document;s=d.createElement("script");s.src="https://client.crisp.chat/l.js";s.async=1;d.getElementsByTagName("head")[0].appendChild(s);})();`}}/>
+      }
         <Component {...pageProps} />
       </>
     </ZetaProvider>

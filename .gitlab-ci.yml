@@ -4,6 +4,8 @@ services:
 
 stages:
   - build
+  - staging
+  - deploy
 variables:
   CONTAINER_IMAGE: registry.gitlab.com/tuteria/v2/tutor-frontend-app/tutor-application
 
@@ -17,3 +19,78 @@ build:
     - docker push $CONTAINER_IMAGE:latest
   only:
     - develop
+
+staging:
+  stage: staging
+  image: python:2.7
+  before_script:
+  ##
+  ## Install ssh-agent if not already installed, it is required by Docker.
+  ## (change apt-get to yum if you use an RPM-based image)
+  ##
+  - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+
+  ##
+  ## Run ssh-agent (inside the build environment)
+  ##
+  - eval $(ssh-agent -s)
+
+  ##
+  ## Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
+  ## We're using tr to fix line endings which makes ed25519 keys work
+  ## without extra base64 encoding.
+  ## https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
+  ##
+  # - echo "$PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+  - echo "$DEPLOY_SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+
+  ##
+  ## Create the SSH directory and give it the right permissions
+  ##
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+  script:
+    - python -m pip install fabric==1.13.2
+    - fab deploy_staging
+  environment:
+    name: staging
+    url: https://tutor-staging-prod.tuteria.com
+  only:
+    - develop
+deploy:
+  stage: deploy
+  image: python:2.7
+  before_script:
+  ##
+  ## Install ssh-agent if not already installed, it is required by Docker.
+  ## (change apt-get to yum if you use an RPM-based image)
+  ##
+  - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+
+  ##
+  ## Run ssh-agent (inside the build environment)
+  ##
+  - eval $(ssh-agent -s)
+
+  ##
+  ## Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
+  ## We're using tr to fix line endings which makes ed25519 keys work
+  ## without extra base64 encoding.
+  ## https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
+  ##
+  # - echo "$PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+  - echo "$DEPLOY_SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+
+  ##
+  ## Create the SSH directory and give it the right permissions
+  ##
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+  script:
+    - python -m pip install fabric==1.13.2
+    - fab deploy_next
+  environment:
+    name: production
+    url: https://tutors.tuteria.com
+  only:
+    - master

@@ -41,3 +41,4 @@ workbox*
 
 # Sentry
 .sentryclirc
+*.pyc

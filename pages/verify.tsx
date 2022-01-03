@@ -55,6 +55,11 @@ export default function TutorVerificationPage({
           },
         },
       });
+
+      if(window?.$crisp){
+        $crisp.push(["set", "user:email", [store.personalInfo.email]]);
+        console.log("Email set for crisp")
+      }
       if (store.currentStep === APPLICATION_STEPS.VERIFY) {
         setIsLoading(false);
       } else {
