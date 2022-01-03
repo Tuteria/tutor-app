@@ -68,8 +68,14 @@ export default function ApplicationPage({
       if (store.currentStep === APPLICATION_STEPS.APPLY) {
         setIsLoading(false);
       } else {
+        let queryParams = clientAdapter.getQueryValues()
+        if(queryParams.force === "true"){
+          setIsLoading(false)
+        }else{
         let v = buildNavigation(result.accessToken, result.tutorInfo);
         navigate(v);
+          
+        }
       }
       setLoaded("done");
     } catch (error) {
