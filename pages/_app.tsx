@@ -51,9 +51,9 @@ const MyApp = ({ Component, pageProps }) => {
     '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-NJQC9N');
           `}}/>
-          <script type="text/javascript" dangerouslySetInnerHTML={{__html:`
-            window.$crisp=[];window.CRISP_WEBSITE_ID="6d3491e9-3cbf-4b1d-9c31-5e4eb5c87af2";(function(){d=document;s=d.createElement("script");s.src="https://client.crisp.chat/l.js";s.async=1;d.getElementsByTagName("head")[0].appendChild(s);})();
-            `}}/>
+      {pageProps.displayCrisp?null:
+        <script type="text/javascript" dangerouslySetInnerHTML={{__html:`window.$crisp=[];window.CRISP_WEBSITE_ID="6d3491e9-3cbf-4b1d-9c31-5e4eb5c87af2";(function(){d=document;s=d.createElement("script");s.src="https://client.crisp.chat/l.js";s.async=1;d.getElementsByTagName("head")[0].appendChild(s);})();`}}/>
+      }
         <Component {...pageProps} />
       </>
     </ZetaProvider>
