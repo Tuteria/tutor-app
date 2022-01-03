@@ -18,7 +18,7 @@ export default function CompletedPage({ tutorInfo }: any) {
     store.setCurrentStep("complete");
     setLoading(true)
   }, []);
-
+  
 function onLogout(){
     clientAdapter.onLogout()
     navigate("/")
