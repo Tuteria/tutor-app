@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { getUserInfo, serverAdapter } from "./server_utils/server";
+import { withSentry } from '@sentry/nextjs';
 
 export const defaultView = (
   handler: (
@@ -14,7 +15,7 @@ export const defaultView = (
     afterResponse?: any;
   } = { method: "POST" }
 ) => {
-  return async (req: NextApiRequest, res: NextApiResponse) => {
+  const handlers = async (req: NextApiRequest, res: NextApiResponse) => {
     if (req.method === options.method) {
       try {
         let response = await handler(req, res);
@@ -26,7 +27,8 @@ export const defaultView = (
     } else {
       res.status(405).json({ msg: "Not Allowed Method" });
     }
-  };
+  }
+  return withSentry(handlers);
 };
 
 export const authCheck = (
@@ -44,7 +46,7 @@ export const authCheck = (
 ) => {
   let force_verify =
     (serverAdapter.apiTest ? false : true) || options.force_verify;
-  return async (req: NextApiRequest, res: NextApiResponse) => {
+  const handlers = async (req: NextApiRequest, res: NextApiResponse) => {
     let userInfo;
     if (req.method === options.method) {
       const authorization = req.headers["authorization"];
@@ -81,5 +83,6 @@ export const authCheck = (
     } else {
       res.status(405).json({ msg: "Not Allowed Method" });
     }
-  };
+  }
+  return withSentry(handlers);
 };

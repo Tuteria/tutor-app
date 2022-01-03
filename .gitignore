@@ -38,3 +38,6 @@ sw.js
 sw.js.map
 workbox*
 /public/upload_*
+
+# Sentry
+.sentryclirc

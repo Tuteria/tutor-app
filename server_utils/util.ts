@@ -45,6 +45,7 @@ export const usePrefetchHook = ({
         isClosable: true,
         position: "top",
       });
+      throw error
     }
   }
   function buildNavigation(accessToken, tutorData) {

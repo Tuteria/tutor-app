@@ -144,13 +144,16 @@ export async function uploadCloudinaryResource(
   checks?: any
 ) {
   let formData = new XFormDAta();
-
+  if (kind === 'video' && fileObj.type != "video/webm"){
+    fileObj.type = "video/webm"
+  }
   Object.keys(options).forEach((key) => {
     if (options[key]) {
       formData.append(key, options[key]);
     }
   });
-  formData.append(kind, fs.createReadStream(fileObj.path));
+  let newStream = fs.createReadStream(fileObj.path)
+  formData.append(kind, newStream);
   formData.append("kind", kind);
   if (serverConfig) {
     formData.append("server_config", serverConfig);

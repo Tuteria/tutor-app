@@ -38,7 +38,7 @@ export default function TutorVerificationPage({
       });
       let step = result.tutorInfo.appData.currentEditableForm;
       if ([STEPS.VIDEO_SUMMARY, STEPS.VERIFY_EMAIL].includes(step)) {
-        if (result.tutorInfo.others.videoSummary?.url.includes("http")) {
+        if (result.tutorInfo.others?.videoSummary?.url.includes("http")) {
           step = STEPS.VERIFY_EMAIL;
         }
         if (step === STEPS.VERIFY_EMAIL && result.tutorInfo.email_verified) {

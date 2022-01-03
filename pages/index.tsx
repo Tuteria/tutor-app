@@ -69,6 +69,7 @@ function Index() {
       throw error
     }
   }
+  
 
   return (
     <LandingPage
