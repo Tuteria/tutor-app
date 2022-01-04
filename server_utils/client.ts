@@ -294,12 +294,15 @@ export const clientAdapter: any = {
     
      if (response.ok) {
       const { data } = await response.json();
-       data.forEach((item) => {
-        item.name = item.public_id;
-        item.secure_url = item.url;
-      });
        progressCallback(100);
-      return data;
+       return data.map((item) => {
+        return {
+          ...item,
+          name: item.public_id,
+          secure_url:item.url
+
+        }
+      });
     }
     throw "Failed to upload media";
     // const { data: response } = await axios.post(
