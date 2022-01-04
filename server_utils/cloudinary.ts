@@ -6,7 +6,9 @@ import { getCloudinaryDetails } from "@tuteria/tuteria-data/src";
 // const MEDIA_SERVICE = process.env.MEDIA_SERVICE || "http://dev.tuteria.com:8020";
 // process.env.MEDIA_SERVICE || "http://staging-prod.tuteria.com:8020";
 const MEDIA_SERVICE =
-  process.env.MEDIA_SERVICE || "http://dev.tuteria.com:8020";
+  process.env.MEDIA_SERVICE || "https://sheet.tuteria.com";
+// const MEDIA_SERVICE =
+//   process.env.MEDIA_SERVICE || "https://gsheet.vercel.app";
 const MEDIA_FORMAT = process.env.MEDIA_FORMAT || "test";
 
 async function transformImage(publicId: string, serverConfig) {
@@ -100,7 +102,7 @@ export async function destroy({ id, kind = "image" }) {
   const serverConfig = await getCloudinaryDetails(MEDIA_FORMAT);
   let response = await fetch(`${MEDIA_SERVICE}/media/${MEDIA_FORMAT}/delete`, {
     method: "POST",
-    body: JSON.stringify({ public_id: id, kind,server_config: serverConfig }),
+    body: JSON.stringify({ public_id: id, kind, server_config: serverConfig }),
     headers: {
       "Content-Type": "application/json",
     },
@@ -143,8 +145,52 @@ export async function uploadCloudinaryResource(
   serverConfig?: string,
   checks?: any
 ) {
+  let formData = {};
+  if (kind === 'video') {
+    return await uploadCloudinaryFormResource(fileObj, options, kind, serverConfig, checks)
+  }
+  Object.keys(options).forEach((key) => {
+    if (options[key]) {
+      formData[key] = options[key];
+    }
+  });
+  let base64File = fs.readFileSync(fileObj.path, 'base64')
+  let newStream = `data:${fileObj.type};base64,${base64File}`
+  formData[kind] = newStream;
+  formData['kind'] = kind;
+  if (serverConfig) {
+    formData["server_config"] = JSON.parse(serverConfig);
+  }
+  if (checks) {
+    formData["checks"] = JSON.parse(checks);
+  }
+  console.log(formData);
+  let response = await fetch(`https://gsheet.vercel.app/media/${MEDIA_FORMAT}/upload`, {
+    method: "POST",
+    body: JSON.stringify(formData),
+    headers: { "content-type": "application/json" },
+
+  });
+  if (response.ok) {
+    let result = await response.json();
+    if (response.status < 400) {
+      return result.data;
+    }
+    return result;
+  }
+  console.log(response)
+  console.log(fileObj.type);
+  throw "Error from server";
+}
+export async function uploadCloudinaryFormResource(
+  fileObj: any,
+  options: any,
+  kind: UploadTypes = "image",
+  serverConfig?: string,
+  checks?: any
+) {
   let formData = new XFormDAta();
-  if (kind === 'video' && fileObj.type != "video/webm"){
+  if (kind === 'video' && fileObj.type != "video/webm") {
     fileObj.type = "video/webm"
   }
   Object.keys(options).forEach((key) => {
