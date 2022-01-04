@@ -57,6 +57,8 @@ export default authCheck(
       console.log(tempFiles.map(o=>o.path))
       await Promise.all(tempFiles.map(({ path }) => fs.promises.unlink(path)));
       tempFiles = []
+      // ensure the file is deleted
+      console.log("Deleted file is ",tempFiles)
     },
   }
 );
