@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { getUserInfo, serverAdapter } from "./server_utils/server";
-import { withSentry } from '@sentry/nextjs';
+import { withSentry } from "@sentry/nextjs";
 
 export const defaultView = (
   handler: (
@@ -27,14 +27,14 @@ export const defaultView = (
     } else {
       res.status(405).json({ msg: "Not Allowed Method" });
     }
-  }
+  };
   return withSentry(handlers);
 };
 
 export const authCheck = (
   handler: (
     req: NextApiRequest,
-    userInfo: { slug: string, personalInfo: { email: string } },
+    userInfo: { slug: string; personalInfo: { email: string } },
     method?: string
   ) => Promise<any>,
   options: {
@@ -76,6 +76,9 @@ export const authCheck = (
         } catch (error) {
           console.log(error);
           res.status(400).json({ status: false, error });
+          if (options.afterResponse) {
+            await options.afterResponse(req);
+          }
         }
       } else {
         res.status(403).json({ error: "Could not load token" });
@@ -83,6 +86,6 @@ export const authCheck = (
     } else {
       res.status(405).json({ msg: "Not Allowed Method" });
     }
-  }
+  };
   return withSentry(handlers);
 };

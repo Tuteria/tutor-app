@@ -38,6 +38,10 @@ export default authCheck(
     const transform = fields.transform
       ? fields.transform.includes("true".toLowerCase())
       : false;
+    // const fileIsToBig = tempFiles.some((o) => o.size > 10 * 1048576);
+    // if (fileIsToBig && tempFiles.length > 0){
+    //   throw "File uploaded should be less that 10MB"
+    // }
     const data = await serverAdapter.uploadMedia(
       tempFiles,
       options,
@@ -50,7 +54,9 @@ export default authCheck(
   {
     method: "POST",
     afterResponse: async () => {
+      console.log(tempFiles.map(o=>o.path))
       await Promise.all(tempFiles.map(({ path }) => fs.promises.unlink(path)));
+      tempFiles = []
     },
   }
 );

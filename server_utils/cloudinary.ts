@@ -222,7 +222,55 @@ export type UploadTypes = "image" | "video" | "raw";
 //   console.log(fileObj.type);
 //   throw "Error from server";
 // }
-export function uploadCloudinaryResource(
+// export function uploadCloudinaryResource(
+//   fileObj: any,
+//   options: any,
+//   kind: UploadTypes = "image",
+//   serverConfig?: string,
+//   checks?: any
+// ) {
+//   let formData = new XFormDAta();
+//   if (kind === 'video' && fileObj.type != "video/webm") {
+//     fileObj.type = "video/webm"
+//   }
+//   Object.keys(options).forEach((key) => {
+//     if (options[key]) {
+//       formData.append(key, options[key]);
+//     }
+//   });
+//   let newStream = fs.createReadStream(fileObj.path)
+//   formData.append(kind, newStream);
+//   formData.append("kind", kind);
+//   if (serverConfig) {
+//     formData.append("server_config", serverConfig);
+//   }
+//   if (checks) {
+//     formData.append("checks", checks);
+//   }
+//   console.log(options);
+//   return axios.post(`${MEDIA_SERVICE}/media/${MEDIA_FORMAT}/upload`,formData,{
+//     headers:{...formData.getHeaders()}
+//   }).then(response=>{
+//     return response.data.data}).catch(error=>error)
+
+//   // let response = await fetch(`${MEDIA_SERVICE}/media/${MEDIA_FORMAT}/upload`, {
+//   //   method: "POST",
+//   //   body: formData,
+//   //   headers: formData.getHeaders(),
+//   // });
+//   // if (response.ok) {
+//   //   let result = await response.json();
+//   //   if (response.status < 400) {
+//   //     return result.data;
+//   //   }
+//   //   return result;
+//   // }
+//   // console.log(response)
+//   // console.log(fileObj.type);
+//   // throw "Error from server";
+// }
+
+export async function uploadCloudinaryResource(
   fileObj: any,
   options: any,
   kind: UploadTypes = "image",
@@ -248,68 +296,19 @@ export function uploadCloudinaryResource(
     formData.append("checks", checks);
   }
   console.log(options);
-  return axios.post(`${MEDIA_SERVICE}/media/${MEDIA_FORMAT}/upload`,formData,{
-    headers:{...formData.getHeaders()}
-  }).then(response=>{
-    return response.data.data}).catch(error=>error)
-
-  // let response = await fetch(`${MEDIA_SERVICE}/media/${MEDIA_FORMAT}/upload`, {
-  //   method: "POST",
-  //   body: formData,
-  //   headers: formData.getHeaders(),
-  // });
-  // if (response.ok) {
-  //   let result = await response.json();
-  //   if (response.status < 400) {
-  //     return result.data;
-  //   }
-  //   return result;
-  // }
-  // console.log(response)
-  // console.log(fileObj.type);
-  // throw "Error from server";
+  let response = await fetch(`${MEDIA_SERVICE}/media/${MEDIA_FORMAT}/upload`, {
+    method: "POST",
+    body: formData,
+    headers: formData.getHeaders(),
+  });
+  if (response.ok) {
+    let result = await response.json();
+    if (response.status < 400) {
+      return result.data;
+    }
+    return result;
+  }
+  console.log(response)
+  console.log(fileObj.type);
+  throw "Error from server";
 }
-
-// export async function uploadCloudinaryResource(
-//   fileObj: any,
-//   options: any,
-//   kind: UploadTypes = "image",
-//   serverConfig?: string,
-//   checks?: any
-// ) {
-//   let formData = new XFormDAta();
-//   if (kind === 'video' && fileObj.type != "video/webm") {
-//     fileObj.type = "video/webm"
-//   }
-//   Object.keys(options).forEach((key) => {
-//     if (options[key]) {
-//       formData.append(key, options[key]);
-//     }
-//   });
-//   let newStream = fs.createReadStream(fileObj.path)
-//   // formData.append(kind, newStream);
-//   formData.append(kind, fileObj.buffer, fileObj.filename)
-//   formData.append("kind", kind);
-//   if (serverConfig) {
-//     formData.append("server_config", serverConfig);
-//   }
-//   if (checks) {
-//     formData.append("checks", checks);
-//   }
-//   console.log(options);
-//   let response = await fetch(`${MEDIA_SERVICE}/media/${MEDIA_FORMAT}/upload`, {
-//     method: "POST",
-//     body: formData,
-//     headers: formData.getHeaders(),
-//   });
-//   if (response.ok) {
-//     let result = await response.json();
-//     if (response.status < 400) {
-//       return result.data;
-//     }
-//     return result;
-//   }
-//   console.log(response)
-//   console.log(fileObj.type);
-//   throw "Error from server";
-// }
