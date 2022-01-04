@@ -12,6 +12,12 @@ import SubjectCreationPage from "@tuteria/shared-lib/src/tutor-application/pages
 const adapter = loadAdapter(clientAdapter);
 const store = initializeStore(clientAdapter);
 
+declare global {
+  interface Window {
+    $crisp:any
+  }
+}
+
 export default function TutorVerificationPage({
   allCountries,
   allRegions,
@@ -46,7 +52,7 @@ export default function TutorVerificationPage({
         },
       });
       if(window?.$crisp){
-        $crisp.push(["set", "user:email", [store.personalInfo.email]]);
+        window.$crisp.push(["set", "user:email", [store.personalInfo.email]]);
         console.log("Email set for crisp")
       }
       if (store.currentStep === APPLICATION_STEPS.SUBJECT) {

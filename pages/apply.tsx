@@ -15,6 +15,12 @@ import { usePrefetchHook } from "../server_utils/util";
 const adapter = loadAdapter(clientAdapter);
 const store = initializeStore(clientAdapter);
 
+declare global {
+  interface Window {
+    $crisp:any
+  }
+}
+
 export default function ApplicationPage({
   allCountries,
   allRegions,
@@ -66,7 +72,7 @@ export default function ApplicationPage({
         },
       });
       if(window.$crisp){
-        $crisp.push(["set", "user:email", [store.personalInfo.email]]);
+        window.$crisp.push(["set", "user:email", [store.personalInfo.email]]);
         console.log("Email set for crisp")
       }
       if (store.currentStep === APPLICATION_STEPS.APPLY) {

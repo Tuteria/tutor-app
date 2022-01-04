@@ -290,27 +290,39 @@ export const clientAdapter: any = {
     formData.append("folder", "identity");
     formData.append("kind", "image");
     formData.append("publicId", `${slug}-identity`)
-    const { data: response } = await axios.post(
-      "/api/tutors/upload-media",
-      formData,
-      {
-        headers: {
-          Authorization: `Bearer ${storage.get(NEW_TUTOR_TOKEN, "")}`,
-          "X-Requested-With": "XMLHttpRequest",
-        },
-        onDownloadProgress(progressEvent) {
-          const percentCompleted = Math.floor(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          progressCallback(percentCompleted);
-        },
-      }
-    );
-    response.data.forEach((item) => {
-      item.name = item.public_id;
-      item.secure_url = item.url;
-    });
-    return response.data;
+    const response = await multipartFetch("/api/tutors/upload-media", formData);
+    
+     if (response.ok) {
+      const { data } = await response.json();
+       data.forEach((item) => {
+        item.name = item.public_id;
+        item.secure_url = item.url;
+      });
+       progressCallback(100);
+      return data;
+    }
+    throw "Failed to upload media";
+    // const { data: response } = await axios.post(
+    //   "/api/tutors/upload-media",
+    //   formData,
+    //   {
+    //     headers: {
+    //       Authorization: `Bearer ${storage.get(NEW_TUTOR_TOKEN, "")}`,
+    //       "X-Requested-With": "XMLHttpRequest",
+    //     },
+    //     onDownloadProgress(progressEvent) {
+    //       const percentCompleted = Math.floor(
+    //         (progressEvent.loaded * 100) / progressEvent.total
+    //       );
+    //       progressCallback(percentCompleted);
+    //     },
+    //   }
+    // );
+    // response.data.forEach((item) => {
+    //   item.name = item.public_id;
+    //   item.secure_url = item.url;
+    // });
+    // return response.data;
   },
   uploadApiHandler: async (files, { folder, unique = false }) => {
     const body = new FormData();
