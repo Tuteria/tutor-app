@@ -1,0 +1,7 @@
+version: "2"
+
+services:
+  tutor_frontend_app:
+    build:
+      context: .
+      dockerfile: Dockerfile-next
