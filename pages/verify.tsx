@@ -21,7 +21,7 @@ declare global {
   }
 }
 
-export default function TutorVerificationPage({
+function TutorVerificationPage({
   allCountries,
   allRegions,
   supportedCountries,
@@ -120,6 +120,12 @@ export async function getStaticProps() {
   return {
     props: {
       ...result,
+      seo: {
+        title: "Complete Verification  | Tutor Application - Tuteria",
+        description: "Upload profile photo, Video and ID"
+      },
     },
   };
 }
+
+export default TutorVerificationPage

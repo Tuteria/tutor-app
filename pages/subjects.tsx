@@ -18,7 +18,7 @@ declare global {
   }
 }
 
-export default function TutorVerificationPage({
+function SubjectsListPage({
   allCountries,
   allRegions,
   supportedCountries,
@@ -113,6 +113,12 @@ export async function getStaticProps() {
   return {
     props: {
       ...result,
+      seo:{
+        title: "Add Your Subjects  | Tutor Application - Tuteria",
+        description: "Create the subjects you want to teach"
+      }
     },
   };
 }
+
+export default SubjectsListPage

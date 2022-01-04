@@ -21,7 +21,7 @@ declare global {
   }
 }
 
-export default function ApplicationPage({
+function ApplicationPage({
   allCountries,
   allRegions,
   supportedCountries,
@@ -123,6 +123,12 @@ export async function getStaticProps() {
   return {
     props: {
       ...result,
+      seo: {
+        title: "Begin Your Application | Tutor Application - Tuteria",
+        description: "Fill all forms to apply to become a tutor on Tuteria"
+      },
     },
   };
 }
+
+export default ApplicationPage

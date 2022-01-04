@@ -10,21 +10,29 @@ if (typeof window !== "undefined") {
   window.React2 = require("react");
   console.log(window.React1 === window.React2);
 }
-const MyApp = ({ Component, pageProps }) => {
+const MyApp = ({ Component, pageProps:others }) => {
+  let { seo = {}, ...pageProps } = others;
+
   // console.log(pageProps);
   return (
     <ZetaProvider>
       <>
         <Head>
-          <meta charSet="utf-8" />
+          <meta charset="UTF-8"/>
           <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-          <meta
-            name="viewport"
-            content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"
-          />
-          <meta name="description" content="Description" />
+          <meta name="robots" content="index, follow"/>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+          <meta property="og:image" content={"https://res.cloudinary.com/tuteria/image/upload/v1640969761/landing_page_images/successful-teacher-2021-09-24-03-01-11-utc.jpg"} />
           <meta name="keywords" content="Keywords" />
-          <title>Tuteria Tutor Application</title>
+          <title>{seo.title || `Tuteria Tutor Application`}</title>
+          <meta
+            property="og:title"
+            content={seo.title || "Tuteria Tutor Application"}
+          />
+          <meta
+            property="og:description"
+            content={seo.description || ""}
+          />
           <link rel="icon" href="/favicon.ico" />
           <link rel="manifest" href="/manifest.json" />
          
