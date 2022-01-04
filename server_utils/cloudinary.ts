@@ -174,6 +174,7 @@ export async function uploadCloudinaryResource(
     }
     return result;
   }
+  console.log(response)
   console.log(fileObj.type);
   throw "Error from server";
 }
