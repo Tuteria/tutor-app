@@ -11,7 +11,7 @@ RUN mv package-prod.json package.json
 
 RUN yarn install
 
-RUN yarn build
+RUN yarn build:local
 
 EXPOSE 3000
 

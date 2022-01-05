@@ -49,6 +49,7 @@ function SubjectsListPage({
         ...result,
         tutorInfo: {
           ...result.tutorInfo,
+          others:{...result.tutorInfo.others,canApply:true}
         },
       });
       if(window?.$crisp){

@@ -22,7 +22,7 @@ const MyApp = ({ Component, pageProps:others }) => {
           <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
           <meta name="robots" content="index, follow"/>
           <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-          <meta property="og:image" content={"https://res.cloudinary.com/tuteria/image/upload/v1640969761/landing_page_images/successful-teacher-2021-09-24-03-01-11-utc.jpg"} />
+          <meta property="og:image" content={"https://res.cloudinary.com/tuteria/image/upload/c_fit,h_627,q_80,w_1200/v1/landing_page_images/successful-teacher-2021-09-24-03-01-11-utc.jpg"} />
           <meta name="keywords" content="Keywords" />
           <title>{seo.title || `Tuteria Tutor Application`}</title>
           <meta
