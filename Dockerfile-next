@@ -11,8 +11,9 @@ RUN mv package-prod.json package.json
 
 RUN yarn install
 
-RUN yarn add vercel
+RUN npm install -g vercel
 
-ENV NOW_TOKEN "HZT3w9QVx49ajPNviQDd0tDA"
+ARG NOW_TOKEN
 
-RUN yarn build:next
+RUN vercel --no-clipboard --token=$NOW_TOKEN --prod
+# RUN yarn build:next
