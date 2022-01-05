@@ -24,8 +24,7 @@ let transpileModules = [
 ];
 
 
-// module.exports = withPWA(
-module.exports = withSentryConfig(withImages(
+const config = withImages(
   withTM({
     // pwa: {
     //   dest: "public",
@@ -69,5 +68,6 @@ module.exports = withSentryConfig(withImages(
     },
     reactStrictMode: true,
   })
-),sentryWebpackPluginOptions);
-// );
+)
+
+module.exports = process.env.SKIP_SENTRY_UPLOAD ? config : withSentryConfig(config ,sentryWebpackPluginOptions);
