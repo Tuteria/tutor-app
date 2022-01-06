@@ -155,6 +155,16 @@ function buildTutorData(
     const foundSubject = tuteriaSubjects.find(
       (item) => item.name === subject.name
     );
+    if(subject.status === "in-progress"){
+      let testable = foundSubject.subjects.some(x=>x.test_name)
+      if(testable && subject.canTakeTest){
+        subject.status = "not-started"
+      }else{
+        if (subject.sittingsCount === 0 && testable){
+          subject.status = "not-started"
+        }
+      }
+    }
     return { ...subject, category: foundSubject ? foundSubject.category : "" };
   });
   storage.set(adapter.regionKey, regions);
