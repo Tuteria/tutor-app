@@ -155,13 +155,15 @@ function buildTutorData(
     const foundSubject = tuteriaSubjects.find(
       (item) => item.name === subject.name
     );
-    if(subject.status === "in-progress"){
-      let testable = foundSubject.subjects.some(x=>x.test_name)
-      if(testable && subject.canTakeTest){
-        subject.status = "not-started"
-      }else{
-        if (subject.sittingsCount === 0 && testable){
+    if (foundSubject) {
+      if (subject.status === "in-progress") {
+        let testable = foundSubject.subjects.some(x => x.test_name)
+        if (testable && subject.canTakeTest) {
           subject.status = "not-started"
+        } else {
+          if (subject.sittingsCount === 0 && testable) {
+            subject.status = "not-started"
+          }
         }
       }
     }
@@ -301,15 +303,15 @@ export const clientAdapter: any = {
     formData.append("kind", "image");
     formData.append("publicId", `${slug}-identity`)
     const response = await multipartFetch("/api/tutors/upload-media", formData);
-    
-     if (response.ok) {
+
+    if (response.ok) {
       const { data } = await response.json();
-       progressCallback(100);
-       return data.map((item) => {
+      progressCallback(100);
+      return data.map((item) => {
         return {
           ...item,
           name: item.public_id,
-          secure_url:item.url
+          secure_url: item.url
 
         }
       });
@@ -472,8 +474,8 @@ export const clientAdapter: any = {
     }
     throw "Failed to save tutor info";
   },
-  submitSelectedSubjects: async () => {},
-  updateUserPassword: async () => {},
+  submitSelectedSubjects: async () => { },
+  updateUserPassword: async () => { },
   validateCredentials: () => {
     let data = decodeToken();
     if (data) {
@@ -665,7 +667,7 @@ export const clientAdapter: any = {
     return storage.get(name, "");
   },
 
-  buildPreferences(subject: { category: string; [key: string]: any }) {
+  buildPreferences(subject: { category: string;[key: string]: any }) {
     const placeholder = "$subject_name";
     const preferences = seshStorage.get(TUTERIA_PREFERENCE_KEY, []);
     const result = preferences
@@ -733,7 +735,7 @@ export const clientAdapter: any = {
       }
     }
   },
-  onLogout(){
+  onLogout() {
     window.localStorage.clear()
   }
 };
