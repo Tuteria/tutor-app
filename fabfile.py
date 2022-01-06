@@ -38,3 +38,15 @@ def deploy_staging():
         run('docker-compose pull tutor-next')
         run('docker-compose up -d tutor-next')
     run('docker rmi $(docker images --filter "dangling=true" -q --no-trunc)')    
+
+@hosts('sama@tutor-search.tuteria.com')
+def build_new_flow():
+    with cd('/home/sama/tutor-frontend-app-v2'):
+        run('git pull --no-edit')
+        run('git checkout -f develop')
+        # run('yarn install')
+        # run('/home/sama/.nvm/versions/node/v8.9.4/bin/node build')
+        run('docker login -u gbozee -p abiola2321 registry.gitlab.com')    
+        run('docker build --no-cache -t registry.gitlab.com/tuteria/v2/tutor-frontend-app/tutor-application:latest .')
+        run('docker push registry.gitlab.com/tuteria/v2/tutor-frontend-app/tutor-application:latest')
+    run('docker rmi $(docker images --filter "dangling=true" -q --no-trunc)') 
