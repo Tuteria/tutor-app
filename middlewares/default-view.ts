@@ -19,6 +19,9 @@ export const defaultView = (
       try {
         let response = await handler(req, res);
         res.json({ status: true, data: response });
+        if (options.afterResponse) {
+          await options.afterResponse(req);
+        }
       } catch (error) {
         console.log(error);
         res.status(400).json({ status: false, error });

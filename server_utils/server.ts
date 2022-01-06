@@ -7,6 +7,7 @@ import {
   getSheetTestData,
   getStaticInfo,
   getTestableSubjects,
+  getTuteriaSubjectData,
   getTuteriaSubjectList,
   getTuteriaSubjects,
   transformData,
@@ -23,6 +24,7 @@ import {
   checkSpellingAndGrammar,
   deleteTutorSubject,
   fetchAllowedQuizesForUser,
+  getNonTestableSubjects,
   HOST,
   saveTutorInfoService,
   saveTutorSubjectInfo,
@@ -30,11 +32,45 @@ import {
   saveUserSelectedSubjects,
   sendEmailNotification,
   serverValidatePersonalInfo,
+  updateNonTestableSubjects,
   updateTestStatus,
   userRetakeTest,
 } from "./hostService";
-async function updateAllNonTestables(){
-  let [tuteriaSubjects,nonTestableSubject] = await Promise.all([getTestableSubjects()])
+async function updateAllNonTestables(run = false) {
+  let [tuteriaSubjects, nonTestableSubject] = await Promise.all([
+    getTuteriaSubjectData(),
+    getNonTestableSubjects(),
+  ]);
+  const validTuteriaSubjects = tuteriaSubjects.filter((subject) => {
+    return (
+      nonTestableSubject.includes(subject.name) &&
+      (subject.testSheetID as any) !== ""
+    );
+  });
+  if (run) {
+    let payload = [];
+    for (let i = 0; i < validTuteriaSubjects.length; i++) {
+      let r: any = validTuteriaSubjects[i];
+      console.log("bulkUpdate for " + r.name);
+      try {
+        await fetchQuizSubjectsFromSheet(
+          r.subjects.map((v) => ({
+            name: v.skill,
+            test_sheet_id: v.testSheetID,
+            ...v,
+          }))
+        );
+      } catch (error) {
+        console.log(error);
+      } finally {
+        payload.push({ name: r.name, quiz: r.subjects[0].skill });
+      }
+    }
+    console.log("Updating record of non-testables to django");
+    await updateNonTestableSubjects(payload);
+  }
+  // validTuteriaSubjects.forEach((subject) => {});
+  return validTuteriaSubjects;
 }
 const bulkFetchQuizSubjectsFromSheet = async (
   subjects: string[],
@@ -552,4 +588,5 @@ export const serverAdapter = {
     let ipLocations = await getIpData(client_ip);
     return ipLocations;
   },
+  updateAllNonTestables,
 };
