@@ -389,5 +389,5 @@ export async function updateNonTestableSubjects(subjects) {
     let { data } = await response.json();
     return data;
   }
-  throw new Error("Failed to fetch")
+  throw new Error("Error updating subjects")
 }
