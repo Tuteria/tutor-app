@@ -1,15 +1,15 @@
 import {
+  buildQuizInfo,
   formatSubjects,
+  getIpData,
   getPreferences,
   getQuizzesFromSubjects,
   getSheetTestData,
   getStaticInfo,
   getTestableSubjects,
-  getTuteriaSubjectData,
-  getIpData,
-  transformData,
   getTuteriaSubjectList,
-  buildQuizInfo
+  getTuteriaSubjects,
+  transformData,
 } from "@tuteria/tuteria-data/src";
 import { File } from "formidable";
 import jwt from "jsonwebtoken";
@@ -23,7 +23,6 @@ import {
   checkSpellingAndGrammar,
   deleteTutorSubject,
   fetchAllowedQuizesForUser,
-  getQuizData,
   HOST,
   saveTutorInfoService,
   saveTutorSubjectInfo,
@@ -34,7 +33,6 @@ import {
   updateTestStatus,
   userRetakeTest,
 } from "./hostService";
-import { TuteriaSubjectType } from "./types";
 
 const bulkFetchQuizSubjectsFromSheet = async (
   subjects: string[],
@@ -112,7 +110,7 @@ const fetchQuizSubjectsFromSheet = async (
   }
   return result.map((item) => ({
     ...item,
-    questions: transformData(item.questions, true,item.name),
+    questions: transformData(item.questions, true, item.name),
   }));
 };
 
@@ -163,27 +161,6 @@ export function getUserInfo(
   return null;
 }
 
-async function getTuteriaSubjects(
-  subject?: string
-): Promise<Array<TuteriaSubjectType> | TuteriaSubjectType | any> {
-  const subjects = await getTuteriaSubjectData();
-  const formattedSubjects = subjects.map((subject) => ({
-    ...subject,
-    subjects: subject.subjects.map(
-      ({ shortName, url, test_name, pass_mark, testSheetID }) => ({
-        name: shortName,
-        url,
-        test_name,
-        pass_mark,
-        test_sheet_id: testSheetID || null,
-      })
-    ),
-  }));
-  if (!subject) return formattedSubjects;
-  const foundSubject = formattedSubjects.find((item) => item.slug === subject);
-  if (foundSubject) return foundSubject;
-  throw new Error("Subject not found");
-}
 async function getTutorSubjects(email: string) {
   const selectedSubjects = await saveUserSelectedSubjects({
     email,
