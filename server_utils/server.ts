@@ -33,7 +33,9 @@ import {
   updateTestStatus,
   userRetakeTest,
 } from "./hostService";
-
+async function updateAllNonTestables(){
+  let [tuteriaSubjects,nonTestableSubject] = await Promise.all([getTestableSubjects()])
+}
 const bulkFetchQuizSubjectsFromSheet = async (
   subjects: string[],
   create = false
@@ -468,6 +470,7 @@ export const serverAdapter = {
       other_details: {
         first_name: firstName,
         password,
+        // date_joined: new Date()
       },
     });
     if ("code" in data) {
