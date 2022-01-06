@@ -55,7 +55,7 @@ function TutorVerificationPage({
         ...result,
         tutorInfo: {
           ...result.tutorInfo,
-          others:{...result.tutorInfo.others,canApply:true},
+          // others:{...result.tutorInfo.others,canApply:true},
           appData: {
             ...result.tutorInfo.appData,
             currentEditableForm: step,
