@@ -155,6 +155,18 @@ function buildTutorData(
     const foundSubject = tuteriaSubjects.find(
       (item) => item.name === subject.name
     );
+    if (foundSubject) {
+      if (subject.status === "in-progress") {
+        let testable = foundSubject.subjects.some(x => x.test_name)
+        if (testable && subject.canTakeTest) {
+          subject.status = "not-started"
+        } else {
+          if (subject.sittingsCount === 0 && testable) {
+            subject.status = "not-started"
+          }
+        }
+      }
+    }
     return { ...subject, category: foundSubject ? foundSubject.category : "" };
   });
   storage.set(adapter.regionKey, regions);
@@ -290,27 +302,42 @@ export const clientAdapter: any = {
     formData.append("folder", "identity");
     formData.append("kind", "image");
     formData.append("publicId", `${slug}-identity`)
-    const { data: response } = await axios.post(
-      "/api/tutors/upload-media",
-      formData,
-      {
-        headers: {
-          Authorization: `Bearer ${storage.get(NEW_TUTOR_TOKEN, "")}`,
-          "X-Requested-With": "XMLHttpRequest",
-        },
-        onDownloadProgress(progressEvent) {
-          const percentCompleted = Math.floor(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          progressCallback(percentCompleted);
-        },
-      }
-    );
-    response.data.forEach((item) => {
-      item.name = item.public_id;
-      item.secure_url = item.url;
-    });
-    return response.data;
+    const response = await multipartFetch("/api/tutors/upload-media", formData);
+
+    if (response.ok) {
+      const { data } = await response.json();
+      progressCallback(100);
+      return data.map((item) => {
+        return {
+          ...item,
+          name: item.public_id,
+          secure_url: item.url
+
+        }
+      });
+    }
+    throw "Failed to upload media";
+    // const { data: response } = await axios.post(
+    //   "/api/tutors/upload-media",
+    //   formData,
+    //   {
+    //     headers: {
+    //       Authorization: `Bearer ${storage.get(NEW_TUTOR_TOKEN, "")}`,
+    //       "X-Requested-With": "XMLHttpRequest",
+    //     },
+    //     onDownloadProgress(progressEvent) {
+    //       const percentCompleted = Math.floor(
+    //         (progressEvent.loaded * 100) / progressEvent.total
+    //       );
+    //       progressCallback(percentCompleted);
+    //     },
+    //   }
+    // );
+    // response.data.forEach((item) => {
+    //   item.name = item.public_id;
+    //   item.secure_url = item.url;
+    // });
+    // return response.data;
   },
   uploadApiHandler: async (files, { folder, unique = false }) => {
     const body = new FormData();
@@ -447,8 +474,8 @@ export const clientAdapter: any = {
     }
     throw "Failed to save tutor info";
   },
-  submitSelectedSubjects: async () => {},
-  updateUserPassword: async () => {},
+  submitSelectedSubjects: async () => { },
+  updateUserPassword: async () => { },
   validateCredentials: () => {
     let data = decodeToken();
     if (data) {
@@ -640,7 +667,7 @@ export const clientAdapter: any = {
     return storage.get(name, "");
   },
 
-  buildPreferences(subject: { category: string; [key: string]: any }) {
+  buildPreferences(subject: { category: string;[key: string]: any }) {
     const placeholder = "$subject_name";
     const preferences = seshStorage.get(TUTERIA_PREFERENCE_KEY, []);
     const result = preferences
@@ -708,7 +735,7 @@ export const clientAdapter: any = {
       }
     }
   },
-  onLogout(){
+  onLogout() {
     window.localStorage.clear()
   }
 };

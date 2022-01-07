@@ -12,7 +12,13 @@ import SubjectCreationPage from "@tuteria/shared-lib/src/tutor-application/pages
 const adapter = loadAdapter(clientAdapter);
 const store = initializeStore(clientAdapter);
 
-export default function TutorVerificationPage({
+declare global {
+  interface Window {
+    $crisp:any
+  }
+}
+
+function SubjectsListPage({
   allCountries,
   allRegions,
   supportedCountries,
@@ -43,10 +49,11 @@ export default function TutorVerificationPage({
         ...result,
         tutorInfo: {
           ...result.tutorInfo,
+          // others:{...result.tutorInfo.others,canApply:true}
         },
       });
       if(window?.$crisp){
-        $crisp.push(["set", "user:email", [store.personalInfo.email]]);
+        window.$crisp.push(["set", "user:email", [store.personalInfo.email]]);
         console.log("Email set for crisp")
       }
       if (store.currentStep === APPLICATION_STEPS.SUBJECT) {
@@ -107,6 +114,12 @@ export async function getStaticProps() {
   return {
     props: {
       ...result,
+      seo:{
+        title: "Add Your Subjects  | Tutor Application - Tuteria",
+        description: "Create the subjects you want to teach"
+      }
     },
   };
 }
+
+export default SubjectsListPage

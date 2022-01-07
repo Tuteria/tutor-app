@@ -1,40 +1,11 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { getUserInfo, serverAdapter } from "./server_utils/server";
-import { withSentry } from '@sentry/nextjs';
-
-export const defaultView = (
-  handler: (
-    _req?: NextApiRequest,
-    _res?: NextApiResponse,
-    method?: string
-  ) => Promise<any>,
-  options: {
-    force_verify?: boolean;
-    method?: string;
-    includeToken?: string;
-    afterResponse?: any;
-  } = { method: "POST" }
-) => {
-  const handlers = async (req: NextApiRequest, res: NextApiResponse) => {
-    if (req.method === options.method) {
-      try {
-        let response = await handler(req, res);
-        res.json({ status: true, data: response });
-      } catch (error) {
-        console.log(error);
-        res.status(400).json({ status: false, error });
-      }
-    } else {
-      res.status(405).json({ msg: "Not Allowed Method" });
-    }
-  }
-  return withSentry(handlers);
-};
+import { getUserInfo, serverAdapter } from "../server_utils/server";
+import { withSentry } from "@sentry/nextjs";
 
 export const authCheck = (
   handler: (
     req: NextApiRequest,
-    userInfo: { slug: string, personalInfo: { email: string } },
+    userInfo: { slug: string; personalInfo: { email: string } },
     method?: string
   ) => Promise<any>,
   options: {
@@ -76,6 +47,9 @@ export const authCheck = (
         } catch (error) {
           console.log(error);
           res.status(400).json({ status: false, error });
+          if (options.afterResponse) {
+            await options.afterResponse(req);
+          }
         }
       } else {
         res.status(403).json({ error: "Could not load token" });
@@ -83,6 +57,6 @@ export const authCheck = (
     } else {
       res.status(405).json({ msg: "Not Allowed Method" });
     }
-  }
+  };
   return withSentry(handlers);
 };

@@ -11,8 +11,9 @@ RUN mv package-prod.json package.json
 
 RUN yarn install
 
-RUN yarn build:local
+RUN npm install -g vercel
 
-EXPOSE 3000
+ARG NOW_TOKEN
 
-CMD ["yarn", "start:prod"]
+RUN vercel --no-clipboard --token=$NOW_TOKEN --prod
+# RUN yarn build:next

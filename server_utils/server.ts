@@ -1,15 +1,16 @@
 import {
+  buildQuizInfo,
   formatSubjects,
+  getIpData,
   getPreferences,
   getQuizzesFromSubjects,
   getSheetTestData,
   getStaticInfo,
   getTestableSubjects,
   getTuteriaSubjectData,
-  getIpData,
-  transformData,
   getTuteriaSubjectList,
-  buildQuizInfo
+  getTuteriaSubjects,
+  transformData,
 } from "@tuteria/tuteria-data/src";
 import { File } from "formidable";
 import jwt from "jsonwebtoken";
@@ -23,7 +24,7 @@ import {
   checkSpellingAndGrammar,
   deleteTutorSubject,
   fetchAllowedQuizesForUser,
-  getQuizData,
+  getNonTestableSubjects,
   HOST,
   saveTutorInfoService,
   saveTutorSubjectInfo,
@@ -31,11 +32,46 @@ import {
   saveUserSelectedSubjects,
   sendEmailNotification,
   serverValidatePersonalInfo,
+  updateNonTestableSubjects,
   updateTestStatus,
   userRetakeTest,
 } from "./hostService";
-import { TuteriaSubjectType } from "./types";
-
+async function updateAllNonTestables(run = false) {
+  let [tuteriaSubjects, nonTestableSubject] = await Promise.all([
+    getTuteriaSubjectData(),
+    getNonTestableSubjects(),
+  ]);
+  const validTuteriaSubjects = tuteriaSubjects.filter((subject) => {
+    return (
+      nonTestableSubject.includes(subject.name) &&
+      (subject.testSheetID as any) !== ""
+    );
+  });
+  if (run) {
+    let payload = [];
+    for (let i = 0; i < validTuteriaSubjects.length; i++) {
+      let r: any = validTuteriaSubjects[i];
+      console.log("bulkUpdate for " + r.name);
+      try {
+        await fetchQuizSubjectsFromSheet(
+          r.subjects.map((v) => ({
+            name: v.skill,
+            test_sheet_id: v.testSheetID,
+            ...v,
+          }))
+        );
+      } catch (error) {
+        console.log(error);
+      } finally {
+        payload.push({ name: r.name, quiz: r.subjects[0].skill });
+      }
+    }
+    console.log("Updating record of non-testables to django");
+    await updateNonTestableSubjects(payload);
+  }
+  // validTuteriaSubjects.forEach((subject) => {});
+  return validTuteriaSubjects;
+}
 const bulkFetchQuizSubjectsFromSheet = async (
   subjects: string[],
   create = false
@@ -112,7 +148,7 @@ const fetchQuizSubjectsFromSheet = async (
   }
   return result.map((item) => ({
     ...item,
-    questions: transformData(item.questions, true,item.name),
+    questions: transformData(item.questions, true, item.name),
   }));
 };
 
@@ -163,27 +199,6 @@ export function getUserInfo(
   return null;
 }
 
-async function getTuteriaSubjects(
-  subject?: string
-): Promise<Array<TuteriaSubjectType> | TuteriaSubjectType | any> {
-  const subjects = await getTuteriaSubjectData();
-  const formattedSubjects = subjects.map((subject) => ({
-    ...subject,
-    subjects: subject.subjects.map(
-      ({ shortName, url, test_name, pass_mark, testSheetID }) => ({
-        name: shortName,
-        url,
-        test_name,
-        pass_mark,
-        test_sheet_id: testSheetID || null,
-      })
-    ),
-  }));
-  if (!subject) return formattedSubjects;
-  const foundSubject = formattedSubjects.find((item) => item.slug === subject);
-  if (foundSubject) return foundSubject;
-  throw new Error("Subject not found");
-}
 async function getTutorSubjects(email: string) {
   const selectedSubjects = await saveUserSelectedSubjects({
     email,
@@ -491,6 +506,7 @@ export const serverAdapter = {
       other_details: {
         first_name: firstName,
         password,
+        // date_joined: new Date()
       },
     });
     if ("code" in data) {
@@ -572,4 +588,5 @@ export const serverAdapter = {
     let ipLocations = await getIpData(client_ip);
     return ipLocations;
   },
+  updateAllNonTestables,
 };

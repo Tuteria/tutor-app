@@ -1,28 +1,8 @@
-import formidable, { Fields, File, Files } from "formidable";
-import fs from "fs";
-import { authCheck } from "../../../middlewares";
+import { uploadView } from "../../../middlewares";
 import { serverAdapter } from "../../../server_utils/server";
 
-let tempFiles: File[] = [];
-
-export default authCheck(
-  async (req, userInfo) => {
-    const form = formidable({
-      multiples: true,
-      uploadDir: "./public",
-      keepExtensions: true,
-    });
-    const { fields, files }: { files: Files; fields: Fields } =
-      await new Promise((resolve, reject) => {
-        form.parse(req, (err, fields, files) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve({ fields, files });
-          }
-        });
-      });
-    tempFiles = tempFiles.concat(files.media);
+export default uploadView(
+  async (req, fields, tempFiles) => {
     const options: any = { folder: fields.folder as string, kind: fields.kind };
     if (fields.publicId) {
       options.public_id = fields.publicId as string;
@@ -38,6 +18,10 @@ export default authCheck(
     const transform = fields.transform
       ? fields.transform.includes("true".toLowerCase())
       : false;
+    // const fileIsToBig = tempFiles.some((o) => o.size > 10 * 1048576);
+    // if (fileIsToBig && tempFiles.length > 0){
+    //   throw "File uploaded should be less that 10MB"
+    // }
     const data = await serverAdapter.uploadMedia(
       tempFiles,
       options,
@@ -49,9 +33,6 @@ export default authCheck(
   },
   {
     method: "POST",
-    afterResponse: async () => {
-      await Promise.all(tempFiles.map(({ path }) => fs.promises.unlink(path)));
-    },
   }
 );
 

@@ -228,13 +228,13 @@ export const saveUserSelectedSubjects = async (data: {
   throw new Error("Error saving selected-subjects");
 };
 
-export async function serverValidatePersonalInfo(data,email){
+export async function serverValidatePersonalInfo(data, email) {
   let response = await fetch(`${HOST}/new-subject-flow/validate-personal-info`, {
     headers: {
       "Content-Type": "application/json",
     },
     method: "POST",
-    body: JSON.stringify({data,email}),
+    body: JSON.stringify({ data, email }),
   });
   if (response.status < 500) {
     let result = await response.json();
@@ -366,4 +366,28 @@ export async function checkSpellingAndGrammar(
     // return result;
   }
   throw new Error("Failed to run check");
+}
+
+export async function getNonTestableSubjects() {
+  const response = await fetch(`${HOST}/new-subject-flow/non-testable-subjects`)
+  if (response.ok) {
+    let { data } = await response.json();
+    return data;
+  }
+  throw new Error("Failed to fetch")
+}
+
+export async function updateNonTestableSubjects(subjects) {
+  const response = await fetch(`${HOST}/new-subject-flow/update-non-testable-subjects`, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+    method: "POST",
+    body: JSON.stringify({ subjects: subjects }),
+  })
+  if (response.ok) {
+    let { data } = await response.json();
+    return data;
+  }
+  throw new Error("Error updating subjects")
 }

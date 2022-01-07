@@ -95,9 +95,10 @@ function Index() {
 }
 
 Index.getInitialProps = async (ctx) => {
-  const res = await fetch('https://api.github.com/repos/vercel/next.js')
-  const json = await res.json()
-  return { displayCrisp:true }
+  return { displayCrisp:true,seo:{
+    title: "Become a Tutor and Earn Money Teaching What You Love - Tuteria",
+    description: `Teach students in-person or online, and fit lessons into your schedule. Simply take up jobs, deliver great lessons and get paid! It's that easy. Apply now.`
+  } }
 }
 export default Index;
 

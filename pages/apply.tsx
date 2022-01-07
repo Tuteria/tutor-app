@@ -15,7 +15,13 @@ import { usePrefetchHook } from "../server_utils/util";
 const adapter = loadAdapter(clientAdapter);
 const store = initializeStore(clientAdapter);
 
-export default function ApplicationPage({
+declare global {
+  interface Window {
+    $crisp:any
+  }
+}
+
+function ApplicationPage({
   allCountries,
   allRegions,
   supportedCountries,
@@ -66,7 +72,7 @@ export default function ApplicationPage({
         },
       });
       if(window.$crisp){
-        $crisp.push(["set", "user:email", [store.personalInfo.email]]);
+        window.$crisp.push(["set", "user:email", [store.personalInfo.email]]);
         console.log("Email set for crisp")
       }
       if (store.currentStep === APPLICATION_STEPS.APPLY) {
@@ -117,6 +123,12 @@ export async function getStaticProps() {
   return {
     props: {
       ...result,
+      seo: {
+        title: "Begin Your Application | Tutor Application - Tuteria",
+        description: "Fill all forms to apply to become a tutor on Tuteria"
+      },
     },
   };
 }
+
+export default ApplicationPage

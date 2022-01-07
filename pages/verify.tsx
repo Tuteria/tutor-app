@@ -15,7 +15,13 @@ import { usePrefetchHook } from "../server_utils/util";
 const adapter = loadAdapter(clientAdapter);
 const store = initializeStore(clientAdapter);
 
-export default function TutorVerificationPage({
+declare global {
+  interface Window {
+    $crisp: any
+  }
+}
+
+function TutorVerificationPage({
   allCountries,
   allRegions,
   supportedCountries,
@@ -49,6 +55,7 @@ export default function TutorVerificationPage({
         ...result,
         tutorInfo: {
           ...result.tutorInfo,
+          // others:{...result.tutorInfo.others,canApply:true},
           appData: {
             ...result.tutorInfo.appData,
             currentEditableForm: step,
@@ -56,18 +63,20 @@ export default function TutorVerificationPage({
         },
       });
 
-      if(window?.$crisp){
-        $crisp.push(["set", "user:email", [store.personalInfo.email]]);
+      if (window?.$crisp) {
+        window.$crisp.push(["set", "user:email", [store.personalInfo.email]]);
         console.log("Email set for crisp")
       }
       if (store.currentStep === APPLICATION_STEPS.VERIFY) {
         setIsLoading(false);
       } else {
-        let _path = buildNavigation(result.accessToken, result.tutorInfo);
-        if (_path) {
-          navigate(_path);
+        let queryParams = clientAdapter.getQueryValues()
+        if (queryParams.force === "true") {
+          setIsLoading(false)
         } else {
-          navigate("/apply");
+          let v = buildNavigation(result.accessToken, result.tutorInfo);
+          navigate(v);
+
         }
       }
     } catch (error) {
@@ -87,7 +96,7 @@ export default function TutorVerificationPage({
     }
   }
 
-  function onLogout(){
+  function onLogout() {
     clientAdapter.onLogout()
     navigate("/")
   }
@@ -112,6 +121,12 @@ export async function getStaticProps() {
   return {
     props: {
       ...result,
+      seo: {
+        title: "Complete Verification  | Tutor Application - Tuteria",
+        description: "Upload profile photo, Video and ID"
+      },
     },
   };
 }
+
+export default TutorVerificationPage

@@ -3,14 +3,22 @@ services:
   - docker:dind
 
 stages:
+  - develop
   - build
   - staging
   - deploy
 variables:
-  CONTAINER_IMAGE: registry.gitlab.com/tuteria/v2/tutor-frontend-app/tutor-application
+  CONTAINER_IMAGE: registry.gitlab.com/tuteria/v2/tutor-frontend-app/next-image
 
 before_script:
   - docker login -u gbozee -p abiola2321 registry.gitlab.com
+
+develop:
+  stage: develop
+  script:
+    - docker build -f Dockerfile-next -t $CONTAINER_IMAGE:latest .
+  only:
+    - develop-build
 
 build:
   stage: build

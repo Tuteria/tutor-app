@@ -7,7 +7,7 @@ import { usePrefetchHook } from "../server_utils/util";
 
 const store = initializeStore(clientAdapter);
 
-export default function CompletedPage({ tutorInfo }: any) {
+function CompletedPage({ tutorInfo }: any) {
   const [loading, setLoading] = React.useState(false);
   const { navigate } = usePrefetchHook({
     routes: ["/login", "/complete", "subjects", "/apply"],
@@ -43,7 +43,7 @@ export async function getServerSideProps({ query, res }) {
       let tutorInfo = await serverAdapter.getTutorInfo(
         userInfo.personalInfo.email
       );
-      return { props: { tutorInfo } };
+      return { props: { tutorInfo,seo:{title:"Application Completed  | Tutor Application - Tuteria",description:"Thanks for completing your application"} } };
     } else {
       throw new Error("not allowed");
     }
@@ -54,3 +54,5 @@ export async function getServerSideProps({ query, res }) {
     res.end();
   }
 }
+
+export default CompletedPage
