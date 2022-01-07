@@ -15,6 +15,8 @@ function Index() {
   );
   const [tutorData, setTutorData] = React.useState<any>()
 
+  const queryParams = clientAdapter.getQueryValues();
+
   async function checkLoggedInStatus() {
     try {
       let { loggedIn, email, tutorData, accessToken, redirectUrl } =
@@ -86,6 +88,7 @@ function Index() {
 
         }
       continueUrl={continueUrl}
+      displayBanner={queryParams.denied === "true"}
       onSubmit={onSubmit}
       onLogin={authenticateUser}
       continueText={continueText}
