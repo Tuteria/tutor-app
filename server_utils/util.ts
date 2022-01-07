@@ -49,7 +49,6 @@ export const usePrefetchHook = ({
     }
   }
   function buildNavigation(accessToken, tutorData) {
-    // debugger;
     const paths = {
       [APPLICATION_STEPS.APPLY]: `/apply?currentStep=personal-info`,
       [APPLICATION_STEPS.VERIFY]: `/verify`,
