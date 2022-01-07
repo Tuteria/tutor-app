@@ -1,5 +1,5 @@
 import LandingPage from "@tuteria/shared-lib/src/tutor-application/pages/LandingPage";
-import React from "react";
+import React, { useState } from "react";
 import { clientAdapter } from "../server_utils/client";
 import { usePrefetchHook } from "../server_utils/util";
 
@@ -14,6 +14,12 @@ function Index() {
     "Continue Application"
   );
   const [tutorData, setTutorData] = React.useState<any>()
+  const [clientSideLoaded, setClientSideLoaded] = useState(false);
+  const queryParams = clientAdapter.getQueryValues();
+
+  React.useEffect(() => {
+    setClientSideLoaded(true);
+  }, []);
 
   async function checkLoggedInStatus() {
     try {
@@ -86,6 +92,7 @@ function Index() {
 
         }
       continueUrl={continueUrl}
+      displayBanner={clientSideLoaded && queryParams.denied === "true"}
       onSubmit={onSubmit}
       onLogin={authenticateUser}
       continueText={continueText}

@@ -11,6 +11,8 @@ export default defaultView(
       if (data.tutorData.application_status === 'VERIFIED') {
         const { pk, slug } = data.tutorData;
         data.redirectUrl = `${HOST}/users/authenticate/${pk}/${slug}`; 
+      } else if (data.tutorData.application_status === 'DENIED') {
+        data.redirectUrl = '/?denied=true';
       }
     } else {
       data = await serverAdapter.loginUser(email);
