@@ -13,7 +13,7 @@ function Index() {
   const [continueText, setContinueText] = React.useState(
     "Continue Application"
   );
-  const [tutorData, setTutorData] = React.useState<any>()
+  const [tutorData, setTutorData] = React.useState<any>();
   const [clientSideLoaded, setClientSideLoaded] = useState(false);
   const queryParams = clientAdapter.getQueryValues();
 
@@ -62,35 +62,38 @@ function Index() {
       throw error;
     }
   }
-  async function onSubmit(payload:any){
-    try{
-      let result = await clientAdapter.beginTutorApplication(payload)
-      if(result?.tutorData){
-        setTutorData(result.tutorData)
+  async function onSubmit(payload: any) {
+    try {
+      let result = await clientAdapter.beginTutorApplication(payload);
+      if (result?.tutorData) {
+        setTutorData(result.tutorData);
       }
-      return result
-    
-    }catch(error){
+      return result;
+    } catch (error) {
       console.log(error);
-      throw error
+      throw error;
     }
   }
-  
 
+  function onLogout() {
+    clientAdapter.onLogout();
+    navigate("/");
+  }
   return (
     <LandingPage
       beginApplication={() => {
-        if(tutorData){
-        let v = buildNavigation(tutorData?.accessToken, tutorData?.tutorData);
+        if (tutorData) {
+          let v = buildNavigation(tutorData?.accessToken, tutorData?.tutorData);
           if (v) {
             navigate(v);
           } else {
             navigate("/apply?currentStep=personal-info");
           }
-        }else{
-        navigate("/apply?currentStep=personal-info")}}
-
+        } else {
+          navigate("/apply?currentStep=personal-info");
         }
+      }}
+      onLogoutClick={onLogout}
       continueUrl={continueUrl}
       displayBanner={clientSideLoaded && queryParams.denied === "true"}
       onSubmit={onSubmit}
@@ -102,10 +105,12 @@ function Index() {
 }
 
 Index.getInitialProps = async (ctx) => {
-  return { displayCrisp:true,seo:{
-    title: "Become a Tutor and Earn Money Teaching What You Love - Tuteria",
-    description: `Teach students in-person or online, and fit lessons into your schedule. Simply take up jobs, deliver great lessons and get paid! It's that easy. Apply now.`
-  } }
-}
+  return {
+    displayCrisp: true,
+    seo: {
+      title: "Become a Tutor and Earn Money Teaching What You Love - Tuteria",
+      description: `Teach students in-person or online, and fit lessons into your schedule. Simply take up jobs, deliver great lessons and get paid! It's that easy. Apply now.`,
+    },
+  };
+};
 export default Index;
-
