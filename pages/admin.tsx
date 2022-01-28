@@ -10,7 +10,7 @@ const Admin = () => {
     if (c) {
       console.log(router)
       clientAdapter.storage.set(NEW_TUTOR_TOKEN, c)
-      router.push('/apply?force=true')
+      router.push('/apply')
     }
   }, [c])
 
