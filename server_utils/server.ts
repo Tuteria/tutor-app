@@ -589,4 +589,9 @@ export const serverAdapter = {
     return ipLocations;
   },
   updateAllNonTestables,
+  async hijackTutor(email) {
+    const tutorInfo = await this.getTutorInfo(email, true, true)
+    const accessToken = this.upgradeAccessToken(tutorInfo)
+    return accessToken
+  }
 };

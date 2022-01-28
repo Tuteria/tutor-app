@@ -5,7 +5,7 @@ import axios from "axios";
 import jwt_decode from "jwt-decode";
 import { TuteriaSubjectType } from "./types";
 
-const NEW_TUTOR_TOKEN = "NEW_TUTOR_TOKEN";
+export const NEW_TUTOR_TOKEN = "NEW_TUTOR_TOKEN";
 const NEW_TUTOR_INFO = "NEW_TUTOR_INFO";
 const TUTOR_QUIZZES = "TUTOR-QUIZZES";
 const TUTERIA_SUBJECTS_KEY = "TUTERIA_SUBJECTS";
@@ -270,6 +270,7 @@ async function createQuizFromSheet(subject) {
 }
 
 export const clientAdapter: any = {
+  storage,
   getQueryValues,
   saveSubject,
   buildReviewQuizData,
