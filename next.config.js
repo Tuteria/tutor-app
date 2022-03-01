@@ -3,6 +3,9 @@ const withImages = require("next-images");
 const withPWA = require("next-pwa");
 const runtimeCaching = require("./cache");
 const { withSentryConfig } = require('@sentry/nextjs');
+const DISABLE_TYPESCRIPT_ERRORS =
+  process.env["DISABLE_TYPESCRIPT_ERRORS"] === "true";
+
 
 const sentryWebpackPluginOptions = {
   // Additional config options for the Sentry Webpack plugin. Keep in mind that
@@ -67,7 +70,10 @@ const config = withImages(
       basePath: process.env.BASE_PATH || "",
     },
     reactStrictMode: true,
+    typescript: {
+      ignoreBuildErrors: DISABLE_TYPESCRIPT_ERRORS,
+    },
   })
-)
+);
 
 module.exports = process.env.SKIP_SENTRY_UPLOAD ? config : withSentryConfig(config ,sentryWebpackPluginOptions);
