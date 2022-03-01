@@ -271,7 +271,7 @@ export const serverAdapter = {
     pass_mark,
     subjects,
     duration,
-    total_questions,
+    total_questions = 15,
   }: {
     slug: string;
     name: string;
@@ -590,8 +590,8 @@ export const serverAdapter = {
   },
   updateAllNonTestables,
   async hijackTutor(email) {
-    const tutorInfo = await this.getTutorInfo(email, true, true)
-    const accessToken = this.upgradeAccessToken(tutorInfo)
-    return accessToken
-  }
+    const tutorInfo = await this.getTutorInfo(email, true, true);
+    const accessToken = this.upgradeAccessToken(tutorInfo);
+    return accessToken;
+  },
 };
