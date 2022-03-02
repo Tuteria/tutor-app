@@ -157,12 +157,12 @@ function buildTutorData(
     );
     if (foundSubject) {
       if (subject.status === "in-progress") {
-        let testable = foundSubject.subjects.some(x => x.test_name)
+        let testable = foundSubject.subjects.some((x) => x.test_name);
         if (testable && subject.canTakeTest) {
-          subject.status = "not-started"
+          subject.status = "not-started";
         } else {
           if (subject.sittingsCount === 0 && testable) {
-            subject.status = "not-started"
+            subject.status = "not-started";
           }
         }
       }
@@ -302,7 +302,7 @@ export const clientAdapter: any = {
     formData.append("media", files[0]);
     formData.append("folder", "identity");
     formData.append("kind", "image");
-    formData.append("publicId", `${slug}-identity`)
+    formData.append("publicId", `${slug}-identity`);
     const response = await multipartFetch("/api/tutors/upload-media", formData);
 
     if (response.ok) {
@@ -312,9 +312,8 @@ export const clientAdapter: any = {
         return {
           ...item,
           name: item.public_id,
-          secure_url: item.url
-
-        }
+          secure_url: item.url,
+        };
       });
     }
     throw "Failed to upload media";
@@ -475,8 +474,8 @@ export const clientAdapter: any = {
     }
     throw "Failed to save tutor info";
   },
-  submitSelectedSubjects: async () => { },
-  updateUserPassword: async () => { },
+  submitSelectedSubjects: async () => {},
+  updateUserPassword: async () => {},
   validateCredentials: () => {
     let data = decodeToken();
     if (data) {
@@ -532,7 +531,7 @@ export const clientAdapter: any = {
     throw "Error submitting";
   },
 
-  async beginQuiz(payload: { subjects: string[] }) {
+  async beginQuiz(payload: { subjects: string[] }, subject_data) {
     const tutorToken = storage.get(NEW_TUTOR_TOKEN);
     const response: any = await fetch("/api/quiz/begin", {
       headers: {
@@ -540,7 +539,10 @@ export const clientAdapter: any = {
         Authorization: "Bearer " + tutorToken,
       },
       method: "POST",
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        payload,
+        subject_data: { pk: subject_data.skill_id, ...subject_data.payload },
+      }),
     });
     if (response.ok) {
       const { data } = response.json();
@@ -668,7 +670,7 @@ export const clientAdapter: any = {
     return storage.get(name, "");
   },
 
-  buildPreferences(subject: { category: string;[key: string]: any }) {
+  buildPreferences(subject: { category: string; [key: string]: any }) {
     const placeholder = "$subject_name";
     const preferences = seshStorage.get(TUTERIA_PREFERENCE_KEY, []);
     const result = preferences
@@ -737,6 +739,6 @@ export const clientAdapter: any = {
     }
   },
   onLogout() {
-    window.localStorage.clear()
-  }
+    window.localStorage.clear();
+  },
 };
