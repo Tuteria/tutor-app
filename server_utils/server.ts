@@ -367,7 +367,13 @@ export const serverAdapter = {
     let response = await this.getTutorDetails(email, true, true, data);
     return response;
   },
-
+  async authenticateUserTelegram(telegram_id: string) {
+    const data = await authenticateLoginDetails({ telegram_id });
+    let {
+      personalInfo: { email },
+    } = data;
+    return await this.getTutorDetails(email, true, true, data);
+  },
   async loginUser(email: string) {
     const data = await authenticateLoginDetails({ email });
     if ("code" in data) {

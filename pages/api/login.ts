@@ -1,21 +1,25 @@
 import { defaultView } from "../../middlewares";
 import { serverAdapter } from "../../server_utils/server";
-import { HOST } from '../../server_utils/hostService';
+import { HOST } from "../../server_utils/hostService";
 
 export default defaultView(
   async (req) => {
-    const { email, code } = req.body;
+    const { email, code, telegram_id } = req.body;
     let data;
-    if (email && code) {
-      data = await serverAdapter.authenticateUserCode(email, code);
-      if (data.tutorData.application_status === 'VERIFIED') {
-        const { pk, slug } = data.tutorData;
-        data.redirectUrl = `${HOST}/users/authenticate/${pk}/${slug}`; 
-      } else if (data.tutorData.application_status === 'DENIED') {
-        data.redirectUrl = '/?denied=true';
-      }
+    if (telegram_id) {
+      data = await serverAdapter.authenticateUserTelegram(telegram_id);
     } else {
-      data = await serverAdapter.loginUser(email);
+      if (email && code) {
+        data = await serverAdapter.authenticateUserCode(email, code);
+        if (data.tutorData.application_status === "VERIFIED") {
+          const { pk, slug } = data.tutorData;
+          data.redirectUrl = `${HOST}/users/authenticate/${pk}/${slug}`;
+        } else if (data.tutorData.application_status === "DENIED") {
+          data.redirectUrl = "/?denied=true";
+        }
+      } else {
+        data = await serverAdapter.loginUser(email);
+      }
     }
     return data;
   },
