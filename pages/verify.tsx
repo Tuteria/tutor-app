@@ -110,7 +110,7 @@ function TutorVerificationPage({
         onLogout={onLogout}
         onNextStep={async () => {
           let token = await store.submitApplication(store.currentStep);
-          navigate(`/subjects`);
+          navigate(`/complete?access_token=${token}`);
         }}
       />
     </LoadingStateWrapper>

@@ -45,7 +45,7 @@ export const usePrefetchHook = ({
         isClosable: true,
         position: "top",
       });
-      throw error
+      throw error;
     }
   }
   function buildNavigation(accessToken, tutorData) {
@@ -54,6 +54,9 @@ export const usePrefetchHook = ({
       [APPLICATION_STEPS.VERIFY]: `/verify`,
       [APPLICATION_STEPS.SUBJECT]: `/subjects?access_token=${accessToken}`,
       [APPLICATION_STEPS.COMPLETE]: `/complete?access_token=${accessToken}`,
+      [APPLICATION_STEPS.TUTOR_PREFERENCES]: `/preferences?access_token=${accessToken}`,
+      [APPLICATION_STEPS.TERMS]: `/terms?access_token=${accessToken}`,
+      [APPLICATION_STEPS.VERIFIED_TUTOR]: `/application-verified?access_token=${accessToken}`,
     };
     let step = tutorData?.appData?.currentStep || APPLICATION_STEPS.APPLY;
     return paths[step];
