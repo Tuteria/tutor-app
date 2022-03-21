@@ -105,6 +105,7 @@ function SubjectsListPage({
           navigate(`/complete?access_token=${token}`);
         }}
         store={store}
+        canEditSubject={false}
       />
     </LoadingStateWrapper>
   );
