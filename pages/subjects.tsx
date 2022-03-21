@@ -14,7 +14,7 @@ const store = initializeStore(clientAdapter);
 
 declare global {
   interface Window {
-    $crisp:any
+    $crisp: any;
   }
 }
 
@@ -26,7 +26,7 @@ function SubjectsListPage({
   tuteriaSubjects = [],
   preferences,
   pricing,
-  groups = []
+  groups = [],
 }) {
   const toast = useToast();
   const { navigate, buildNavigation } = usePrefetchHook({
@@ -43,7 +43,7 @@ function SubjectsListPage({
         tuteriaSubjects,
         preferences,
         pricing,
-        groups
+        groups,
       });
       store.initializeTutorData({
         ...result,
@@ -52,19 +52,18 @@ function SubjectsListPage({
           // others:{...result.tutorInfo.others,canApply:true}
         },
       });
-      if(window?.$crisp){
+      if (window?.$crisp) {
         window.$crisp.push(["set", "user:email", [store.personalInfo.email]]);
-        console.log("Email set for crisp")
+        console.log("Email set for crisp");
       }
       if (store.currentStep === APPLICATION_STEPS.SUBJECT) {
         setIsLoading(false);
       } else {
         let _path = buildNavigation(result.accessToken, result.tutorInfo);
-        let queryParams = clientAdapter.getQueryValues()
-        if (queryParams.force === "true"){
-          setIsLoading(false)
-        }else{
-
+        let queryParams = clientAdapter.getQueryValues();
+        if (queryParams.force === "true") {
+          setIsLoading(false);
+        } else {
           if (_path) {
             navigate(_path);
           } else {
@@ -89,9 +88,9 @@ function SubjectsListPage({
     }
   }
 
-  function onLogout(){
-    clientAdapter.onLogout()
-    navigate("/")
+  function onLogout() {
+    clientAdapter.onLogout();
+    navigate("/");
   }
   return (
     <LoadingStateWrapper
@@ -102,9 +101,10 @@ function SubjectsListPage({
         onLogout={onLogout}
         onNextStep={async () => {
           let token = await store.submitApplication(store.currentStep);
-          navigate(`/complete?access_token=${token}`);
+          navigate(`/verify?access_token=${token}`);
         }}
         store={store}
+        canEditSubject={false}
       />
     </LoadingStateWrapper>
   );
@@ -114,12 +114,12 @@ export async function getStaticProps() {
   return {
     props: {
       ...result,
-      seo:{
+      seo: {
         title: "Add Your Subjects  | Tutor Application - Tuteria",
-        description: "Create the subjects you want to teach"
-      }
+        description: "Create the subjects you want to teach",
+      },
     },
   };
 }
 
-export default SubjectsListPage
+export default SubjectsListPage;

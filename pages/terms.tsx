@@ -6,11 +6,12 @@ import {
   STEPS,
 } from "@tuteria/shared-lib/src/stores/rootStore";
 import React from "react";
-import TutorPageComponent from "../components/TutorPageComponent";
+
 import { clientAdapter } from "../server_utils/client";
 import { serverAdapter } from "../server_utils/server";
 import { TuteriaSubjectType } from "../server_utils/types";
 import { usePrefetchHook } from "../server_utils/util";
+import TutorAgreementPage from "@tuteria/shared-lib/src/tutor-application/pages/TutorAgreementPage";
 
 const adapter = loadAdapter(clientAdapter);
 const store = initializeStore(clientAdapter);
@@ -21,7 +22,7 @@ declare global {
   }
 }
 
-function ApplicationPage({
+function TutorTermsAndAgreementPage({
   allCountries,
   allRegions,
   supportedCountries,
@@ -35,7 +36,7 @@ function ApplicationPage({
   tuteriaSubjects: TuteriaSubjectType[];
 }) {
   const { navigate, onError, buildNavigation } = usePrefetchHook({
-    routes: ["/login", "/complete"],
+    routes: ["/login", "/terms", "application-verified"],
   });
   const [loaded, setLoaded] = React.useState("initialize");
 
@@ -51,7 +52,8 @@ function ApplicationPage({
       });
       if (!clientAdapter.canUseSpinner()) {
         if (
-          result.tutorInfo?.appData?.currentStep === APPLICATION_STEPS.APPLY
+          result.tutorInfo?.appData?.currentStep ===
+          APPLICATION_STEPS.TUTOR_PREFERENCES
         ) {
           setIsLoading(false);
         }
@@ -62,11 +64,13 @@ function ApplicationPage({
           ...result.tutorInfo,
           appData: {
             ...(result.tutorInfo?.appData || {
-              currentStep: APPLICATION_STEPS.APPLY,
+              currentEditableForm:
+                result.tutorInfo?.appData?.currentEditableForm ||
+                STEPS.LOCATION_INFO,
+              currentStep: APPLICATION_STEPS.TUTOR_PREFERENCES,
             }),
             // ...({
             //   currentStep: APPLICATION_STEPS.APPLY,
-            //   currentEditableForm: STEPS.AGREEMENT_INFO,
             // }),
           },
         },
@@ -75,7 +79,7 @@ function ApplicationPage({
         window.$crisp.push(["set", "user:email", [store.personalInfo.email]]);
         console.log("Email set for crisp");
       }
-      if (store.currentStep === APPLICATION_STEPS.APPLY) {
+      if (store.currentStep === APPLICATION_STEPS.TUTOR_PREFERENCES) {
         setIsLoading(false);
       } else {
         let queryParams = clientAdapter.getQueryValues();
@@ -104,7 +108,7 @@ function ApplicationPage({
       // defaultLoading={currentStep === undefined}
       initialize={initialize}
     >
-      <TutorPageComponent
+      <TutorAgreementPage
         currentStep={currentStep ? store.currentEditableForm : currentStep}
         key={loaded}
         store={store}
@@ -130,4 +134,4 @@ export async function getStaticProps() {
   };
 }
 
-export default ApplicationPage;
+export default TutorTermsAndAgreementPage;
