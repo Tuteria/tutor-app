@@ -17,7 +17,7 @@ export default defaultView(
         data = await serverAdapter.authenticateUserCode(email, code);
         if (data.tutorData.application_status === "VERIFIED") {
           const { pk, slug } = data.tutorData;
-          data.redirectUrl = `${HOST}/users/authenticate/${pk}/${slug}`;
+          data.redirectUrl = `${HOST}/users/authenticate/${pk}/${slug}?redirect_url=/dashboard/`;
         } else if (data.tutorData.application_status === "DENIED") {
           data.redirectUrl = "/?denied=true";
         }

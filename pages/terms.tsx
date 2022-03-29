@@ -67,7 +67,7 @@ function TutorTermsAndAgreementPage({
               currentEditableForm:
                 result.tutorInfo?.appData?.currentEditableForm ||
                 STEPS.LOCATION_INFO,
-              currentStep: APPLICATION_STEPS.TUTOR_PREFERENCES,
+              currentStep: APPLICATION_STEPS.TERMS,
             }),
             // ...({
             //   currentStep: APPLICATION_STEPS.APPLY,
@@ -79,7 +79,7 @@ function TutorTermsAndAgreementPage({
         window.$crisp.push(["set", "user:email", [store.personalInfo.email]]);
         console.log("Email set for crisp");
       }
-      if (store.currentStep === APPLICATION_STEPS.TUTOR_PREFERENCES) {
+      if (store.currentStep === APPLICATION_STEPS.TERMS) {
         setIsLoading(false);
       } else {
         let queryParams = clientAdapter.getQueryValues();
@@ -114,7 +114,7 @@ function TutorTermsAndAgreementPage({
         store={store}
         onLogout={onLogout}
         onNextStep={() => {
-          navigate("/subjects");
+          navigate("/application-verified");
         }}
       />
     </LoadingStateWrapper>

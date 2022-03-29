@@ -114,7 +114,7 @@ function PreferenceApplicationPage({
         store={store}
         onLogout={onLogout}
         onNextStep={() => {
-          navigate("/subjects");
+          navigate("/terms");
         }}
       />
     </LoadingStateWrapper>

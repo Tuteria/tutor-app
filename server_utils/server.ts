@@ -493,6 +493,7 @@ export const serverAdapter = {
       tutorSubjects: any[];
       accessToken?: string;
       redirectUrl?: string;
+      actualUrl?:string
     } = { tutorData: response[0], tutorSubjects: [] };
     if (response.length > 1) {
       result.tutorSubjects = response[1].skills;
@@ -502,8 +503,10 @@ export const serverAdapter = {
     }
     if (result?.tutorData?.application_status === "VERIFIED") {
       let { pk, slug } = result.tutorData;
-      result.redirectUrl = `${HOST}/users/authenticate/${pk}/${slug}`;
+      result.redirectUrl = `${HOST}/users/authenticate/${pk}/${slug}?redirect_url=/dashboard/`;
     }
+    let { pk, slug } = result.tutorData;
+    result.actualUrl = `${HOST}/users/authenticate/${pk}/${slug}`;
     return result;
   },
   async beginTutorApplication({ email, firstName, password, countryCode }) {

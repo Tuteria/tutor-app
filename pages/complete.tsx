@@ -30,7 +30,7 @@ function onLogout(){
       firstName={tutorInfo.personalInfo.firstName}
       store={store}
       photo={store.identity.profilePhoto}
-      subjectLink="/subjects?force=true"
+      subjectLink="/preferences?force=true"
     />
   );
 }

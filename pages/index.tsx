@@ -77,7 +77,8 @@ function Index() {
 
   function onLogout() {
     clientAdapter.onLogout();
-    navigate("/");
+    window.location.href='/'
+    // navigate("/");
   }
   return (
     <LandingPage

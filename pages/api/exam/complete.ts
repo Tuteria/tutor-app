@@ -2,15 +2,15 @@ import { authCheck, defaultView } from "../../../middlewares";
 import { serverAdapter } from "../../../server_utils/server";
 import { createOrUpdateSubjectWithFlaggedQuestion } from "@tuteria/tuteria-data/src";
 
-// export default authCheck(
-// async (req, userInfo) => {
-export default defaultView(
-  async (req) => {
-    let { userInfo, ...rest } = req.body;
+export default authCheck(
+  async (req, userInfo) => {
+    // export default defaultView(
+    //   async (req) => {
+    // let { userInfo, ...rest } = req.body;
     let result = await serverAdapter.completeQuiz({
       email: userInfo.personalInfo.email,
-      ...rest,
-      // ...req.body,
+      // ...rest,
+      ...req.body,
     });
     return result.testsTaken;
   },
