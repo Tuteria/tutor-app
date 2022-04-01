@@ -76,11 +76,11 @@ function PreferenceApplicationPage({
           ...result.tutorInfo,
           appData: {
             ...(result.tutorInfo?.appData || {
-              currentEditableForm: getCurrentEditableForm(
-                result.tutorInfo?.appData?.currentEditableForm
-              ),
               currentStep: APPLICATION_STEPS.TUTOR_PREFERENCES,
             }),
+            currentEditableForm: getCurrentEditableForm(
+              result.tutorInfo?.appData?.currentEditableForm
+            ),
             // ...({
             //   currentStep: APPLICATION_STEPS.APPLY,
             // }),

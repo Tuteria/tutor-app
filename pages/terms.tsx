@@ -77,14 +77,12 @@ function TutorTermsAndAgreementPage({
           ...result.tutorInfo,
           appData: {
             ...(result.tutorInfo?.appData || {
-              currentEditableForm: getCurrentEditableForm(
-                result.tutorInfo?.appData?.currentEditableForm
-              ),
               currentStep: APPLICATION_STEPS.TERMS,
             }),
-            // ...({
+            currentEditableForm: getCurrentEditableForm(
+              result.tutorInfo?.appData?.currentEditableForm
+            ),
             //   currentStep: APPLICATION_STEPS.APPLY,
-            // }),
           },
         },
       });
