@@ -39,6 +39,19 @@ function TutorTermsAndAgreementPage({
     routes: ["/login", "/terms", "application-verified"],
   });
   const [loaded, setLoaded] = React.useState("initialize");
+  function getCurrentEditableForm(step) {
+    if (
+      [
+        STEPS.GUARANTOR_INFO,
+        STEPS.AGREEMENT_INFO,
+        STEPS.VERIFY_EMAIL,
+        STEPS.NEW_DEVELOPMENT,
+      ].includes(step)
+    ) {
+      return step;
+    }
+    return STEPS.GUARANTOR_INFO;
+  }
 
   async function initialize(setIsLoading) {
     setIsLoading(true);
@@ -64,9 +77,9 @@ function TutorTermsAndAgreementPage({
           ...result.tutorInfo,
           appData: {
             ...(result.tutorInfo?.appData || {
-              currentEditableForm:
-                result.tutorInfo?.appData?.currentEditableForm ||
-                STEPS.LOCATION_INFO,
+              currentEditableForm: getCurrentEditableForm(
+                result.tutorInfo?.appData?.currentEditableForm
+              ),
               currentStep: APPLICATION_STEPS.TERMS,
             }),
             // ...({

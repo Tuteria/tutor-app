@@ -39,7 +39,19 @@ function PreferenceApplicationPage({
     routes: ["/login", "/terms", "application-verified"],
   });
   const [loaded, setLoaded] = React.useState("initialize");
-
+  function getCurrentEditableForm(step) {
+    if (
+      [
+        STEPS.LOCATION_INFO,
+        STEPS.SCHEDULE_INFO,
+        STEPS.TEACHING_PROFILE,
+        STEPS.PAYMENT_INFO,
+      ].includes(step)
+    ) {
+      return step;
+    }
+    return STEPS.LOCATION_INFO;
+  }
   async function initialize(setIsLoading) {
     setIsLoading(true);
     try {
@@ -64,9 +76,9 @@ function PreferenceApplicationPage({
           ...result.tutorInfo,
           appData: {
             ...(result.tutorInfo?.appData || {
-              currentEditableForm:
-                result.tutorInfo?.appData?.currentEditableForm ||
-                STEPS.LOCATION_INFO,
+              currentEditableForm: getCurrentEditableForm(
+                result.tutorInfo?.appData?.currentEditableForm
+              ),
               currentStep: APPLICATION_STEPS.TUTOR_PREFERENCES,
             }),
             // ...({
