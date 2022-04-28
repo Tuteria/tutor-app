@@ -10,7 +10,7 @@ const Admin = ({ c, current_step }) => {
     if (c) {
       console.log(router);
       clientAdapter.storage.set(NEW_TUTOR_TOKEN, c);
-      router.push(`/${current_step}?access_token=${c}`);
+      router.push(`/${current_step}?access_token=${c}&force=true`);
     }
   }, [c]);
 
