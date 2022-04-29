@@ -42,7 +42,6 @@ function PreferenceApplicationPage({
   function getCurrentEditableForm(step) {
     if (
       [
-        STEPS.LOCATION_INFO,
         STEPS.SCHEDULE_INFO,
         STEPS.TEACHING_PROFILE,
         STEPS.PAYMENT_INFO,
@@ -50,7 +49,7 @@ function PreferenceApplicationPage({
     ) {
       return step;
     }
-    return STEPS.LOCATION_INFO;
+    return STEPS.SCHEDULE_INFO;
   }
   async function initialize(setIsLoading) {
     setIsLoading(true);
