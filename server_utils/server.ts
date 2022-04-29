@@ -493,7 +493,7 @@ export const serverAdapter = {
       tutorSubjects: any[];
       accessToken?: string;
       redirectUrl?: string;
-      actualUrl?:string
+      actualUrl?: string;
     } = { tutorData: response[0], tutorSubjects: [] };
     if (response.length > 1) {
       result.tutorSubjects = response[1].skills;
@@ -598,8 +598,11 @@ export const serverAdapter = {
     return ipLocations;
   },
   updateAllNonTestables,
-  async hijackTutor(email) {
+  async hijackTutor(email, id) {
     const tutorInfo = await this.getTutorInfo(email, true, true);
+    if (`${tutorInfo.pk}` !== `${id}`) {
+      throw "Invalid access! ";
+    }
     const accessToken = this.upgradeAccessToken(tutorInfo);
     return accessToken;
   },

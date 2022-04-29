@@ -2,10 +2,9 @@ const withTM = require("next-transpile-modules");
 const withImages = require("next-images");
 const withPWA = require("next-pwa");
 const runtimeCaching = require("./cache");
-const { withSentryConfig } = require('@sentry/nextjs');
+const { withSentryConfig } = require("@sentry/nextjs");
 const DISABLE_TYPESCRIPT_ERRORS =
   process.env["DISABLE_TYPESCRIPT_ERRORS"] === "true";
-
 
 const sentryWebpackPluginOptions = {
   // Additional config options for the Sentry Webpack plugin. Keep in mind that
@@ -26,7 +25,6 @@ let transpileModules = [
   "@tuteria/tuteria-data",
 ];
 
-
 const config = withImages(
   withTM({
     // pwa: {
@@ -46,7 +44,11 @@ const config = withImages(
         test: /\.svg$/,
         use: ["@svgr/webpack"],
       });
-
+      config.module.rules.push({
+        test: /\.mjs$/,
+        include: /node_modules/,
+        type: "javascript/auto",
+      });
       return config;
     },
     webpackDevMiddleware(config, options) {
@@ -76,4 +78,6 @@ const config = withImages(
   })
 );
 
-module.exports = process.env.SKIP_SENTRY_UPLOAD ? config : withSentryConfig(config ,sentryWebpackPluginOptions);
+module.exports = process.env.SKIP_SENTRY_UPLOAD
+  ? config
+  : withSentryConfig(config, sentryWebpackPluginOptions);
