@@ -1,6 +1,6 @@
 module.exports = {
   displayName: 'tutor-app',
-  preset: '../../jest.preset.js',
+  preset: './jest.preset.js',
   transform: {
     '^(?!.*\\.(js|jsx|ts|tsx|css|json)$)': '@nrwl/react/plugins/jest',
     '^.+\\.[tj]sx?$': ['babel-jest', { presets: ['@nrwl/next/babel'] }]
