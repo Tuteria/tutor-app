@@ -12,7 +12,7 @@ RUN mv production/.npmrc .npmrc
 
 RUN yarn install
 
-RUN yarn build
+RUN yarn build:prod
 
 EXPOSE 3000
 
