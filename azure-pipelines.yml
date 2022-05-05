@@ -24,6 +24,12 @@ steps:
   inputs:
     versionSpec: '14.x'
   displayName: 'Install Node.js'
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: 'production'
+    Contents: '.npmrc'
+    TargetFolder: '$(Build.SourcesDirectory)'
+    OverWrite: true
 
 - script: |
     yarn install
