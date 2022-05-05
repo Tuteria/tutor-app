@@ -2,12 +2,12 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "../../dist/out-tsc",
-    "module": "commonjs",
+    "module": "esnext",
     "types": [
       "jest",
       "node"
     ],
-    "jsx": "react"
+    "jsx": "react-jsx",
   },
   "include": [
     "jest.config.ts",
@@ -19,6 +19,10 @@
     "**/*.spec.js",
     "**/*.test.jsx",
     "**/*.spec.jsx",
-    "**/*.d.ts"
-  ]
+    "**/*.d.ts",
+    "node_modules"
+  ],
+    "exclude": [
+      "jest.config.ts"
+    ]
 }

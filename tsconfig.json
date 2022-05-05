@@ -9,8 +9,7 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "target": "es2015",
-    "composite": true,
-    
+    "composite": true,    
     "jsx": "preserve",
     "jsxImportSource": "@emotion/react",
     "allowJs": true,
