@@ -4705,6 +4705,13 @@
   dependencies:
     "@types/react" "*"
 
+"@types/react-dom@17.0.13":
+  version "17.0.13"
+  resolved "https://pkgs.dev.azure.com/TuteriaTest/_packaging/TuteriaTest/npm/registry/@types/react-dom/-/react-dom-17.0.13.tgz#a3323b974ee4280070982b3112351bb1952a7809"
+  integrity sha1-ozI7l07kKABwmCsxEjUbsZUqeAk=
+  dependencies:
+    "@types/react" "*"
+
 "@types/react-test-renderer@>=16.9.0":
   version "18.0.0"
   resolved "https://registry.yarnpkg.com/@types/react-test-renderer/-/react-test-renderer-18.0.0.tgz#7b7f69ca98821ea5501b21ba24ea7b6139da2243"
@@ -4721,7 +4728,16 @@
     "@types/scheduler" "*"
     csstype "^3.0.2"
 
-"@types/react@^17.0.0", "@types/react@^17.0.16":
+"@types/react@17.0.40":
+  version "17.0.40"
+  resolved "https://pkgs.dev.azure.com/TuteriaTest/_packaging/TuteriaTest/npm/registry/@types/react/-/react-17.0.40.tgz#dc010cee6254d5239a138083f3799a16638e6bad"
+  integrity sha1-3AEM7mJU1SOaE4CD83maFmOOa60=
+  dependencies:
+    "@types/prop-types" "*"
+    "@types/scheduler" "*"
+    csstype "^3.0.2"
+
+"@types/react@^17.0.0":
   version "17.0.44"
   resolved "https://pkgs.dev.azure.com/TuteriaTest/_packaging/TuteriaTest/npm/registry/@types/react/-/react-17.0.44.tgz#c3714bd34dd551ab20b8015d9d0dbec812a51ec7"
   integrity sha1-w3FL003VUasguAFdnQ2+yBKlHsc=

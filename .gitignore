@@ -42,3 +42,4 @@ workbox*
 # Sentry
 .sentryclirc
 *.pyc
+.eslintcache

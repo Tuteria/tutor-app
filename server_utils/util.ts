@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useRouter } from "next/router";
+import { NextRouter, useRouter } from "next/router";
 import { useToast } from "@chakra-ui/react";
 import getConfig from "next/config";
 import { format } from "url";
@@ -27,7 +27,7 @@ export const usePrefetchHook = ({
   }
   useEffect(() => {
     routes.forEach((route) => {
-      router.prefetch(`${base}${rootBase}${route}`);
+      router?.prefetch(`${base}${rootBase}${route}`);
     });
   }, [routes.length]);
   const navigate = (path, same = true) => {

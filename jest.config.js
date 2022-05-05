@@ -3,6 +3,9 @@ module.exports = {
   globals: {
     "ts-jest": {
       tsconfig: "./tsconfig.spec.json",
+      diagnostics: {
+        warnOnly: true,
+      },
     },
   },
   preset: "ts-jest",
