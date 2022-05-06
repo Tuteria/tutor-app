@@ -43,3 +43,4 @@ workbox*
 .sentryclirc
 *.pyc
 .eslintcache
+startup.sh

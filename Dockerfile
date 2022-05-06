@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . .
 
 # RUN mv package-prod.json package.json
-RUN mv production/.npmrc .npmrc 
+# RUN mv production/.npmrc .npmrc 
 
 RUN yarn install
 
