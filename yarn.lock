@@ -4400,10 +4400,10 @@
   resolved "https://registry.yarnpkg.com/@trysound/sax/-/sax-0.2.0.tgz#cccaab758af56761eb7bf37af6f03f326dd798ad"
   integrity sha512-L7z9BgrNEcYyUYtF+HaEfiS5ebkh9jXqbszz7pC0hRBPaatV0XjSD3+eHrpqFemQfgwiFF0QPIarnIihIDn7OA==
 
-"@tuteria/shared-lib@0.0.5-alpha":
-  version "0.0.5-alpha"
-  resolved "https://pkgs.dev.azure.com/TuteriaTest/_packaging/TuteriaTest/npm/registry/@tuteria/shared-lib/-/shared-lib-0.0.5-alpha.tgz#476e91abcc351c1fc8c1eced89351669531fbab4"
-  integrity sha1-R26Rq8w1HB/IweztiTUWaVMfurQ=
+"@tuteria/shared-lib@0.0.7-alpha":
+  version "0.0.7-alpha"
+  resolved "https://pkgs.dev.azure.com/TuteriaHQ/_packaging/TuteriaHQ/npm/registry/@tuteria/shared-lib/-/shared-lib-0.0.7-alpha.tgz#6de3edb7c1e519662716b52535e2712aa414e36a"
+  integrity sha1-bePtt8HlGWYnFrUlNeJxKqQU42o=
   dependencies:
     "@chakra-ui/pro-theme" "0.0.45"
     "@fontsource/inter" "4.5.7"
@@ -4437,6 +4437,11 @@
     remark-math "^4.0.0"
     use-mobile-detect-hook "^1.0.4"
     yup "^0.32.9"
+
+"@tuteria/tuteria-data@0.0.3":
+  version "0.0.3"
+  resolved "https://pkgs.dev.azure.com/TuteriaHQ/_packaging/TuteriaHQ/npm/registry/@tuteria/tuteria-data/-/tuteria-data-0.0.3.tgz#9d5aa17ad2cfd9039aea5645a42f7a70759140fe"
+  integrity sha1-nVqhetLP2QOa6lZFpC96cHWRQP4=
 
 "@types/aria-query@^4.2.0":
   version "4.2.2"
