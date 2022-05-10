@@ -10,7 +10,7 @@ COPY . .
 # RUN mv package-prod.json package.json
 # RUN mv production/.npmrc .npmrc 
 
-RUN yarn install
+RUN yarn --frozen-lockfile
 
 RUN yarn build:prod
 
