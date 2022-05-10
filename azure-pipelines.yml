@@ -16,11 +16,10 @@ variables:
   gitlabhub: 'Gitlab Tuteria'
   imageName: 'registry.gitlab.com/tuteria/v2/tutor-frontend-app/tutor-application'
   shortName: "tuteria/v2/tutor-frontend-app/tutor-application"
-
+  YARN_CACHE_FOLDER: $(Pipeline.Workspace)/.yarn
 
 pool:
   vmImage: ubuntu-latest
-
 
 stages:
 - stage: Test

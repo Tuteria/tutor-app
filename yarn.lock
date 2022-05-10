@@ -3606,10 +3606,10 @@
     use-mobile-detect-hook "^1.0.4"
     yup "^0.32.9"
 
-"@tuteria/tuteria-data@0.0.3":
-  version "0.0.3"
-  resolved "https://pkgs.dev.azure.com/TuteriaHQ/_packaging/TuteriaHQ/npm/registry/@tuteria/tuteria-data/-/tuteria-data-0.0.3.tgz#9d5aa17ad2cfd9039aea5645a42f7a70759140fe"
-  integrity sha1-nVqhetLP2QOa6lZFpC96cHWRQP4=
+"@tuteria/tuteria-data@0.0.4":
+  version "0.0.4"
+  resolved "https://pkgs.dev.azure.com/TuteriaHQ/_packaging/TuteriaHQ/npm/registry/@tuteria/tuteria-data/-/tuteria-data-0.0.4.tgz#d6fcdf4e8d74957bc0d54408e050782043c9158c"
+  integrity sha1-1vzfTo10lXvA1UQI4FB4IEPJFYw=
 
 "@types/aria-query@^4.2.0":
   version "4.2.2"

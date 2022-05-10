@@ -8,7 +8,7 @@ import { getCloudinaryDetails } from "@tuteria/tuteria-data/src";
 // const MEDIA_SERVICE = process.env.MEDIA_SERVICE || "http://dev.tuteria.com:8020";
 // process.env.MEDIA_SERVICE || "http://staging-prod.tuteria.com:8020";
 const MEDIA_SERVICE =
-  process.env.MEDIA_SERVICE || "https://sheet.tuteria.com";
+  process.env.MEDIA_SERVICE || "http://sheet.tuteria.com:8020";
 // const MEDIA_SERVICE =
 //   process.env.MEDIA_SERVICE || "https://gsheet.vercel.app";
 const MEDIA_FORMAT = process.env.MEDIA_FORMAT || "test";
