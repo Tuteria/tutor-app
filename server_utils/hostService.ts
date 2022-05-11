@@ -9,7 +9,7 @@ const NOTIFICATION_SERVICE =
 const SCHEDULER_SERVICE =
   process.env.SCHEDULER_SERVICE || "http://email-service.tuteria.com:8092";
 const SHEET_HOST_URL =
-  process.env.SHEET_HOST_URL || "https://sheet.tuteria.com";
+  process.env.SHEET_HOST_URL || "http://sheet.tuteria.com:8020";
 const SPELL_CHECK_URL =
   process.env.SPELL_CHECK_URL || "http://dev.tuteria.com:8020";
 
