@@ -20,6 +20,9 @@ def deploy_dev(build_no="latest"):
             run("docker image prune -f")
             run("docker container prune -f")
 
+@hosts("sama@tutor-search.tuteria.com")
+def deploy_production():
+    deploy_next()
 
 @hosts("sama@tutor-search.tuteria.com")
 def deploy_production():
@@ -48,6 +51,11 @@ def deploy_next(user="sama", password=password):
             run("docker-compose up -d tutor-next")
             # run('docker-compose pull store-next')
             # run('docker-compose up -d store-next')
+<<<<<<< HEAD
+=======
+            run('docker image prune -f')
+            run('docker container prune -f')
+>>>>>>> f184a224d920d3737a952e1f9c7940b7193e01be
             run('docker rmi $(docker images --filter "dangling=true" -q --no-trunc)')
 
 
@@ -58,13 +66,22 @@ def deploy_staging():
     #     run("docker-compose pull tutor-next")
     #     run("docker-compose up -d tutor-next")
     # run('docker rmi $(docker images --filter "dangling=true" -q --no-trunc)')
+<<<<<<< HEAD
 
 
+=======
+
+
+>>>>>>> f184a224d920d3737a952e1f9c7940b7193e01be
 @hosts("sama@tutor-search.tuteria.com")
 def build_new_flow():
     with cd("/home/sama/tutor-frontend-app-v2"):
         run("git pull --no-edit")
+<<<<<<< HEAD
         run("git checkout -f develop")
+=======
+        run("git checkout -f staging")
+>>>>>>> f184a224d920d3737a952e1f9c7940b7193e01be
         # run('yarn install')
         # run('/home/sama/.nvm/versions/node/v8.9.4/bin/node build')
         run("docker login -u gbozee -p abiola2321 registry.gitlab.com")

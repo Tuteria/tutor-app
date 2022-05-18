@@ -22,6 +22,9 @@ pool:
 
 stages:
 - template: azure-templates/build-stage.yml@templates
+  parameters:
+    short_name: "tuteria/v2/tutor-frontend-app/tutor-application"
+    tag: $(Build.BuildId)
 - template: azure-templates/deploy-all-stages.yml@templates
   parameters:
     short_name: "tuteria/v2/tutor-frontend-app/tutor-application"
