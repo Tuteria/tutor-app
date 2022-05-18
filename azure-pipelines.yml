@@ -21,8 +21,11 @@ pool:
   vmImage: ubuntu-latest
 
 stages:
-- template: azure-templates/frontend-test-stage.yml@templates
-- template: azure-templates/frontend-deploy-stage.yml@templates
+- template: azure-templates/build-stage.yml@templates
+  parameters:
+    short_name: "tuteria/v2/tutor-frontend-app/tutor-application"
+    tag: $(Build.BuildId)
+- template: azure-templates/deploy-all-stages.yml@templates
   parameters:
     short_name: "tuteria/v2/tutor-frontend-app/tutor-application"
     tag: $(Build.BuildId)

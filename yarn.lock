@@ -1371,10 +1371,10 @@
     "@chakra-ui/react-utils" "1.1.2"
     "@chakra-ui/utils" "1.8.3"
 
-"@chakra-ui/pro-theme@0.0.45":
-  version "0.0.45"
-  resolved "https://pkgs.dev.azure.com/TuteriaHQ/_packaging/TuteriaHQ/npm/registry/@chakra-ui/pro-theme/-/pro-theme-0.0.45.tgz#0ec077ce589f76ce7ae612b3c017d87a0d5c1577"
-  integrity sha1-DsB3zlifds565hKzwBfYeg1cFXc=
+"@chakra-ui/pro-theme@0.0.47":
+  version "0.0.47"
+  resolved "https://pkgs.dev.azure.com/TuteriaHQ/_packaging/TuteriaHQ/npm/registry/@chakra-ui/pro-theme/-/pro-theme-0.0.47.tgz#79503425a116820261a7fa72108a3e1ee196f7a8"
+  integrity sha1-eVA0JaEWggJhp/pyEIo+HuGW96g=
   dependencies:
     "@chakra-ui/theme-tools" "1.3.6"
     focus-visible "5.2.0"
@@ -3568,12 +3568,12 @@
   resolved "https://pkgs.dev.azure.com/TuteriaHQ/_packaging/TuteriaHQ/npm/registry/@trysound/sax/-/sax-0.2.0.tgz#cccaab758af56761eb7bf37af6f03f326dd798ad"
   integrity sha1-zMqrdYr1Z2Hre/N69vA/Mm3XmK0=
 
-"@tuteria/shared-lib@0.0.7-alpha":
-  version "0.0.7-alpha"
-  resolved "https://pkgs.dev.azure.com/TuteriaHQ/_packaging/TuteriaHQ/npm/registry/@tuteria/shared-lib/-/shared-lib-0.0.7-alpha.tgz#6de3edb7c1e519662716b52535e2712aa414e36a"
-  integrity sha1-bePtt8HlGWYnFrUlNeJxKqQU42o=
+"@tuteria/shared-lib@0.0.8-alpha":
+  version "0.0.8-alpha"
+  resolved "https://pkgs.dev.azure.com/TuteriaHQ/_packaging/TuteriaHQ/npm/registry/@tuteria/shared-lib/-/shared-lib-0.0.8-alpha.tgz#bc0943cb1a2abedd1abb9234f40c631e7562cfc0"
+  integrity sha1-vAlDyxoqvt0au5I09AxjHnViz8A=
   dependencies:
-    "@chakra-ui/pro-theme" "0.0.45"
+    "@chakra-ui/pro-theme" "0.0.47"
     "@fontsource/inter" "4.5.7"
     "@nrwl/jest" "^14.0.5"
     "@styled-system/theme-get" "^5.1.2"
